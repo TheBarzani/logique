@@ -11,7 +11,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 import json
 from pathlib import Path
-from typing import Dict, List, Optional
+from typing import List, Optional
 import argparse
 
 
@@ -101,7 +101,9 @@ class BenchmarkVisualizer:
         return labels
     
     def create_grouped_bar_chart(self, metric: str, title: str, ylabel: str, 
-                                filename: Optional[str] = None, figsize: tuple = (14, 8)):
+                                filename: Optional[str] = None, figsize: tuple = (14, 8),
+                                log_scale: bool = False, exclude_outliers: bool = False,
+                                outlier_threshold: float = 3.0):
         """
         Create a grouped bar chart for a specific metric
         
@@ -111,6 +113,9 @@ class BenchmarkVisualizer:
             ylabel: Y-axis label
             filename: Optional filename to save the chart
             figsize: Figure size as (width, height)
+            log_scale: Use logarithmic scale for y-axis
+            exclude_outliers: Exclude extreme outliers from visualization
+            outlier_threshold: Standard deviations beyond which to consider outliers
         """
         if self.data is None:
             raise ValueError("No data loaded. Call load_csv_data() or load_json_data() first.")
@@ -128,6 +133,37 @@ class BenchmarkVisualizer:
             else:
                 print(f"Warning: Column {col_name} not found in data")
                 metric_data[approach] = np.zeros(len(self.data))
+        
+        # Handle outliers if requested
+        if exclude_outliers:
+            # Calculate outliers based on all non-zero values
+            all_values = []
+            for approach in approaches:
+                non_zero_values = metric_data[approach][metric_data[approach] > 0]
+                all_values.extend(non_zero_values)
+            
+            if len(all_values) > 0:
+                mean_val = np.mean(all_values)
+                std_val = np.std(all_values)
+                threshold = mean_val + outlier_threshold * std_val
+                
+                print(f"Outlier threshold for {metric}: {threshold:.0f}")
+                
+                # Create a note about excluded outliers
+                outlier_info = []
+                for i, approach in enumerate(approaches):
+                    outliers = metric_data[approach] > threshold
+                    if np.any(outliers):
+                        outlier_benchmarks = [self.data.iloc[j]['benchmark'] for j in range(len(outliers)) if outliers[j]]
+                        outlier_values = [metric_data[approach][j] for j in range(len(outliers)) if outliers[j]]
+                        for bench, val in zip(outlier_benchmarks, outlier_values):
+                            outlier_info.append(f"{self.labels[approach]} {bench}: {val:.0f}")
+                        
+                        # Cap outliers at threshold
+                        metric_data[approach] = np.minimum(metric_data[approach], threshold)
+                
+                if outlier_info:
+                    title += f"\n(Values >{threshold:.0f} capped. Outliers: {', '.join(outlier_info[:3])}{'...' if len(outlier_info) > 3 else ''})"
         
         # Set up the plot
         fig, ax = plt.subplots(figsize=figsize)
@@ -153,6 +189,11 @@ class BenchmarkVisualizer:
                 linewidth=0.5
             ))
         
+        # Apply log scale if requested
+        if log_scale:
+            ax.set_yscale('log')
+            ylabel += " (log scale)"
+        
         # Customize the plot
         ax.set_xlabel('Benchmark Graphs\n(nodes, edges, colors)', fontsize=12, fontweight='bold')
         ax.set_ylabel(ylabel, fontsize=12, fontweight='bold')
@@ -167,17 +208,23 @@ class BenchmarkVisualizer:
         ax.grid(True, alpha=0.3, axis='y')
         ax.set_axisbelow(True)
         
-        # Add value labels on bars (optional - can be commented out for cleaner look)
+        # Add value labels on bars (with better positioning for log scale)
         for bar_group in bars:
             for bar in bar_group:
                 height = bar.get_height()
                 if height > 0:  # Only label non-zero bars
+                    # Adjust label positioning for log scale
+                    if log_scale:
+                        label_y = height * 1.05
+                        fontsize = 7
+                    else:
+                        label_y = height + max(height * 0.01, 1)
+                        fontsize = 8
+                    
                     ax.annotate(f'{int(height)}',
-                              xy=(bar.get_x() + bar.get_width()/2, height),
-                              xytext=(0, 3),  # 3 points vertical offset
-                              textcoords="offset points",
+                              xy=(bar.get_x() + bar.get_width()/2, label_y),
                               ha='center', va='bottom',
-                              fontsize=8, rotation=90)
+                              fontsize=fontsize, rotation=90 if not log_scale else 0)
         
         # Adjust layout to prevent label cutoff
         plt.tight_layout()
@@ -191,34 +238,311 @@ class BenchmarkVisualizer:
         # Show the plot
         plt.show()
     
-    def create_all_charts(self, save_charts: bool = True):
-        """Create all three metric charts"""
+    def create_all_charts(self, save_charts: bool = True, normalize_all: bool = True):
+        """Create all three metric charts with optional normalization"""
         if self.data is None:
             raise ValueError("No data loaded. Call load_csv_data() or load_json_data() first.")
         
-        # Chart 1: Qubits
-        self.create_grouped_bar_chart(
-            metric='qubits',
-            title='Quantum Circuit Comparison: Number of Qubits\nVCGC vs Saha-Belletti Approaches',
-            ylabel='Number of Qubits',
-            filename='qubits_comparison.png' if save_charts else None
-        )
+        # Chart 1: Qubits (with normalization options)
+        if normalize_all:
+            # Create both log scale and outlier-excluded versions
+            self.create_grouped_bar_chart(
+                metric='qubits',
+                title='Quantum Circuit Comparison: Number of Qubits (Log Scale)\nVCGC vs Saha-Belletti Approaches',
+                ylabel='Number of Qubits',
+                filename='qubits_comparison_log.png' if save_charts else None,
+                log_scale=True
+            )
+            
+            self.create_grouped_bar_chart(
+                metric='qubits',
+                title='Quantum Circuit Comparison: Number of Qubits (Outliers Capped)\nVCGC vs Saha-Belletti Approaches',
+                ylabel='Number of Qubits',
+                filename='qubits_comparison_normalized.png' if save_charts else None,
+                exclude_outliers=True,
+                outlier_threshold=2.0
+            )
+        else:
+            # Original chart
+            self.create_grouped_bar_chart(
+                metric='qubits',
+                title='Quantum Circuit Comparison: Number of Qubits\nVCGC vs Saha-Belletti Approaches',
+                ylabel='Number of Qubits',
+                filename='qubits_comparison.png' if save_charts else None
+            )
         
-        # Chart 2: Depth
+        # Chart 2: Depth (with normalization options)
+        if normalize_all:
+            # Create both log scale and outlier-excluded versions
+            self.create_grouped_bar_chart(
+                metric='depth',
+                title='Quantum Circuit Comparison: Circuit Depth (Log Scale)\nVCGC vs Saha-Belletti Approaches',
+                ylabel='Circuit Depth',
+                filename='depth_comparison_log.png' if save_charts else None,
+                log_scale=True
+            )
+            
+            self.create_grouped_bar_chart(
+                metric='depth',
+                title='Quantum Circuit Comparison: Circuit Depth (Outliers Capped)\nVCGC vs Saha-Belletti Approaches',
+                ylabel='Circuit Depth',
+                filename='depth_comparison_normalized.png' if save_charts else None,
+                exclude_outliers=True,
+                outlier_threshold=2.0  # 2 standard deviations
+            )
+        else:
+            # Original chart
+            self.create_grouped_bar_chart(
+                metric='depth',
+                title='Quantum Circuit Comparison: Circuit Depth\nVCGC vs Saha-Belletti Approaches',
+                ylabel='Circuit Depth',
+                filename='depth_comparison.png' if save_charts else None
+            )
+        
+        # Chart 3: Gates (with normalization options)
+        if normalize_all:
+            # Create both log scale and outlier-excluded versions
+            self.create_grouped_bar_chart(
+                metric='gates',
+                title='Quantum Circuit Comparison: Number of Gates (Log Scale)\nVCGC vs Saha-Belletti Approaches',
+                ylabel='Number of Gates',
+                filename='gates_comparison_log.png' if save_charts else None,
+                log_scale=True
+            )
+            
+            self.create_grouped_bar_chart(
+                metric='gates',
+                title='Quantum Circuit Comparison: Number of Gates (Outliers Capped)\nVCGC vs Saha-Belletti Approaches',
+                ylabel='Number of Gates',
+                filename='gates_comparison_normalized.png' if save_charts else None,
+                exclude_outliers=True,
+                outlier_threshold=2.0
+            )
+        else:
+            # Original chart
+            self.create_grouped_bar_chart(
+                metric='gates',
+                title='Quantum Circuit Comparison: Number of Gates\nVCGC vs Saha-Belletti Approaches',
+                ylabel='Number of Gates',
+                filename='gates_comparison.png' if save_charts else None
+            )
+    
+    def create_all_comparison_alternatives(self):
+        """Create multiple normalized versions for all metrics"""
+        if self.data is None:
+            raise ValueError("No data loaded. Call load_csv_data() or load_json_data() first.")
+        
+        print("Creating alternative visualizations for all metrics...")
+        
+        metrics = ['qubits', 'depth', 'gates']
+        
+        for metric in metrics:
+            print(f"\nCreating {metric} visualizations...")
+            
+            # 1. Log scale version
+            self.create_grouped_bar_chart(
+                metric=metric,
+                title=f'{metric.capitalize()} Comparison (Logarithmic Scale)\nVCGC vs Saha-Belletti Approaches',
+                ylabel=f'{metric.capitalize()} (log scale)',
+                filename=f'{metric}_comparison_log.png',
+                log_scale=True
+            )
+            
+            # 2. Outliers excluded version
+            self.create_grouped_bar_chart(
+                metric=metric,
+                title=f'{metric.capitalize()} Comparison (Extreme Values Capped)\nVCGC vs Saha-Belletti Approaches',
+                ylabel=metric.capitalize(),
+                filename=f'{metric}_comparison_capped.png',
+                exclude_outliers=True,
+                outlier_threshold=2.0
+            )
+            
+            # 3. Create a separate chart showing only the problematic benchmarks
+            self.create_metric_outlier_focus_chart(metric)
+    
+    def create_metric_outlier_focus_chart(self, metric: str):
+        """Create a focused chart showing only benchmarks with extreme values for a specific metric"""
+        if self.data is None:
+            return
+        
+        # Find benchmarks with extreme values across all approaches
+        approaches = ['vcgc', 'sb_original', 'sb_minimal', 'sb_simple', 'sb_balanced']
+        all_values = []
+        
+        for approach in approaches:
+            col_name = f'{approach}_{metric}'
+            if col_name in self.data.columns:
+                values = self.data[col_name]
+                all_values.extend(values[values > 0])
+        
+        if not all_values:
+            print(f"No data found for {metric} outlier analysis")
+            return
+        
+        mean_val = np.mean(all_values)
+        std_val = np.std(all_values)
+        threshold = mean_val + 2 * std_val
+        
+        # Find benchmarks that have at least one approach exceeding the threshold
+        outlier_mask = False
+        for approach in approaches:
+            col_name = f'{approach}_{metric}'
+            if col_name in self.data.columns:
+                outlier_mask = outlier_mask | (self.data[col_name] > threshold)
+        
+        if not outlier_mask.any():
+            print(f"No outliers found for {metric} focused chart")
+            return
+        
+        # Create subset data
+        outlier_data = self.data[outlier_mask].copy()
+        
+        fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(16, 6))
+        
+        # Left plot: Linear scale
+        x_pos = np.arange(len(outlier_data))
+        width = 0.15
+        
+        for i, approach in enumerate(approaches):
+            col_name = f'{approach}_{metric}'
+            if col_name in outlier_data.columns:
+                values = outlier_data[col_name]
+                offset = (i - len(approaches)/2 + 0.5) * width
+                ax1.bar(x_pos + offset, values, width, 
+                       label=self.labels[approach], color=self.colors[approach], alpha=0.8)
+        
+        ax1.set_title(f'Outlier Benchmarks for {metric.capitalize()}: Linear Scale')
+        ax1.set_ylabel(metric.capitalize())
+        ax1.set_xticks(x_pos)
+        ax1.set_xticklabels([f"{row['benchmark']}\n({row['nodes']}n,{row['edges']}e,{row['colors']}c)" 
+                            for _, row in outlier_data.iterrows()], rotation=45, ha='right')
+        ax1.legend()
+        ax1.grid(True, alpha=0.3)
+        
+        # Right plot: Log scale
+        for i, approach in enumerate(approaches):
+            col_name = f'{approach}_{metric}'
+            if col_name in outlier_data.columns:
+                values = outlier_data[col_name]
+                values = np.maximum(values, 1)  # Avoid log(0)
+                offset = (i - len(approaches)/2 + 0.5) * width
+                ax2.bar(x_pos + offset, values, width, 
+                       label=self.labels[approach], color=self.colors[approach], alpha=0.8)
+        
+        ax2.set_title(f'Outlier Benchmarks for {metric.capitalize()}: Log Scale')
+        ax2.set_ylabel(f'{metric.capitalize()} (log scale)')
+        ax2.set_yscale('log')
+        ax2.set_xticks(x_pos)
+        ax2.set_xticklabels([f"{row['benchmark']}\n({row['nodes']}n,{row['edges']}e,{row['colors']}c)" 
+                            for _, row in outlier_data.iterrows()], rotation=45, ha='right')
+        ax2.legend()
+        ax2.grid(True, alpha=0.3)
+        
+        plt.tight_layout()
+        
+        # Save the focused chart
+        save_path = self.results_dir / f'{metric}_outliers_focus.png'
+        plt.savefig(save_path, dpi=300, bbox_inches='tight')
+        print(f"{metric.capitalize()} outlier focus chart saved to: {save_path}")
+        
+        plt.show()
+    
+    def create_depth_comparison_alternatives(self):
+        """Create multiple normalized versions of the depth comparison"""
+        if self.data is None:
+            raise ValueError("No data loaded. Call load_csv_data() or load_json_data() first.")
+        
+        print("Creating alternative depth visualizations...")
+        
+        # 1. Log scale version
         self.create_grouped_bar_chart(
             metric='depth',
-            title='Quantum Circuit Comparison: Circuit Depth\nVCGC vs Saha-Belletti Approaches',
-            ylabel='Circuit Depth',
-            filename='depth_comparison.png' if save_charts else None
+            title='Circuit Depth Comparison (Logarithmic Scale)\nVCGC vs Saha-Belletti Approaches',
+            ylabel='Circuit Depth (log scale)',
+            filename='depth_comparison_log.png',
+            log_scale=True
         )
         
-        # Chart 3: Gates
+        # 2. Outliers excluded version
         self.create_grouped_bar_chart(
-            metric='gates',
-            title='Quantum Circuit Comparison: Number of Gates\nVCGC vs Saha-Belletti Approaches',
-            ylabel='Number of Gates',
-            filename='gates_comparison.png' if save_charts else None
+            metric='depth',
+            title='Circuit Depth Comparison (Extreme Values Capped)\nVCGC vs Saha-Belletti Approaches',
+            ylabel='Circuit Depth',
+            filename='depth_comparison_capped.png',
+            exclude_outliers=True,
+            outlier_threshold=2.0
         )
+        
+        # 3. Create a separate chart showing only the problematic benchmarks
+        self.create_outlier_focus_chart()
+    
+    def create_outlier_focus_chart(self):
+        """Create a focused chart showing only benchmarks with extreme depth values"""
+        if self.data is None:
+            return
+        
+        # Find benchmarks with extreme SB-Minimal values
+        sb_minimal_values = self.data['sb_minimal_depth']
+        mean_val = sb_minimal_values.mean()
+        std_val = sb_minimal_values.std()
+        threshold = mean_val + 2 * std_val
+        
+        outlier_mask = sb_minimal_values > threshold
+        
+        if not outlier_mask.any():
+            print("No outliers found for focused chart")
+            return
+        
+        # Create subset data
+        outlier_data = self.data[outlier_mask].copy()
+        
+        fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(16, 6))
+        
+        # Left plot: Linear scale
+        approaches = ['vcgc', 'sb_original', 'sb_minimal', 'sb_simple', 'sb_balanced']
+        x_pos = np.arange(len(outlier_data))
+        width = 0.15
+        
+        for i, approach in enumerate(approaches):
+            values = outlier_data[f'{approach}_depth']
+            offset = (i - len(approaches)/2 + 0.5) * width
+            ax1.bar(x_pos + offset, values, width, 
+                   label=self.labels[approach], color=self.colors[approach], alpha=0.8)
+        
+        ax1.set_title('Outlier Benchmarks: Linear Scale')
+        ax1.set_ylabel('Circuit Depth')
+        ax1.set_xticks(x_pos)
+        ax1.set_xticklabels([f"{row['benchmark']}\n({row['nodes']}n,{row['edges']}e,{row['colors']}c)" 
+                            for _, row in outlier_data.iterrows()], rotation=45, ha='right')
+        ax1.legend()
+        ax1.grid(True, alpha=0.3)
+        
+        # Right plot: Log scale
+        for i, approach in enumerate(approaches):
+            values = outlier_data[f'{approach}_depth']
+            values = np.maximum(values, 1)  # Avoid log(0)
+            offset = (i - len(approaches)/2 + 0.5) * width
+            ax2.bar(x_pos + offset, values, width, 
+                   label=self.labels[approach], color=self.colors[approach], alpha=0.8)
+        
+        ax2.set_title('Outlier Benchmarks: Log Scale')
+        ax2.set_ylabel('Circuit Depth (log scale)')
+        ax2.set_yscale('log')
+        ax2.set_xticks(x_pos)
+        ax2.set_xticklabels([f"{row['benchmark']}\n({row['nodes']}n,{row['edges']}e,{row['colors']}c)" 
+                            for _, row in outlier_data.iterrows()], rotation=45, ha='right')
+        ax2.legend()
+        ax2.grid(True, alpha=0.3)
+        
+        plt.tight_layout()
+        
+        # Save the focused chart
+        save_path = self.results_dir / 'depth_outliers_focus.png'
+        plt.savefig(save_path, dpi=300, bbox_inches='tight')
+        print(f"Outlier focus chart saved to: {save_path}")
+        
+        plt.show()
     
     def print_summary_statistics(self):
         """Print summary statistics for the data"""
@@ -322,6 +646,10 @@ def main():
                        help="Don't save charts to files")
     parser.add_argument("--summary-only", action="store_true",
                        help="Only print summary statistics")
+    parser.add_argument("--depth-alternatives", action="store_true",
+                       help="Create alternative normalized depth charts")
+    parser.add_argument("--all-alternatives", action="store_true",
+                       help="Create alternative normalized charts for all metrics")
     
     args = parser.parse_args()
     
@@ -342,8 +670,15 @@ def main():
     visualizer.print_summary_statistics()
     
     if not args.summary_only:
-        # Create all charts
-        visualizer.create_all_charts(save_charts=not args.no_save)
+        if args.all_alternatives:
+            # Create alternative visualizations for all metrics
+            visualizer.create_all_comparison_alternatives()
+        elif args.depth_alternatives:
+            # Create alternative depth visualizations
+            visualizer.create_depth_comparison_alternatives()
+        else:
+            # Create all charts with normalization
+            visualizer.create_all_charts(save_charts=not args.no_save, normalize_all=True)
         
         # Create improvement analysis
         visualizer.create_improvement_analysis()

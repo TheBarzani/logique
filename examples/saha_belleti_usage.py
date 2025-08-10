@@ -23,7 +23,7 @@ def main():
     print('\n')
     # 1. Create a wrapper VCPNetwork
     network = VCPNetwork()
-    network.read_dimacs("data/benchmarks/K55.col")
+    network.read_dimacs("data/benchmarks/K5.col")
 
     # 2. Generate Saha-Belleti Circuits
     qc: QuantumCircuit = generate_circuit(graph=network.graph, colors=network.available_colors, oracle_type='original', grover_iterations=1) # grover_iterations

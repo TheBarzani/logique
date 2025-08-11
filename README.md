@@ -1,166 +1,132 @@
-# VCGC: Vertex Coloring with Grover's Circuit 
+# VCGC: High-Level Synthesis and Benchmarking for Quantum Vertex Coloring
 
 [![MIT License](https://img.shields.io/badge/License-MIT-green.svg)](https://choosealicense.com/licenses/mit/)
 [![Python 3.10+](https://img.shields.io/badge/python-3.10+-blue.svg)](https://www.python.org/downloads/)
 [![Qiskit](https://img.shields.io/badge/Qiskit-1.3.2-6929C4)](https://qiskit.org/)
 
-## Welcome to the Quantum Graph Coloring Universe! 🌌
+## Overview
 
-VCGC is a collection of experiments to run Grover's search algorithm for graph vertex coloring problems using quantum circuits. We're exploring the quantum advantage for NP-hard problems - one qubit at a time!
+**VCGC** is a research-driven Python library and experimental suite for compiling vertex coloring problems into quantum circuits, leveraging Grover's algorithm. It provides:
 
-![Quantum Circuit Example](images/grover_circuit_reg.png)
+- An automated high-level synthesis (HLS) flow from graph instances to quantum circuits
+- Extensive benchmarking and comparison to state-of-the-art (Saha-Belletti) methods
+- Tools for reproducible experiments and quantum hardware execution
 
-## 🚀 Features
 
-- **Quantum-Powered Graph Coloring**: Solve classic vertex coloring problems using Grover's algorithm
-- **Real Quantum Hardware**: Run your circuits on actual IBM Quantum computers
-- **Quantum Bias Analysis**: Check if quantum hardware shows bias toward certain states
-- **Error Mitigation**: Implement dynamic decoupling and M3 mitigation techniques
-- **Visualization Tools**: Pretty plots of your quantum circuit results
-- **Customizable Graphs**: Try different graph structures and coloring constraints
+## Key Contributions
 
-## 🔧 Installation
+- **Automated Quantum Circuit Generation**: End-to-end pipeline from DIMACS graph files to Grover oracles and full quantum circuits.
+- **Benchmark Suite**: Includes real-world and synthetic graphs, with results on circuit size, depth, and quantum resource counts.
+- **State-of-the-Art Comparison**: Direct, scriptable comparison to the Saha-Belletti approach.
+- **Experimental Results**: Extensive data on circuit synthesis, hardware runs, and quantum/classical performance.
+- **Reproducibility**: All experiments, data, and scripts are included for full reproducibility.
+
+
+## Installation
+ > **Note**: Because the `tweedledum` library has not been updated for python versions >3.10, I recommend to use python 3.10 for this project. 
+
+### Using uv (Recommended)
 
 ```bash
-# Clone the repository
-git clone https://github.com/yourusername/vcgc.git
+git clone --recursive https://github.com/TheBarzani/vcgc.git
 cd vcgc
-
-# Set up virtual environment
-python -m venv .venv
-source .venv/bin/activate  # On Windows: .venv\Scripts\activate
-
-# Install dependencies
-uv pip install -r requirements.txt
-
-# Install vcgc package in development mode
+uv venv --python 3.10
+uv sync
 uv pip install -e .
 ```
 
-## 📦 Using the VCGC Package
+### Using pip
 
-The `vcgc` package provides a Python API for working with vertex coloring problems and quantum circuits:
+```bash
+git clone --recursive https://github.com/TheBarzani/vcgc.git
+cd vcgc
+python -m venv .venv
+source .venv/bin/activate
+pip install -r requirements.txt 
+pip install -e .
+```
+
+
+## Quick Start
+
+### 1. Generate a Quantum Circuit from a Graph
 
 ```python
 import vcgc
-
-# Create a vertex coloring problem network
 network = vcgc.VCPNetwork()
-
-# Read a graph from DIMACS format
-network.read_dimacs("path/to/your/graph.col")
-
-# Generate boolean expressions for coloring constraints  
+network.read_dimacs("data/benchmarks/myciel3.col")
 bf = vcgc.BooleanFunction()
-expression, variables = bf.generate_coloring_expression(network)
-
-# Synthesize quantum circuits
-synthesizer = vcgc.Synthesizer()
-qiskit_circuit = synthesizer.synthesize_with_xag()
-
-# Or read DIMACS files directly
-num_vertices, num_edges, colors, edges, colored_vertices = vcgc.read_dimacs("file.col")
+expr, vars = bf.generate_coloring_expression(network)
+synth = vcgc.Synthesizer()
+qc = synth.synthesize_with_xag(expr, vars)
+qc.draw()
 ```
 
-### Package Components
+### 2. Run Benchmarks
 
-- **`VCPNetwork`**: Create and manage graph networks for vertex coloring problems
-- **`BooleanFunction`**: Generate boolean expressions and constraints for graph coloring
-- **`Synthesizer`**: Convert logic networks to quantum circuits using XAG synthesis
-- **`read_dimacs`**: Read graph data from DIMACS format files
-
-## 📚 Getting Started
-
-1. **Set up your IBM Quantum account**:
-   - Create an IBM Quantum account at [quantum-computing.ibm.com](https://quantum-computing.ibm.com/)
-   - Get your API token and set it up in ibm_quantum_platform.ipynb
-
-2. **Run your first quantum coloring circuit**:
-   - Open graph_2_grover_circuit.ipynb for a basic 2-node graph example
-   - Follow the notebook cells to understand the implementation
-
-3. **Experiment with different graphs**:
-   - Check out the graphs directory for other graph examples
-   - Create your own graph structure and implement its oracle
-
-## 🧪 Experiments
-
-### Basic Circuit Implementation
-
-```python
-# Create a quantum subcircuit for grover oracle
-grover_oracle = QuantumCircuit(5, name="grover_oracle")
-grover_oracle.x(0)
-grover_oracle.ccx(0,1,3)
-grover_oracle.x(0)
-grover_oracle.cx(0,2)
-grover_oracle.ccx(2,3,4)
-grover_oracle.cx(0,2)
-grover_oracle.x(0)
+```bash
+python examples/run_benchmarks.py --output results.csv
 ```
 
-### Run on Real Quantum Hardware
+### 3. Compare to Saha-Belletti
 
-```python
-service = QiskitRuntimeService()
-backend = service.least_busy(simulator=False, operational=True)
-sampler = Sampler(mode=backend)
-sampler.options.default_shots = 10_000
-job = sampler.run([transpiled_circuit])
-```
+Check out `examples/comparing_vcgc_to_saha_belletti.ipynb`.
 
-## 🔬 Quantum Bias Analysis
 
-We've included experiments to check if there's any bias in quantum hardware towards states with more 1s vs 0s. You can run these experiments yourself:
+## Library Components
 
-1. Open ibm_quantum_bias_check.ipynb
-2. Follow the implementation of both regular and "inverted" circuits
-3. Compare results to see if there's a bias in real quantum hardware
+- **`VCPNetwork`**: Graph parsing and management (DIMACS support)
+- **`BooleanFunction`**: Boolean constraint generation for coloring
+- **`Synthesizer`**: Logic network synthesis to quantum circuits (XAG, etc.)
+- **Benchmark Scripts**: Automated evaluation and comparison
+- **Visualization**: Circuit and result plotting utilities
 
-## 📊 Results Visualization
 
-```python
-from qiskit.visualization import plot_distribution
-result = job.result()
-raw_counts = result[0].data.c.get_counts()
-new_counts = process_counts(raw_counts)
-plot_distribution(new_counts)
-```
+## Experimental Results
 
-## 📋 Requirements
+### Performance Improvements over Saha-Belletti
 
-- Python 3.10
-- Qiskit 
-- Qiskit Aer 
-- Matplotlib 
-- NumPy 
-- mthree
-- qiskit-ibm-runtime
+Our approach demonstrates significant improvements across all key quantum circuit metrics:
 
-## 🤝 Contributing
+![VCGC Improvements](data/output/improvement_analysis.png)
 
-Contributions welcome! Feel free to:
-- Report bugs
-- Suggest improvements
-- Submit pull requests
-- Add examples for new graph structures
+- **Circuit Depth**: 62.1% average reduction (up to 80.3% in SB-Minimal variant)
+- **Gate Count**: 47.2% average reduction (up to 82.1% in SB-Minimal variant)  
+- **Qubit Usage**: More efficient in most cases, with strategic trade-offs
 
-## 🔮 Future Work
+### Detailed Circuit Comparisons
 
-- Implement larger graph structures
-- Explore quantum error correction techniques
-- Compare with classical algorithms
-- Add support for other quantum platforms
-- Optimize circuit depth for better results on noisy hardware
+#### Qubit Count Comparison
+![Qubit Comparison](data/output/qubits_comparison_log.png)
 
-## 👏 Acknowledgements
+#### Gate Count Comparison
+![Gate Comparison](data/output/gates_comparison_log.png)
 
-- IBM Quantum team for providing quantum computing resources
-- Qiskit community for their excellent documentation and support
-- Graph theory researchers who made this field so fascinating!
+#### Circuit Depth Comparison
+![Depth Comparison](data/output/depth_comparison_log.png)
 
----
+### Data and Resources
 
-*"The most incomprehensible thing about quantum mechanics is that it is comprehensible."* - Adapted from Albert Einstein
+The repository includes:
 
-Happy quantum computing! 🧬💻🔮
+- **Raw and processed benchmark data** (see `data/` and `output/`)
+- **Comparison plots**: VCGC vs. Saha-Belletti (see `examples/` and `output/`)
+- **Quantum resource counts**: Qubits, gates, depth, etc.
+- **Hardware execution scripts**: For IBM Quantum and simulators
+
+
+## Reproducibility
+
+All experiments can be reproduced using the provided scripts and data. To reproduce the main results:
+
+1. Install dependencies and the package (see above)
+2. Run `examples/run_benchmarks.py` and `examples/comparing_vcgc_to_saha_belletti.py`
+3. See `output/` for results and plots
+
+## Citing
+
+If you use this code or data, please cite the paper draft or this repository.
+
+## License
+
+TODO

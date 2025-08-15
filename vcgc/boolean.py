@@ -90,19 +90,17 @@ class BooleanFunction():
         --------
         BoolFunction : Tweedledum boolean function object
         """
-        vertices: list = list(network.graph.nodes())
+        # Find vertices that are actually used in edges
+        vertices = set()
+        for u, v in edges:
+            vertices.add(u)
+            vertices.add(v)
         edges: list = list(network.graph.edges())
         bits_per_color: int = math.ceil(math.log2(network.available_colors))
 
-        # Find vertices that are actually used in edges
-        used_vertices = set()
-        for u, v in edges:
-            used_vertices.add(u)
-            used_vertices.add(v)
-        
         # Create variable names only for vertices that appear in edges
         var_names = []
-        for vertex in sorted(used_vertices):
+        for vertex in sorted(vertices):
             for bit in range(bits_per_color):
                 var_names.append(f"v{vertex}_{bit}")
         

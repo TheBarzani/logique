@@ -92,11 +92,11 @@ class BooleanFunction():
         """
         # Find vertices that are actually used in edges
         vertices = set()
+        edges: list = list(network.graph.edges())
+        bits_per_color: int = math.ceil(math.log2(network.available_colors))
         for u, v in edges:
             vertices.add(u)
             vertices.add(v)
-        edges: list = list(network.graph.edges())
-        bits_per_color: int = math.ceil(math.log2(network.available_colors))
 
         # Create variable names only for vertices that appear in edges
         var_names = []

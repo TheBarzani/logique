@@ -6,16 +6,33 @@ from qiskit.circuit.library.data_preparation.state_preparation import UniformSup
 from math import ceil, log2
 
 # Create a quantum subcircuit for grover diffusion operator
-def generate_grover_diffusion(num_qubits: int) -> QuantumCircuit:
+def generate_grover_diffusion(num_qubits: int, uqs: QuantumCircuit = None) -> QuantumCircuit:
     # Create a quantum subcircuit for grover diffusion operator
-    grover_diff = QuantumCircuit(num_qubits, name="grover_diffusion")
-    grover_diff.h(range(num_qubits))
-    grover_diff.x(range(num_qubits))
-    grover_diff.h(num_qubits - 1)
-    grover_diff.mcx(list(range(num_qubits - 1)), num_qubits - 1)
-    grover_diff.h(num_qubits - 1)
-    grover_diff.x(range(num_qubits))
-    grover_diff.h(range(num_qubits))
+    if uqs == None:
+        grover_diff = QuantumCircuit(num_qubits, name="grover_diffusion")
+        grover_diff.h(range(num_qubits))
+        grover_diff.x(range(num_qubits))
+        grover_diff.h(num_qubits - 1)
+        grover_diff.mcx(list(range(num_qubits - 1)), num_qubits - 1)
+        grover_diff.h(num_qubits - 1)
+        grover_diff.x(range(num_qubits))
+        grover_diff.h(range(num_qubits))
+    else:
+        grover_diff = QuantumCircuit(num_qubits, name="grover_diffusion")
+        num_encode_qubits = uqs.num_qubits
+        for vertex in range(num_qubits // num_encode_qubits):
+            start_qubit = vertex * num_encode_qubits
+            end_qubit = start_qubit + num_encode_qubits
+            grover_diff.compose(uqs.inverse(), qubits=range(start_qubit, end_qubit), inplace=True)
+        grover_diff.x(range(num_qubits))
+        grover_diff.h(num_qubits - 1)
+        grover_diff.mcx(list(range(num_qubits - 1)), num_qubits - 1)
+        grover_diff.h(num_qubits - 1)
+        grover_diff.x(range(num_qubits))
+        for vertex in range(num_qubits // num_encode_qubits):
+            start_qubit = vertex * num_encode_qubits
+            end_qubit = start_qubit + num_encode_qubits
+            grover_diff.compose(uqs, qubits=range(start_qubit, end_qubit), inplace=True)
     return grover_diff
 
 

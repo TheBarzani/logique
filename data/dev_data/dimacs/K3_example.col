@@ -1,0 +1,10 @@
+c FILE: K3_example.col
+c K3 is the simplest non-trivial example for vertex coloring problems 
+c since it requires the minimum number of colors (3) where each vertex 
+c must have a unique color.
+c 3 vertices, 3 edges, 3 colors
+p edge 3 3
+e 1 2
+e 1 3
+e 2 3
+x colors 3

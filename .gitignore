@@ -173,6 +173,7 @@ pyrightconfig.json
 # Custom Added
 .venv/
 .vscode/
+*.DS_Store
 
 # DRAWIO stuff
 *.bkp

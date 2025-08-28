@@ -1,0 +1,38 @@
+digraph {
+rankdir=BT;
+0 [label="0",shape=box,style=filled,fillcolor=snow2]
+1 [label="1",shape=triangle,style=filled,fillcolor=snow2]
+2 [label="2",shape=triangle,style=filled,fillcolor=snow2]
+3 [label="3",shape=triangle,style=filled,fillcolor=snow2]
+4 [label="4",shape=triangle,style=filled,fillcolor=snow2]
+5 [label="5",shape=triangle,style=filled,fillcolor=snow2]
+6 [label="XOR",shape=ellipse,style=filled,fillcolor=lightskyblue]
+7 [label="XOR",shape=ellipse,style=filled,fillcolor=lightskyblue]
+8 [label="AND",shape=ellipse,style=filled,fillcolor=lightcoral]
+9 [label="XOR",shape=ellipse,style=filled,fillcolor=lightskyblue]
+10 [label="AND",shape=ellipse,style=filled,fillcolor=lightcoral]
+11 [label="XOR",shape=ellipse,style=filled,fillcolor=lightskyblue]
+12 [label="AND",shape=ellipse,style=filled,fillcolor=lightcoral]
+po0 [shape=invtriangle,style=filled,fillcolor=snow2]
+2 -> 6 [style=solid]
+1 -> 6 [style=solid]
+3 -> 7 [style=solid]
+2 -> 7 [style=solid]
+6 -> 8 [style=solid]
+7 -> 8 [style=solid]
+4 -> 9 [style=solid]
+3 -> 9 [style=solid]
+8 -> 10 [style=solid]
+9 -> 10 [style=solid]
+5 -> 11 [style=solid]
+4 -> 11 [style=solid]
+10 -> 12 [style=solid]
+11 -> 12 [style=solid]
+12 -> po0 [style=solid]
+{rank = same; 0; 1; 2; 3; 4; 5; }
+{rank = same; 6; 7; 9; 11; }
+{rank = same; 8; }
+{rank = same; 10; }
+{rank = same; 12; }
+{rank = same; po0; }
+}

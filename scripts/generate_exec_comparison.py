@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """
 Script to generate execution comparison between VCGC and Saha-Belletti methods
-on linear graphs of increasing size (1-7 vertices).
+on linear graphs of increasing size (3-7 vertices).
 
 This script:
 1. Prepares circuits for each method (VCGC, original, simple, minimal, balanced)
@@ -59,6 +59,11 @@ class ExecutionComparison:
         self.service = QiskitRuntimeService()
         self.backend = None
         self.results = []
+        self.timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+        
+        # Create timestamped subdirectory
+        self.timestamp_dir = os.path.join(output_dir, self.timestamp)
+        os.makedirs(self.timestamp_dir, exist_ok=True)
         
         # Create output directory if it doesn't exist
         os.makedirs(output_dir, exist_ok=True)
@@ -124,7 +129,7 @@ class ExecutionComparison:
         circuit_with_meas.measure(range(num_data_qubits), range(num_data_qubits))
         return circuit_with_meas
     
-    def transpile_circuit(self, circuit: QuantumCircuit) -> QuantumCircuit:
+    def transpile_circuit(self, circuit: QuantumCircuit, num_trials: int = 10) -> QuantumCircuit:
         """Transpile circuit for the target backend."""
         durations = DynamicCircuitInstructionDurations.from_backend(backend=self.backend)
         
@@ -145,8 +150,26 @@ class ExecutionComparison:
             )
         ])
         
-        return optimized_pm.run(circuit)
-    
+        # Transpile multiple times and select the one with lowest depth
+        best_circuit = None
+        best_depth = float('inf')
+        
+        print(f"Transpiling circuit {num_trials} times to find optimal depth...")
+        
+        for trial in range(num_trials):
+            transpiled_circuit = optimized_pm.run(circuit)
+            current_depth = transpiled_circuit.depth()
+            
+            if current_depth < best_depth:
+                best_depth = current_depth
+                best_circuit = transpiled_circuit
+                print(f"Trial {trial + 1}: New best depth = {current_depth}")
+            else:
+                print(f"Trial {trial + 1}: Depth = {current_depth}")
+        
+        print(f"Selected circuit with depth {best_depth} from {num_trials} trials")
+        return best_circuit
+        
     def calculate_success_probability(self, counts: Dict[str, int], 
                                     network: VCPNetwork, method: str) -> float:
         """
@@ -162,102 +185,46 @@ class ExecutionComparison:
         """
         total_shots = sum(counts.values())
         valid_shots = 0
-        print (f'total shots: {total_shots}')
-        print(counts)
+        print(f'total shots: {total_shots}')
+        print(f'Network has {network.num_vertices} vertices, {network.available_colors} colors')
         
-        if method == "vcgc":
-            # VCGC uses binary encoding for colors
-            num_encode_qubits = ceil(log2(network.available_colors)) if network.available_colors > 1 else 1
-            expected_bits = network.num_vertices * num_encode_qubits
+        num_encode_qubits = ceil(log2(network.available_colors)) if network.available_colors > 1 else 1
+        expected_bits = network.num_vertices * num_encode_qubits
+        
+        print(f"Debug: Expected {expected_bits} bits ({num_encode_qubits} per vertex)")
+        print(f"Debug: Sample states: {list(counts.keys())[:3] if counts else 'No states'}")
+        
+        # For linear graphs with 2 colors, generate the valid alternating patterns
+        valid_patterns = set()
+        if network.available_colors == 2 and num_encode_qubits == 1:
+            # For linear graphs, valid colorings are alternating patterns
+            # Pattern 1: 0,1,0,1,... (starting with 0)
+            pattern1 = ''.join(['0' if i % 2 == 0 else '1' for i in range(network.num_vertices)])
+            # Pattern 2: 1,0,1,0,... (starting with 1)  
+            pattern2 = ''.join(['1' if i % 2 == 0 else '0' for i in range(network.num_vertices)])
+            valid_patterns.add(pattern1)
+            valid_patterns.add(pattern2)
             
-            print(f"Debug: VCGC analysis - {network.num_vertices} vertices, {network.available_colors} colors")
-            print(f"Debug: Expected {expected_bits} bits ({num_encode_qubits} per vertex)")
-            print(f"Debug: Sample states: {list(counts.keys())[:3] if counts else 'No states'}")
-                        
-            for state, count in counts.items():
+            print(f"Debug: Valid patterns for {network.num_vertices}-vertex linear graph: {valid_patterns}")
+        
+        for state, count in counts.items():
+            # For 2-color linear graphs, check if the state exactly matches valid patterns
+            if network.available_colors == 2 and num_encode_qubits == 1:
+                if state in valid_patterns:
+                    valid_shots += count
+                    print(f"Debug: Found exact valid pattern {state} with {count} shots")
+            else:
                 # Skip if state string is too short
                 if len(state) < expected_bits:
-                    print(f"Debug: Skipping short state {state} (length {len(state)} < {expected_bits})")
                     continue
                     
+                # Take rightmost bits (the actual measurement results)
+                state_bits = state[-expected_bits:]
+                
                 # Parse the binary state into vertex colors
                 vertex_colors = []
-                # Use the rightmost bits (standard Qiskit bit ordering)
-                state_bits = state[-expected_bits:]  # Take only the expected number of bits
-                
                 success = True
-                for v in range(network.num_vertices):
-                    start_bit = v * num_encode_qubits
-                    end_bit = start_bit + num_encode_qubits
-                    
-                    print(f"Debug: Processing vertex {v}, start_bit={start_bit}, end_bit={end_bit}, state_bits='{state_bits}' (len={len(state_bits)})")
-                    
-                    # Check if we have enough bits
-                    if end_bit > len(state_bits):
-                        print(f"Debug: Not enough bits for vertex {v}: need {end_bit}, have {len(state_bits)}")
-                        success = False
-                        break
-                    
-                    # Extract color bits for this vertex
-                    color_bits = state_bits[start_bit:end_bit]
-                    print(f"Debug: Extracted color_bits='{color_bits}' for vertex {v}")
-                    
-                    if not color_bits:  # Empty string
-                        print(f"Debug: Empty color_bits for vertex {v}")
-                        success = False
-                        break
-                        
-                    try:
-                        # Convert binary string to integer
-                        color_value = int(color_bits, 2)
-                        print(f"Debug: Converted '{color_bits}' to color {color_value}")
-                        
-                        if color_value < network.available_colors:
-                            vertex_colors.append(color_value)
-                        else:
-                            # Invalid color encoding
-                            print(f"Debug: Color {color_value} >= available colors {network.available_colors}")
-                            success = False
-                            break
-                    except ValueError as e:
-                        # Invalid binary string
-                        print(f"Debug: ValueError converting '{color_bits}': {e}")
-                        success = False
-                        break
-                    except Exception as e:
-                        print(f"Debug: Unexpected error: {e}")
-                        success = False
-                        break
                 
-                # Check if we successfully parsed all vertices and have a valid coloring
-                if success and len(vertex_colors) == network.num_vertices:
-                    if self.is_valid_coloring(network, vertex_colors):
-                        valid_shots += count
-                        print(f"Debug: Valid coloring found: {vertex_colors} from state {state}")
-            
-            print(f"Debug: VCGC found {valid_shots}/{total_shots} valid shots")
-        else:
-            # Saha-Belletti methods also use binary encoding
-            print(f"Debug: Saha-Belletti {method} analysis - {network.num_vertices} vertices, {network.available_colors} colors")
-            
-            # For Saha-Belletti, we need to understand their specific encoding scheme
-            # For now, we'll use a similar approach but may need refinement
-            num_encode_qubits = ceil(log2(network.available_colors)) if network.available_colors > 1 else 1
-            expected_bits = network.num_vertices * num_encode_qubits
-            
-            print(f"Debug: Expected {expected_bits} bits ({num_encode_qubits} per vertex)")
-            print(f"Debug: Sample states: {list(counts.keys())[:3] if counts else 'No states'}")
-            
-            for state, count in counts.items():
-                # Skip if state string is too short
-                if len(state) < expected_bits:
-                    continue
-                    
-                # Parse the binary state into vertex colors (similar to VCGC for now)
-                vertex_colors = []
-                state_bits = state[-expected_bits:]  # Take rightmost bits
-                
-                success = True
                 for v in range(network.num_vertices):
                     start_bit = v * num_encode_qubits
                     end_bit = start_bit + num_encode_qubits
@@ -284,7 +251,7 @@ class ExecutionComparison:
                     if self.is_valid_coloring(network, vertex_colors):
                         valid_shots += count
                         
-            print(f"Debug: Saha-Belletti found {valid_shots}/{total_shots} valid shots")
+        print(f"Debug: Found {valid_shots}/{total_shots} valid shots")
         
         return valid_shots / total_shots if total_shots > 0 else 0.0
     
@@ -312,8 +279,8 @@ class ExecutionComparison:
             
             print(f"Executing {method} circuit for {num_vertices} vertices...")
             # TODO: fix this later
-            # job = sampler.run([transpiled_circuit])
-            job = self.service.job(job_id="d2nrt037d31s73acje40")
+            job = sampler.run([transpiled_circuit])
+            # job = self.service.job(job_id="d2nrt037d31s73acje40")
             result = job.result()
             
             # Get counts
@@ -417,8 +384,7 @@ class ExecutionComparison:
     def save_results_to_csv(self, filename: str = None):
         """Save results to CSV file."""
         if not filename:
-            timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-            filename = f"{self.output_dir}execution_comparison_{timestamp}.csv"
+            filename = f"{self.output_dir}/{self.timestamp}/execution_comparison.csv"
         
         if self.results:
             df = pd.DataFrame(self.results)
@@ -458,8 +424,7 @@ class ExecutionComparison:
         plt.xticks(range(1, 8))
         
         # Save plot
-        timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-        plot_filename = f"{self.output_dir}success_probability_comparison_{timestamp}.png"
+        plot_filename = f"{self.output_dir}/{self.timestamp}/success_probability_comparison.png"
         plt.savefig(plot_filename, dpi=300, bbox_inches='tight')
         plt.show()
         
@@ -510,8 +475,7 @@ class ExecutionComparison:
         plt.tight_layout()
         
         # Save plot
-        timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-        plot_filename = f"{self.output_dir}detailed_metrics_comparison_{timestamp}.png"
+        plot_filename = f"{self.output_dir}/{self.timestamp}/detailed_metrics_comparison.png"
         plt.savefig(plot_filename, dpi=300, bbox_inches='tight')
         plt.show()
         
@@ -530,12 +494,12 @@ def main():
     )
     
     # Setup backend
-    comparison.setup_backend()  # Will use least busy backend
+    comparison.setup_backend(backend_name="ibm_torino")  # Will use least busy backend
     # Or specify a specific backend:
     # comparison.setup_backend("ibm_torino")
     
     # Run comparison
-    comparison.run_comparison(start_vertices=2, end_vertices=7)
+    comparison.run_comparison(start_vertices=3, end_vertices=8)
     
     # Save results
     csv_file = comparison.save_results_to_csv()

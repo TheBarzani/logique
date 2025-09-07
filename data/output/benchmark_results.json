@@ -7,7 +7,7 @@
     },
     "vcgc": {
       "qubits": 217,
-      "depth": 168,
+      "depth": 174,
       "gates": 1238,
       "mcx_ancilla_qubits": 0,
       "total_qubits_with_ancilla": 217
@@ -15,28 +15,28 @@
     "saha_belletti": {
       "original": {
         "qubits": 112,
-        "depth": 888,
+        "depth": 896,
         "gates": 2862,
         "mcx_ancilla_qubits": 53,
         "total_qubits_with_ancilla": 165
       },
       "minimal": {
         "qubits": 83,
-        "depth": 3142,
+        "depth": 3152,
         "gates": 19099,
         "mcx_ancilla_qubits": 250,
         "total_qubits_with_ancilla": 333
       },
       "simple": {
         "qubits": 147,
-        "depth": 98,
+        "depth": 107,
         "gates": 1817,
         "mcx_ancilla_qubits": 70,
         "total_qubits_with_ancilla": 217
       },
       "balanced": {
         "qubits": 88,
-        "depth": 178,
+        "depth": 184,
         "gates": 3014,
         "mcx_ancilla_qubits": 114,
         "total_qubits_with_ancilla": 202
@@ -51,7 +51,7 @@
     },
     "vcgc": {
       "qubits": 65,
-      "depth": 87,
+      "depth": 91,
       "gates": 378,
       "mcx_ancilla_qubits": 0,
       "total_qubits_with_ancilla": 65
@@ -59,28 +59,28 @@
     "saha_belletti": {
       "original": {
         "qubits": 34,
-        "depth": 378,
+        "depth": 382,
         "gates": 834,
         "mcx_ancilla_qubits": 25,
         "total_qubits_with_ancilla": 59
       },
       "minimal": {
         "qubits": 29,
-        "depth": 512,
+        "depth": 520,
         "gates": 2433,
         "mcx_ancilla_qubits": 29,
         "total_qubits_with_ancilla": 58
       },
       "simple": {
         "qubits": 45,
-        "depth": 78,
+        "depth": 83,
         "gates": 555,
         "mcx_ancilla_qubits": 20,
         "total_qubits_with_ancilla": 65
       },
       "balanced": {
         "qubits": 30,
-        "depth": 150,
+        "depth": 154,
         "gates": 920,
         "mcx_ancilla_qubits": 25,
         "total_qubits_with_ancilla": 55
@@ -95,7 +95,7 @@
     },
     "vcgc": {
       "qubits": 848,
-      "depth": 547,
+      "depth": 554,
       "gates": 5004,
       "mcx_ancilla_qubits": 0,
       "total_qubits_with_ancilla": 848
@@ -103,28 +103,28 @@
     "saha_belletti": {
       "original": {
         "qubits": 191,
-        "depth": 4146,
+        "depth": 5005,
         "gates": 12822,
         "mcx_ancilla_qubits": 1789,
         "total_qubits_with_ancilla": 1980
       },
       "minimal": {
         "qubits": 152,
-        "depth": 26776,
+        "depth": 36731,
         "gates": 198309,
         "mcx_ancilla_qubits": 21958,
         "total_qubits_with_ancilla": 22110
       },
       "simple": {
         "qubits": 472,
-        "depth": 246,
+        "depth": 310,
         "gates": 7693,
         "mcx_ancilla_qubits": 988,
         "total_qubits_with_ancilla": 1460
       },
       "balanced": {
         "qubits": 169,
-        "depth": 476,
+        "depth": 602,
         "gates": 13944,
         "mcx_ancilla_qubits": 1900,
         "total_qubits_with_ancilla": 2069
@@ -139,7 +139,7 @@
     },
     "vcgc": {
       "qubits": 281,
-      "depth": 186,
+      "depth": 192,
       "gates": 1650,
       "mcx_ancilla_qubits": 0,
       "total_qubits_with_ancilla": 281
@@ -147,28 +147,28 @@
     "saha_belletti": {
       "original": {
         "qubits": 96,
-        "depth": 1186,
+        "depth": 1455,
         "gates": 4256,
         "mcx_ancilla_qubits": 742,
         "total_qubits_with_ancilla": 838
       },
       "minimal": {
         "qubits": 79,
-        "depth": 7890,
+        "depth": 10930,
         "gates": 53391,
         "mcx_ancilla_qubits": 6667,
         "total_qubits_with_ancilla": 6746
       },
       "simple": {
         "qubits": 210,
-        "depth": 130,
+        "depth": 170,
         "gates": 2727,
         "mcx_ancilla_qubits": 418,
         "total_qubits_with_ancilla": 628
       },
       "balanced": {
         "qubits": 88,
-        "depth": 286,
+        "depth": 384,
         "gates": 4809,
         "mcx_ancilla_qubits": 796,
         "total_qubits_with_ancilla": 884
@@ -183,7 +183,7 @@
     },
     "vcgc": {
       "qubits": 12,
-      "depth": 40,
+      "depth": 42,
       "gates": 74,
       "mcx_ancilla_qubits": 0,
       "total_qubits_with_ancilla": 12
@@ -191,28 +191,28 @@
     "saha_belletti": {
       "original": {
         "qubits": 13,
-        "depth": 88,
+        "depth": 90,
         "gates": 145,
         "mcx_ancilla_qubits": 4,
         "total_qubits_with_ancilla": 17
       },
       "minimal": {
         "qubits": 11,
-        "depth": 96,
+        "depth": 98,
         "gates": 221,
         "mcx_ancilla_qubits": 3,
         "total_qubits_with_ancilla": 14
       },
       "simple": {
         "qubits": 14,
-        "depth": 38,
+        "depth": 40,
         "gates": 118,
         "mcx_ancilla_qubits": 5,
         "total_qubits_with_ancilla": 19
       },
       "balanced": {
         "qubits": 11,
-        "depth": 58,
+        "depth": 60,
         "gates": 173,
         "mcx_ancilla_qubits": 4,
         "total_qubits_with_ancilla": 15
@@ -227,7 +227,7 @@
     },
     "vcgc": {
       "qubits": 61,
-      "depth": 69,
+      "depth": 73,
       "gates": 354,
       "mcx_ancilla_qubits": 0,
       "total_qubits_with_ancilla": 61
@@ -235,28 +235,28 @@
     "saha_belletti": {
       "original": {
         "qubits": 34,
-        "depth": 308,
+        "depth": 312,
         "gates": 708,
         "mcx_ancilla_qubits": 19,
         "total_qubits_with_ancilla": 53
       },
       "minimal": {
         "qubits": 29,
-        "depth": 492,
+        "depth": 496,
         "gates": 2359,
         "mcx_ancilla_qubits": 28,
         "total_qubits_with_ancilla": 57
       },
       "simple": {
         "qubits": 43,
-        "depth": 68,
+        "depth": 73,
         "gates": 517,
         "mcx_ancilla_qubits": 18,
         "total_qubits_with_ancilla": 61
       },
       "balanced": {
         "qubits": 30,
-        "depth": 138,
+        "depth": 142,
         "gates": 844,
         "mcx_ancilla_qubits": 24,
         "total_qubits_with_ancilla": 54
@@ -271,7 +271,7 @@
     },
     "vcgc": {
       "qubits": 259,
-      "depth": 226,
+      "depth": 231,
       "gates": 1504,
       "mcx_ancilla_qubits": 0,
       "total_qubits_with_ancilla": 259
@@ -279,28 +279,28 @@
     "saha_belletti": {
       "original": {
         "qubits": 91,
-        "depth": 1312,
+        "depth": 1318,
         "gates": 3491,
         "mcx_ancilla_qubits": 114,
         "total_qubits_with_ancilla": 205
       },
       "minimal": {
         "qubits": 69,
-        "depth": 4028,
+        "depth": 4035,
         "gates": 24565,
         "mcx_ancilla_qubits": 325,
         "total_qubits_with_ancilla": 394
       },
       "simple": {
         "qubits": 161,
-        "depth": 128,
+        "depth": 136,
         "gates": 2265,
         "mcx_ancilla_qubits": 98,
         "total_qubits_with_ancilla": 259
       },
       "balanced": {
         "qubits": 76,
-        "depth": 248,
+        "depth": 253,
         "gates": 3930,
         "mcx_ancilla_qubits": 163,
         "total_qubits_with_ancilla": 239
@@ -315,7 +315,7 @@
     },
     "vcgc": {
       "qubits": 8,
-      "depth": 26,
+      "depth": 27,
       "gates": 51,
       "mcx_ancilla_qubits": 0,
       "total_qubits_with_ancilla": 8
@@ -323,28 +323,28 @@
     "saha_belletti": {
       "original": {
         "qubits": 11,
-        "depth": 38,
+        "depth": 39,
         "gates": 70,
         "mcx_ancilla_qubits": 3,
         "total_qubits_with_ancilla": 14
       },
       "minimal": {
         "qubits": 9,
-        "depth": 38,
+        "depth": 39,
         "gates": 99,
         "mcx_ancilla_qubits": 1,
         "total_qubits_with_ancilla": 10
       },
       "simple": {
         "qubits": 10,
-        "depth": 28,
+        "depth": 29,
         "gates": 79,
         "mcx_ancilla_qubits": 2,
         "total_qubits_with_ancilla": 12
       },
       "balanced": {
         "qubits": 9,
-        "depth": 38,
+        "depth": 39,
         "gates": 102,
         "mcx_ancilla_qubits": 1,
         "total_qubits_with_ancilla": 10
@@ -359,7 +359,7 @@
     },
     "vcgc": {
       "qubits": 11,
-      "depth": 28,
+      "depth": 30,
       "gates": 73,
       "mcx_ancilla_qubits": 0,
       "total_qubits_with_ancilla": 11
@@ -367,28 +367,28 @@
     "saha_belletti": {
       "original": {
         "qubits": 11,
-        "depth": 24,
+        "depth": 28,
         "gates": 76,
         "mcx_ancilla_qubits": 4,
         "total_qubits_with_ancilla": 15
       },
       "minimal": {
         "qubits": 11,
-        "depth": 88,
+        "depth": 90,
         "gates": 211,
         "mcx_ancilla_qubits": 2,
         "total_qubits_with_ancilla": 13
       },
       "simple": {
         "qubits": 13,
-        "depth": 38,
+        "depth": 40,
         "gates": 107,
         "mcx_ancilla_qubits": 4,
         "total_qubits_with_ancilla": 17
       },
       "balanced": {
         "qubits": 11,
-        "depth": 61,
+        "depth": 64,
         "gates": 147,
         "mcx_ancilla_qubits": 4,
         "total_qubits_with_ancilla": 15
@@ -403,7 +403,7 @@
     },
     "vcgc": {
       "qubits": 44,
-      "depth": 55,
+      "depth": 58,
       "gates": 264,
       "mcx_ancilla_qubits": 0,
       "total_qubits_with_ancilla": 44
@@ -411,28 +411,28 @@
     "saha_belletti": {
       "original": {
         "qubits": 24,
-        "depth": 146,
+        "depth": 191,
         "gates": 540,
         "mcx_ancilla_qubits": 108,
         "total_qubits_with_ancilla": 132
       },
       "minimal": {
         "qubits": 22,
-        "depth": 620,
+        "depth": 783,
         "gates": 2527,
         "mcx_ancilla_qubits": 325,
         "total_qubits_with_ancilla": 347
       },
       "simple": {
         "qubits": 41,
-        "depth": 74,
+        "depth": 94,
         "gates": 450,
         "mcx_ancilla_qubits": 73,
         "total_qubits_with_ancilla": 114
       },
       "balanced": {
         "qubits": 24,
-        "depth": 144,
+        "depth": 180,
         "gates": 761,
         "mcx_ancilla_qubits": 127,
         "total_qubits_with_ancilla": 151

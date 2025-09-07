@@ -189,7 +189,7 @@ class BenchmarkGenerator:
             return CircuitMetrics(
                 name="VCGC",
                 num_qubits=vcgc_grover_circuit.num_qubits,
-                depth=vcgc_grover_circuit.depth(),
+                depth=vcgc_grover_circuit.depth(mcx_decomposition=True),
                 num_gates=len(vcgc_grover_circuit),
                 mcx_ancilla_qubits=ancilla_count,
                 total_qubits_with_ancilla=vcgc_grover_circuit.num_qubits + ancilla_count
@@ -233,7 +233,7 @@ class BenchmarkGenerator:
                 sb_metrics[oracle_type] = CircuitMetrics(
                     name=f"Saha-Belletti-{oracle_type}",
                     num_qubits=sb_circuit.num_qubits,
-                    depth=sb_circuit.depth(),
+                    depth=sb_circuit.depth(mcx_decomposition=True),
                     num_gates=len(sb_circuit),
                     oracle_type=oracle_type,
                     mcx_ancilla_qubits=ancilla_count,

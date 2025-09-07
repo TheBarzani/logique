@@ -77,7 +77,9 @@ class BenchmarkVisualizer:
                 'colors': data['graph_info']['colors'],
                 'vcgc_qubits': data['vcgc']['qubits'],
                 'vcgc_depth': data['vcgc']['depth'],
-                'vcgc_gates': data['vcgc']['gates']
+                'vcgc_gates': data['vcgc']['gates'],
+                'vcgc_ancilla': data['vcgc'].get('mcx_ancilla_qubits', 0),
+                'vcgc_total_qubits': data['vcgc'].get('total_qubits_with_ancilla', data['vcgc']['qubits'])
             }
             
             # Add Saha-Belletti metrics
@@ -85,6 +87,8 @@ class BenchmarkVisualizer:
                 row[f'sb_{oracle_type}_qubits'] = metrics['qubits']
                 row[f'sb_{oracle_type}_depth'] = metrics['depth']
                 row[f'sb_{oracle_type}_gates'] = metrics['gates']
+                row[f'sb_{oracle_type}_ancilla'] = metrics.get('mcx_ancilla_qubits', 0)
+                row[f'sb_{oracle_type}_total_qubits'] = metrics.get('total_qubits_with_ancilla', metrics['qubits'])
             
             rows.append(row)
         
@@ -239,7 +243,7 @@ class BenchmarkVisualizer:
         plt.show()
     
     def create_all_charts(self, save_charts: bool = True, normalize_all: bool = True):
-        """Create all three metric charts with optional normalization"""
+        """Create all metric charts with optional normalization"""
         if self.data is None:
             raise ValueError("No data loaded. Call load_csv_data() or load_json_data() first.")
         
@@ -271,7 +275,57 @@ class BenchmarkVisualizer:
                 filename='qubits_comparison.png' if save_charts else None
             )
         
-        # Chart 2: Depth (with normalization options)
+        # Chart 2: Total Qubits (including ancilla)
+        if normalize_all:
+            self.create_grouped_bar_chart(
+                metric='total_qubits',
+                title='Quantum Circuit Comparison: Total Qubits with Ancilla (Log Scale)\nVCGC vs Saha-Belletti Approaches',
+                ylabel='Total Qubits (including ancilla)',
+                filename='total_qubits_comparison_log.png' if save_charts else None,
+                log_scale=True
+            )
+            
+            self.create_grouped_bar_chart(
+                metric='total_qubits',
+                title='Quantum Circuit Comparison: Total Qubits with Ancilla (Outliers Capped)\nVCGC vs Saha-Belletti Approaches',
+                ylabel='Total Qubits (including ancilla)',
+                filename='total_qubits_comparison_normalized.png' if save_charts else None,
+                exclude_outliers=True,
+                outlier_threshold=2.0
+            )
+        else:
+            self.create_grouped_bar_chart(
+                metric='total_qubits',
+                title='Quantum Circuit Comparison: Total Qubits with Ancilla\nVCGC vs Saha-Belletti Approaches',
+                ylabel='Total Qubits (including ancilla)',
+                filename='total_qubits_comparison.png' if save_charts else None
+            )
+        
+        # Chart 3: Ancilla Qubits
+        if normalize_all:
+            self.create_grouped_bar_chart(
+                metric='ancilla',
+                title='Quantum Circuit Comparison: Ancilla Qubits for MCX Decomposition (Log Scale)\nVCGC vs Saha-Belletti Approaches',
+                ylabel='Ancilla Qubits',
+                filename='ancilla_comparison_log.png' if save_charts else None,
+                log_scale=True
+            )
+            
+            self.create_grouped_bar_chart(
+                metric='ancilla',
+                title='Quantum Circuit Comparison: Ancilla Qubits for MCX Decomposition\nVCGC vs Saha-Belletti Approaches',
+                ylabel='Ancilla Qubits',
+                filename='ancilla_comparison.png' if save_charts else None
+            )
+        else:
+            self.create_grouped_bar_chart(
+                metric='ancilla',
+                title='Quantum Circuit Comparison: Ancilla Qubits for MCX Decomposition\nVCGC vs Saha-Belletti Approaches',
+                ylabel='Ancilla Qubits',
+                filename='ancilla_comparison.png' if save_charts else None
+            )
+        
+        # Chart 4: Depth (with normalization options)
         if normalize_all:
             # Create both log scale and outlier-excluded versions
             self.create_grouped_bar_chart(
@@ -299,7 +353,7 @@ class BenchmarkVisualizer:
                 filename='depth_comparison.png' if save_charts else None
             )
         
-        # Chart 3: Gates (with normalization options)
+        # Chart 5: Gates (with normalization options)
         if normalize_all:
             # Create both log scale and outlier-excluded versions
             self.create_grouped_bar_chart(
@@ -334,7 +388,7 @@ class BenchmarkVisualizer:
         
         print("Creating alternative visualizations for all metrics...")
         
-        metrics = ['qubits', 'depth', 'gates']
+        metrics = ['qubits', 'total_qubits', 'ancilla', 'depth', 'gates']
         
         for metric in metrics:
             print(f"\nCreating {metric} visualizations...")
@@ -561,7 +615,7 @@ class BenchmarkVisualizer:
         print(f"   Colors: {self.data['colors'].min()}-{self.data['colors'].max()} (avg: {self.data['colors'].mean():.1f})")
         
         # Metrics summary
-        metrics = ['qubits', 'depth', 'gates']
+        metrics = ['qubits', 'total_qubits', 'ancilla', 'depth', 'gates']
         approaches = ['vcgc', 'sb_original', 'sb_minimal', 'sb_simple', 'sb_balanced']
         
         for metric in metrics:
@@ -577,11 +631,14 @@ class BenchmarkVisualizer:
         if self.data is None:
             raise ValueError("No data loaded. Call load_csv_data() or load_json_data() first.")
         
-        fig, axes = plt.subplots(1, 3, figsize=(18, 6))
-        metrics = ['qubits', 'depth', 'gates']
+        fig, axes = plt.subplots(2, 3, figsize=(18, 12))
+        axes = axes.flatten()  # Flatten for easy indexing
+        metrics = ['qubits', 'total_qubits', 'ancilla', 'depth', 'gates']
         sb_approaches = ['sb_original', 'sb_minimal', 'sb_simple', 'sb_balanced']
         
         for i, metric in enumerate(metrics):
+            if i >= len(axes):  # Safety check
+                break
             ax = axes[i]
             
             # Calculate improvement percentages
@@ -625,6 +682,10 @@ class BenchmarkVisualizer:
                     bar.set_color('red')
                     bar.set_alpha(0.5)
         
+        # Hide unused subplot
+        if len(metrics) < len(axes):
+            axes[-1].set_visible(False)
+        
         plt.tight_layout()
         
         # Save the improvement analysis
@@ -633,6 +694,26 @@ class BenchmarkVisualizer:
         print(f"Improvement analysis saved to: {save_path}")
         
         plt.show()
+    
+    def create_total_qubits_chart(self, save_chart: bool = True):
+        """Create a focused chart for total qubits comparison"""
+        self.create_grouped_bar_chart(
+            metric='total_qubits',
+            title='Total Qubits Comparison (Including MCX Ancilla)\nVCGC vs Saha-Belletti Approaches',
+            ylabel='Total Qubits (including ancilla for MCX decomposition)',
+            filename='total_qubits_with_ancilla.png' if save_chart else None,
+            figsize=(16, 8)
+        )
+    
+    def create_ancilla_chart(self, save_chart: bool = True):
+        """Create a focused chart for ancilla qubits comparison"""
+        self.create_grouped_bar_chart(
+            metric='ancilla',
+            title='MCX Ancilla Qubits Comparison\nVCGC vs Saha-Belletti Approaches',
+            ylabel='Additional Qubits Needed for MCX Decomposition',
+            filename='mcx_ancilla_qubits.png' if save_chart else None,
+            figsize=(16, 8)
+        )
 
 
 def main():
@@ -650,6 +731,12 @@ def main():
                        help="Create alternative normalized depth charts")
     parser.add_argument("--all-alternatives", action="store_true",
                        help="Create alternative normalized charts for all metrics")
+    parser.add_argument("--metric", "-m", choices=['qubits', 'total_qubits', 'ancilla', 'depth', 'gates'],
+                       help="Create chart for a specific metric only")
+    parser.add_argument("--total-qubits-only", action="store_true",
+                       help="Create only total qubits charts")
+    parser.add_argument("--ancilla-only", action="store_true",
+                       help="Create only ancilla qubits charts")
     
     args = parser.parse_args()
     
@@ -670,7 +757,38 @@ def main():
     visualizer.print_summary_statistics()
     
     if not args.summary_only:
-        if args.all_alternatives:
+        if args.metric:
+            # Create chart for specific metric
+            visualizer.create_grouped_bar_chart(
+                metric=args.metric,
+                title=f'Quantum Circuit Comparison: {args.metric.replace("_", " ").title()}\nVCGC vs Saha-Belletti Approaches',
+                ylabel=args.metric.replace("_", " ").title(),
+                filename=f'{args.metric}_comparison.png' if not args.no_save else None
+            )
+        elif args.total_qubits_only:
+            # Create only total qubits charts
+            visualizer.create_grouped_bar_chart(
+                metric='total_qubits',
+                title='Quantum Circuit Comparison: Total Qubits with Ancilla\nVCGC vs Saha-Belletti Approaches',
+                ylabel='Total Qubits (including ancilla)',
+                filename='total_qubits_comparison.png' if not args.no_save else None
+            )
+            visualizer.create_grouped_bar_chart(
+                metric='total_qubits',
+                title='Quantum Circuit Comparison: Total Qubits with Ancilla (Log Scale)\nVCGC vs Saha-Belletti Approaches',
+                ylabel='Total Qubits (including ancilla)',
+                filename='total_qubits_comparison_log.png' if not args.no_save else None,
+                log_scale=True
+            )
+        elif args.ancilla_only:
+            # Create only ancilla charts
+            visualizer.create_grouped_bar_chart(
+                metric='ancilla',
+                title='Quantum Circuit Comparison: Ancilla Qubits for MCX Decomposition\nVCGC vs Saha-Belletti Approaches',
+                ylabel='Ancilla Qubits',
+                filename='ancilla_comparison.png' if not args.no_save else None
+            )
+        elif args.all_alternatives:
             # Create alternative visualizations for all metrics
             visualizer.create_all_comparison_alternatives()
         elif args.depth_alternatives:
@@ -682,6 +800,40 @@ def main():
         
         # Create improvement analysis
         visualizer.create_improvement_analysis()
+
+
+def example_usage():
+    """Example of how to use the new total_qubits metric visualization"""
+    # Create visualizer
+    visualizer = BenchmarkVisualizer("../data/vcgc_vs_saha_belletti")
+    
+    # Load data (try CSV first, then JSON)
+    try:
+        visualizer.load_csv_data()
+    except FileNotFoundError:
+        try:
+            visualizer.load_json_data()
+        except FileNotFoundError:
+            print("No benchmark data found. Run generate_benchmarks.py first.")
+            return
+    
+    # Create total qubits comparison
+    print("Creating total qubits comparison...")
+    visualizer.create_total_qubits_chart()
+    
+    # Create ancilla qubits comparison
+    print("Creating ancilla qubits comparison...")
+    visualizer.create_ancilla_chart()
+    
+    # Create specific metric chart
+    print("Creating total qubits with log scale...")
+    visualizer.create_grouped_bar_chart(
+        metric='total_qubits',
+        title='Total Qubits (Log Scale): VCGC vs Saha-Belletti',
+        ylabel='Total Qubits (log scale)',
+        filename='total_qubits_log.png',
+        log_scale=True
+    )
 
 
 if __name__ == "__main__":

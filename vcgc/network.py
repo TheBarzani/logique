@@ -281,4 +281,4 @@ def draw_colored_graph(G: nx.Graph, name: str = "graph.png", pos: Optional[dict]
     # Draw the graph with node colors and custom labels
     plt.figure(figsize=figsize)
     nx.draw(G, pos = pos, labels=custom_labels, node_color=node_colors, node_size=node_size)
-    plt.savefig(name, dpi=300, bbox_inches='tight')
+    plt.savefig(name, dpi=500, bbox_inches='tight')

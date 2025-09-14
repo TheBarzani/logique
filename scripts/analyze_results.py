@@ -10,6 +10,8 @@ import numpy as np
 import glob
 import os
 from typing import List, Optional
+from mpl_toolkits.axes_grid1.inset_locator import inset_axes
+
 
 # Optional import for seaborn
 try:
@@ -29,7 +31,7 @@ class ResultsAnalyzer:
         
     def load_latest_results(self) -> bool:
         """Load the most recent results CSV file."""
-        pattern = os.path.join(self.data_dir, "execution_comparison_*.csv")
+        pattern = os.path.join(self.data_dir, "*_*/execution_comparison.csv")
         csv_files = glob.glob(pattern)
         
         if not csv_files:
@@ -83,28 +85,136 @@ class ResultsAnalyzer:
             print("No data loaded.")
             return
             
-        plt.figure(figsize=(12, 8))
+        # Smaller figure size for 2-column format
+        plt.figure(figsize=(8, 6))
         
         methods = self.df['method'].unique()
-        # colors = plt.cm.Set1(np.linspace(0, 1, len(methods)))
         colors = ['blue', 'red', 'green', 'orange', 'purple']
         
         for method, color in zip(methods, colors):
             method_data = self.df[self.df['method'] == method]
             plt.plot(method_data['num_vertices'], method_data['success_probability'], 
-                    marker='o', label=method, color=color, linewidth=2, markersize=8)
+                    marker='o', label=method, color=color, linewidth=2.5, markersize=6, linestyle='--')
         
-        plt.xlabel('Number of Vertices', fontsize=14)
-        plt.ylabel('Success Quasi-Probability', fontsize=14)
-        plt.title('Success Probability vs Graph Size Comparison', fontsize=16)
-        plt.legend(fontsize=12)
-        plt.grid(True, alpha=0.3)
-        plt.xticks(sorted(self.df['num_vertices'].unique()))
+        # Larger font sizes
+        plt.xlabel('Number of Vertices', fontsize=16)
+        plt.ylabel('Success Quasi-Probability', fontsize=16)
+        plt.title('Success Probability vs Graph Size', fontsize=18, pad=20)
+        
+        # Adjust legend
+        plt.legend(fontsize=12, loc='upper right', frameon=True, fancybox=True, shadow=True)
+        
+        # Grid and ticks
+        plt.grid(True, alpha=0.3, linewidth=0.5)
+        plt.xticks(sorted(self.df['num_vertices'].unique()), fontsize=14)
+        plt.yticks(fontsize=14)
+        
+        # Tighter layout
+        plt.tight_layout()
+        
+        # Adjust margins
+        plt.subplots_adjust(left=0.15, bottom=0.15, right=0.95, top=0.90)
         
         if save_plot:
             plt.savefig(f"{self.data_dir}replotted_success_probability.png", 
-                       dpi=300, bbox_inches='tight')
-            print(f"Plot saved to: {self.data_dir}replotted_success_probability.png")
+                    dpi=300, bbox_inches='tight', facecolor='white')
+            # Also save as PDF for better quality in papers
+            plt.savefig(f"{self.data_dir}replotted_success_probability.pdf", 
+                    bbox_inches='tight', facecolor='white')
+            print(f"Plot saved to: {self.data_dir}replotted_success_probability.png/.pdf")
+        
+        plt.show()
+
+    def plot_success_probability_ieee(self, save_plot: bool = True):
+        """Plot optimized for IEEE 2-column format with zoom inset."""
+        if self.df is None:
+            print("No data loaded.")
+            return
+            
+        # IEEE 2-column optimal size (approximately 3.5 inches wide)
+        plt.figure(figsize=(7, 5))
+        
+        methods = self.df['method'].unique()
+        colors = ['#1f77b4', '#ff7f0e', '#2ca02c', '#d62728', '#9467bd']  # Better colors
+        markers = ['o', 's', '^', 'D', 'v']  # Different markers for each method
+        
+        # Main plot
+        for method, color, marker in zip(methods, colors, markers):
+            method_data = self.df[self.df['method'] == method]
+            plt.plot(method_data['num_vertices'], method_data['success_probability'], 
+                    marker=marker, label=method, color=color, linewidth=2, 
+                    markersize=7, linestyle='--', markerfacecolor='white', 
+                    markeredgewidth=2, markeredgecolor=color)
+        
+        plt.xlabel('Number of Vertices', fontsize=14, weight='bold')
+        plt.ylabel('Success Quasi-Probability', fontsize=14, weight='bold')
+        
+        # Smaller legend with abbreviated names
+        method_abbrev = {
+            'Proposed': 'Proposed',
+            'Saha et al.': 'Saha et al.',
+            'Belletti Simple': 'Belletti-Simple',
+            'Belletti Minimal': 'Belletti-Minimal',
+            'Belletti Balanced': 'Belletti-Balanced'
+        }
+        
+        handles, labels = plt.gca().get_legend_handles_labels()
+        new_labels = [method_abbrev.get(label, label) for label in labels]
+        plt.legend(handles, new_labels, fontsize=11, loc='upper right', 
+                frameon=True, fancybox=False, edgecolor='black')
+        
+        plt.grid(True, alpha=0.3, linewidth=0.5)
+        plt.xticks(sorted(self.df['num_vertices'].unique()), fontsize=12)
+        plt.yticks(fontsize=12)
+        
+        # Create inset for zoom on vertices 6-8
+        axins = inset_axes(plt.gca(), width="100%", height="100%", loc='lower left', 
+                       bbox_to_anchor=(0.6, 0.15, 0.35, 0.35), bbox_transform=plt.gca().transAxes)
+        
+        # Plot same data on inset
+        for method, color, marker in zip(methods, colors, markers):
+            method_data = self.df[self.df['method'] == method]
+            # Filter for vertices 6-8
+            zoom_data = method_data[method_data['num_vertices'] >= 6]
+            axins.plot(zoom_data['num_vertices'], zoom_data['success_probability'], 
+                    marker=marker, color=color, linewidth=1.5, 
+                    markersize=5, linestyle='--', markerfacecolor='white', 
+                    markeredgewidth=1.5, markeredgecolor=color)
+        
+        # Set zoom limits
+        axins.set_xlim(5.8, 8.2)
+        max_val = self.df[self.df['num_vertices'] >= 6]['success_probability'].max()
+        axins.set_ylim(-0.01, max_val * 1.1)
+        
+        # Style the inset
+        axins.grid(True, alpha=0.3, linewidth=0.5)
+        axins.tick_params(labelsize=9)
+        axins.set_xticks([6, 7, 8])
+        
+        # Add border around inset
+        axins.spines['bottom'].set_linewidth(1.5)
+        axins.spines['top'].set_linewidth(1.5)
+        axins.spines['left'].set_linewidth(1.5)
+        axins.spines['right'].set_linewidth(1.5)
+        
+        # Optional: Add lines connecting inset to main plot
+        # This requires the indicate_inset_zoom function
+        try:
+            plt.gca().indicate_inset_zoom(axins, edgecolor="gray", alpha=0.7, linewidth=1)
+        except AttributeError:
+            # Fallback for older matplotlib versions
+            pass
+        
+        plt.tight_layout()
+        
+        if save_plot:
+            plt.savefig(f"{self.data_dir}ieee_success_probability.pdf", 
+                    bbox_inches='tight', facecolor='white', dpi=800)
+            plt.savefig(f"{self.data_dir}ieee_success_probability.png", 
+                    bbox_inches='tight', facecolor='white', dpi=500)
+            plt.savefig(f"{self.data_dir}ieee_success_probability.eps", 
+                    bbox_inches='tight', facecolor='white', dpi=300)
+            print(f"IEEE format plot with zoom inset saved")
         
         plt.show()
     
@@ -263,6 +373,7 @@ def main():
     # Generate plots
     print("\nGenerating plots...")
     analyzer.plot_success_probability()
+    analyzer.plot_success_probability_ieee()
     analyzer.plot_circuit_metrics()
     analyzer.plot_heatmap('success_probability')
     

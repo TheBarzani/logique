@@ -97,7 +97,7 @@ Our approach demonstrates significant improvements across all key quantum circui
 ### Detailed Circuit Comparisons
 
 #### Qubit Count Comparison
-![Qubit Comparison](data/output/qubits_comparison_log.png)
+![Width Comparison](data/output/width_comparison_log.png)
 
 #### Gate Count Comparison
 ![Gate Comparison](data/output/gates_comparison_log.png)

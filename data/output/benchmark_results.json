@@ -33,6 +33,40 @@
       }
     }
   },
+  "grid6": {
+    "graph_info": {
+      "nodes": 6,
+      "edges": 7,
+      "colors": 2
+    },
+    "vcgc": {
+      "width": 12,
+      "depth": 42,
+      "gates": 74
+    },
+    "saha_belletti": {
+      "original": {
+        "width": 17,
+        "depth": 90,
+        "gates": 145
+      },
+      "minimal": {
+        "width": 14,
+        "depth": 98,
+        "gates": 221
+      },
+      "simple": {
+        "width": 19,
+        "depth": 40,
+        "gates": 118
+      },
+      "balanced": {
+        "width": 15,
+        "depth": 60,
+        "gates": 173
+      }
+    }
+  },
   "zed-city_2019": {
     "graph_info": {
       "nodes": 11,
@@ -135,40 +169,6 @@
       }
     }
   },
-  "grid6_2_colored": {
-    "graph_info": {
-      "nodes": 6,
-      "edges": 7,
-      "colors": 2
-    },
-    "vcgc": {
-      "width": 12,
-      "depth": 42,
-      "gates": 74
-    },
-    "saha_belletti": {
-      "original": {
-        "width": 17,
-        "depth": 90,
-        "gates": 145
-      },
-      "minimal": {
-        "width": 14,
-        "depth": 98,
-        "gates": 221
-      },
-      "simple": {
-        "width": 19,
-        "depth": 40,
-        "gates": 118
-      },
-      "balanced": {
-        "width": 15,
-        "depth": 60,
-        "gates": 173
-      }
-    }
-  },
   "myciel3": {
     "graph_info": {
       "nodes": 11,
@@ -203,71 +203,71 @@
       }
     }
   },
-  "1-FullIns_3": {
+  "K20": {
     "graph_info": {
-      "nodes": 30,
-      "edges": 100,
-      "colors": 4
+      "nodes": 20,
+      "edges": 190,
+      "colors": 20
     },
     "vcgc": {
-      "width": 259,
-      "depth": 231,
-      "gates": 1504
+      "width": 1049,
+      "depth": 478,
+      "gates": 6224
     },
     "saha_belletti": {
       "original": {
-        "width": 205,
-        "depth": 1318,
-        "gates": 3491
+        "width": 5793,
+        "depth": 5095,
+        "gates": 19199
       },
       "minimal": {
-        "width": 394,
-        "depth": 4035,
-        "gates": 24565
+        "width": 75359,
+        "depth": 56510,
+        "gates": 357331
       },
       "simple": {
-        "width": 259,
-        "depth": 136,
-        "gates": 2265
+        "width": 3539,
+        "depth": 439,
+        "gates": 11095
       },
       "balanced": {
-        "width": 239,
-        "depth": 253,
-        "gates": 3930
+        "width": 6039,
+        "depth": 1213,
+        "gates": 20793
       }
     }
   },
-  "linear_2_colored": {
+  "K10": {
     "graph_info": {
-      "nodes": 5,
-      "edges": 4,
-      "colors": 2
+      "nodes": 10,
+      "edges": 45,
+      "colors": 10
     },
     "vcgc": {
-      "width": 8,
-      "depth": 27,
-      "gates": 51
+      "width": 219,
+      "depth": 145,
+      "gates": 1294
     },
     "saha_belletti": {
       "original": {
-        "width": 14,
-        "depth": 39,
-        "gates": 70
+        "width": 973,
+        "depth": 977,
+        "gates": 3509
       },
       "minimal": {
-        "width": 10,
-        "depth": 39,
-        "gates": 99
+        "width": 5713,
+        "depth": 5273,
+        "gates": 29627
       },
       "simple": {
-        "width": 12,
-        "depth": 29,
-        "gates": 79
+        "width": 669,
+        "depth": 190,
+        "gates": 2280
       },
       "balanced": {
-        "width": 10,
-        "depth": 39,
-        "gates": 102
+        "width": 1053,
+        "depth": 483,
+        "gates": 4142
       }
     }
   },

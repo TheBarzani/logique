@@ -30,20 +30,20 @@ class BenchmarkVisualizer:
         
         # Define colors for different approaches
         self.colors = {
-            'vcgc': '#2E86AB',           # Blue
-            'sb_original': '#A23B72',    # Pink
-            'sb_minimal': '#F18F01',     # Orange
-            'sb_simple': '#C73E1D',      # Red
-            'sb_balanced': '#6A994E'     # Green
+            'vcgc': '#FF1744',           # Vibrant Red (attention-grabbing)
+            'sb_original': '#5E35B1',    # Deep Purple
+            'sb_minimal': '#1E88E5',     # Blue
+            'sb_simple': '#00897B',      # Teal
+            'sb_balanced': '#FFA726'     # Orange
         }
         
         # Define approach labels
         self.labels = {
-            'vcgc': 'VCGC',
-            'sb_original': 'SB-Original',
-            'sb_minimal': 'SB-Minimal',
-            'sb_simple': 'SB-Simple',
-            'sb_balanced': 'SB-Balanced'
+            'vcgc': 'Proposed',
+            'sb_original': 'Saha et al.',
+            'sb_minimal': 'Belletti-Minimal',
+            'sb_simple': 'Belletti-Simple',
+            'sb_balanced': 'Belletti-Balanced'
         }
     
     def load_csv_data(self, filename: str = "benchmark_results.csv") -> pd.DataFrame:
@@ -120,19 +120,24 @@ class BenchmarkVisualizer:
         if self.data is None:
             raise ValueError("No data loaded. Call load_csv_data() or load_json_data() first.")
         
+        # Sort data by VCGC metric values (lowest to highest)
+        vcgc_metric_col = f'vcgc_{metric}'
+        sorted_data = self.data.sort_values(by=vcgc_metric_col).reset_index(drop=True)
+        
         # Prepare data
         approaches = ['vcgc', 'sb_original', 'sb_minimal', 'sb_simple', 'sb_balanced']
-        graph_labels = self.create_graph_labels()
+        graph_labels = [f"{row['benchmark']}\n({row['nodes']}n, {row['edges']}e, {row['colors']}c)" 
+                       for _, row in sorted_data.iterrows()]
         
         # Extract metric data for each approach
         metric_data = {}
         for approach in approaches:
             col_name = f'{approach}_{metric}'
-            if col_name in self.data.columns:
-                metric_data[approach] = self.data[col_name].values
+            if col_name in sorted_data.columns:
+                metric_data[approach] = sorted_data[col_name].values
             else:
                 print(f"Warning: Column {col_name} not found in data")
-                metric_data[approach] = np.zeros(len(self.data))
+                metric_data[approach] = np.zeros(len(sorted_data))
         
         # Handle outliers if requested
         if exclude_outliers:
@@ -154,7 +159,7 @@ class BenchmarkVisualizer:
                 for i, approach in enumerate(approaches):
                     outliers = metric_data[approach] > threshold
                     if np.any(outliers):
-                        outlier_benchmarks = [self.data.iloc[j]['benchmark'] for j in range(len(outliers)) if outliers[j]]
+                        outlier_benchmarks = [sorted_data.iloc[j]['benchmark'] for j in range(len(outliers)) if outliers[j]]
                         outlier_values = [metric_data[approach][j] for j in range(len(outliers)) if outliers[j]]
                         for bench, val in zip(outlier_benchmarks, outlier_values):
                             outlier_info.append(f"{self.labels[approach]} {bench}: {val:.0f}")
@@ -169,7 +174,7 @@ class BenchmarkVisualizer:
         fig, ax = plt.subplots(figsize=figsize)
         
         # Calculate bar positions
-        n_benchmarks = len(self.data)
+        n_benchmarks = len(sorted_data)
         n_approaches = len(approaches)
         bar_width = 0.15
         positions = np.arange(n_benchmarks)
@@ -216,15 +221,24 @@ class BenchmarkVisualizer:
                     # Adjust label positioning for log scale
                     if log_scale:
                         label_y = height * 1.05
-                        fontsize = 7
+                        fontsize = 10
                     else:
                         label_y = height + max(height * 0.01, 1)
-                        fontsize = 8
+                        fontsize = 10
                     
                     ax.annotate(f'{int(height)}',
                               xy=(bar.get_x() + bar.get_width()/2, label_y),
                               ha='center', va='bottom',
-                              fontsize=fontsize, rotation=90 if not log_scale else 0)
+                              fontsize=fontsize, rotation=90)
+        
+        # Adjust y-axis limits to prevent label cutoff
+        if log_scale:
+            # For log scale, extend the upper limit by a multiplicative factor
+            ax.set_ylim(bottom=ax.get_ylim()[0], top=ax.get_ylim()[1] * 1.6)
+        else:
+            # For linear scale, add some padding at the top
+            y_max = ax.get_ylim()[1]
+            ax.set_ylim(bottom=0, top=y_max * 1.1)
         
         # Adjust layout to prevent label cutoff
         plt.tight_layout()
@@ -248,7 +262,7 @@ class BenchmarkVisualizer:
             # Create both log scale and outlier-excluded versions
             self.create_grouped_bar_chart(
                 metric='width',
-                title='Quantum Circuit Comparison: Circuit Width (Log Scale)\nVCGC vs Saha-Belletti Approaches',
+                title='Circuit Width Comparison (Log Scale)',
                 ylabel='Circuit Width',
                 filename='width_comparison_log.png' if save_charts else None,
                 log_scale=True
@@ -276,7 +290,7 @@ class BenchmarkVisualizer:
             # Create both log scale and outlier-excluded versions
             self.create_grouped_bar_chart(
                 metric='depth',
-                title='Quantum Circuit Comparison: Circuit Depth (Log Scale)\nVCGC vs Saha-Belletti Approaches',
+                title='Circuit Depth Comparison (Log Scale)',
                 ylabel='Circuit Depth',
                 filename='depth_comparison_log.png' if save_charts else None,
                 log_scale=True
@@ -304,7 +318,7 @@ class BenchmarkVisualizer:
             # Create both log scale and outlier-excluded versions
             self.create_grouped_bar_chart(
                 metric='gates',
-                title='Quantum Circuit Comparison: Number of Gates (Log Scale)\nVCGC vs Saha-Belletti Approaches',
+                title='Number of Gates Comparsion (Log Scale)',
                 ylabel='Number of Gates',
                 filename='gates_comparison_log.png' if save_charts else None,
                 log_scale=True
@@ -395,8 +409,10 @@ class BenchmarkVisualizer:
             print(f"No outliers found for {metric} focused chart")
             return
         
-        # Create subset data
+        # Create subset data and sort by VCGC metric values
         outlier_data = self.data[outlier_mask].copy()
+        vcgc_metric_col = f'vcgc_{metric}'
+        outlier_data = outlier_data.sort_values(by=vcgc_metric_col).reset_index(drop=True)
         
         fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(16, 6))
         

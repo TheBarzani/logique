@@ -101,7 +101,7 @@ class BenchmarkVisualizer:
         return labels
     
     def create_grouped_bar_chart(self, metric: str, title: str, ylabel: str, 
-                                filename: Optional[str] = None, figsize: tuple = (14, 8),
+                                filename: Optional[str] = None, figsize: tuple = (14, 7),
                                 log_scale: bool = False, exclude_outliers: bool = False,
                                 outlier_threshold: float = 3.0):
         """
@@ -200,14 +200,18 @@ class BenchmarkVisualizer:
             ylabel += " (log scale)"
         
         # Customize the plot
-        ax.set_xlabel('Benchmark Graphs\n(nodes, edges, colors)', fontsize=12, fontweight='bold')
-        ax.set_ylabel(ylabel, fontsize=12, fontweight='bold')
-        ax.set_title(title, fontsize=14, fontweight='bold', pad=20)
+        ax.set_xlabel('Benchmark Graphs\n(nodes, edges, colors)', fontsize=16, fontweight='bold')
+        ax.set_ylabel(ylabel, fontsize=16, fontweight='bold')
+        ax.set_title(title, fontsize=20, fontweight='bold', pad=20)
         ax.set_xticks(positions)
-        ax.set_xticklabels(graph_labels, rotation=45, ha='right', fontsize=10)
+        ax.set_xticklabels(graph_labels, rotation=25, ha='right', fontsize=15)
+        
+        
+        # Add this line to set y-axis tick label font size
+        ax.tick_params(axis='y', labelsize=14)
         
         # Add legend
-        ax.legend(loc='upper left', frameon=True, fancybox=True, shadow=True)
+        ax.legend(loc='upper left', frameon=True, fancybox=True, shadow=True, fontsize=18)
         
         # Add grid for better readability
         ax.grid(True, alpha=0.3, axis='y')
@@ -221,7 +225,7 @@ class BenchmarkVisualizer:
                     # Adjust label positioning for log scale
                     if log_scale:
                         label_y = height * 1.05
-                        fontsize = 10
+                        fontsize = 14
                     else:
                         label_y = height + max(height * 0.01, 1)
                         fontsize = 10
@@ -234,7 +238,7 @@ class BenchmarkVisualizer:
         # Adjust y-axis limits to prevent label cutoff
         if log_scale:
             # For log scale, extend the upper limit by a multiplicative factor
-            ax.set_ylim(bottom=ax.get_ylim()[0], top=ax.get_ylim()[1] * 1.6)
+            ax.set_ylim(bottom=ax.get_ylim()[0], top=ax.get_ylim()[1] * 4)
         else:
             # For linear scale, add some padding at the top
             y_max = ax.get_ylim()[1]
@@ -262,7 +266,7 @@ class BenchmarkVisualizer:
             # Create both log scale and outlier-excluded versions
             self.create_grouped_bar_chart(
                 metric='width',
-                title='Circuit Width Comparison (Log Scale)',
+                title='Circuit Width Comparison',
                 ylabel='Circuit Width',
                 filename='width_comparison_log.png' if save_charts else None,
                 log_scale=True
@@ -290,7 +294,7 @@ class BenchmarkVisualizer:
             # Create both log scale and outlier-excluded versions
             self.create_grouped_bar_chart(
                 metric='depth',
-                title='Circuit Depth Comparison (Log Scale)',
+                title='Circuit Depth Comparison',
                 ylabel='Circuit Depth',
                 filename='depth_comparison_log.png' if save_charts else None,
                 log_scale=True
@@ -318,7 +322,7 @@ class BenchmarkVisualizer:
             # Create both log scale and outlier-excluded versions
             self.create_grouped_bar_chart(
                 metric='gates',
-                title='Number of Gates Comparsion (Log Scale)',
+                title='Number of Gates Comparsion',
                 ylabel='Number of Gates',
                 filename='gates_comparison_log.png' if save_charts else None,
                 log_scale=True

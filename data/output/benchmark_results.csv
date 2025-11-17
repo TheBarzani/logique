@@ -1,6 +1,5 @@
 benchmark,nodes,edges,colors,vcgc_width,vcgc_depth,vcgc_gates,sb_original_width,sb_original_depth,sb_original_gates,sb_minimal_width,sb_minimal_depth,sb_minimal_gates,sb_simple_width,sb_simple_depth,sb_simple_gates,sb_balanced_width,sb_balanced_depth,sb_balanced_gates
 2-Insertions_3,37,72,4,217,174,1238,165,896,2862,333,3152,19099,217,107,1817,202,184,3014
-grid6,6,7,2,12,42,74,17,90,145,14,98,221,19,40,118,15,60,173
 zed-city_2019,11,22,4,65,91,378,59,382,834,58,520,2433,65,83,555,55,154,920
 myciel5,47,236,6,848,554,5004,1980,5005,12822,22110,36731,198309,1460,310,7693,2069,602,13944
 myciel4,23,71,5,281,192,1650,838,1455,4256,6746,10930,53391,628,170,2727,884,384,4809

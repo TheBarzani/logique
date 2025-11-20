@@ -490,11 +490,11 @@ def main():
     # Initialize comparison
     comparison = ExecutionComparison(
         output_dir="../data/execution/",
-        shots=1000  # Reduced for testing, increase for production
+        shots=10000  # Reduced for testing, increase for production
     )
     
     # Setup backend
-    comparison.setup_backend(backend_name="ibm_torino")  # Will use least busy backend
+    comparison.setup_backend(backend_name="ibm_quebec")  # Will use least busy backend
     # Or specify a specific backend:
     # comparison.setup_backend("ibm_torino")
     

@@ -30,20 +30,20 @@ class BenchmarkVisualizer:
         
         # Define colors for different approaches
         self.colors = {
-            'vcgc': '#2E86AB',           # Blue
-            'sb_original': '#A23B72',    # Pink
-            'sb_minimal': '#F18F01',     # Orange
-            'sb_simple': '#C73E1D',      # Red
-            'sb_balanced': '#6A994E'     # Green
+            'vcgc': '#FF1744',           # Vibrant Red (attention-grabbing)
+            'sb_original': '#5E35B1',    # Deep Purple
+            'sb_minimal': '#1E88E5',     # Blue
+            'sb_simple': '#00897B',      # Teal
+            'sb_balanced': '#FFA726'     # Orange
         }
         
         # Define approach labels
         self.labels = {
-            'vcgc': 'VCGC',
-            'sb_original': 'SB-Original',
-            'sb_minimal': 'SB-Minimal',
-            'sb_simple': 'SB-Simple',
-            'sb_balanced': 'SB-Balanced'
+            'vcgc': 'Proposed',
+            'sb_original': 'Saha et al.',
+            'sb_minimal': 'Belletti-Minimal',
+            'sb_simple': 'Belletti-Simple',
+            'sb_balanced': 'Belletti-Balanced'
         }
     
     def load_csv_data(self, filename: str = "benchmark_results.csv") -> pd.DataFrame:
@@ -75,20 +75,16 @@ class BenchmarkVisualizer:
                 'nodes': data['graph_info']['nodes'],
                 'edges': data['graph_info']['edges'],
                 'colors': data['graph_info']['colors'],
-                'vcgc_qubits': data['vcgc']['qubits'],
+                'vcgc_width': data['vcgc']['width'],
                 'vcgc_depth': data['vcgc']['depth'],
-                'vcgc_gates': data['vcgc']['gates'],
-                'vcgc_ancilla': data['vcgc'].get('mcx_ancilla_qubits', 0),
-                'vcgc_total_qubits': data['vcgc'].get('total_qubits_with_ancilla', data['vcgc']['qubits'])
+                'vcgc_gates': data['vcgc']['gates']
             }
             
             # Add Saha-Belletti metrics
             for oracle_type, metrics in data['saha_belletti'].items():
-                row[f'sb_{oracle_type}_qubits'] = metrics['qubits']
+                row[f'sb_{oracle_type}_width'] = metrics['width']
                 row[f'sb_{oracle_type}_depth'] = metrics['depth']
                 row[f'sb_{oracle_type}_gates'] = metrics['gates']
-                row[f'sb_{oracle_type}_ancilla'] = metrics.get('mcx_ancilla_qubits', 0)
-                row[f'sb_{oracle_type}_total_qubits'] = metrics.get('total_qubits_with_ancilla', metrics['qubits'])
             
             rows.append(row)
         
@@ -105,14 +101,14 @@ class BenchmarkVisualizer:
         return labels
     
     def create_grouped_bar_chart(self, metric: str, title: str, ylabel: str, 
-                                filename: Optional[str] = None, figsize: tuple = (14, 8),
+                                filename: Optional[str] = None, figsize: tuple = (14, 7),
                                 log_scale: bool = False, exclude_outliers: bool = False,
                                 outlier_threshold: float = 3.0):
         """
         Create a grouped bar chart for a specific metric
         
         Args:
-            metric: The metric to plot ('qubits', 'depth', or 'gates')
+            metric: The metric to plot ('width', 'depth', or 'gates')
             title: Chart title
             ylabel: Y-axis label
             filename: Optional filename to save the chart
@@ -124,19 +120,24 @@ class BenchmarkVisualizer:
         if self.data is None:
             raise ValueError("No data loaded. Call load_csv_data() or load_json_data() first.")
         
+        # Sort data by VCGC metric values (lowest to highest)
+        vcgc_metric_col = f'vcgc_{metric}'
+        sorted_data = self.data.sort_values(by=vcgc_metric_col).reset_index(drop=True)
+        
         # Prepare data
         approaches = ['vcgc', 'sb_original', 'sb_minimal', 'sb_simple', 'sb_balanced']
-        graph_labels = self.create_graph_labels()
+        graph_labels = [f"{row['benchmark']}\n({row['nodes']}n, {row['edges']}e, {row['colors']}c)" 
+                       for _, row in sorted_data.iterrows()]
         
         # Extract metric data for each approach
         metric_data = {}
         for approach in approaches:
             col_name = f'{approach}_{metric}'
-            if col_name in self.data.columns:
-                metric_data[approach] = self.data[col_name].values
+            if col_name in sorted_data.columns:
+                metric_data[approach] = sorted_data[col_name].values
             else:
                 print(f"Warning: Column {col_name} not found in data")
-                metric_data[approach] = np.zeros(len(self.data))
+                metric_data[approach] = np.zeros(len(sorted_data))
         
         # Handle outliers if requested
         if exclude_outliers:
@@ -158,7 +159,7 @@ class BenchmarkVisualizer:
                 for i, approach in enumerate(approaches):
                     outliers = metric_data[approach] > threshold
                     if np.any(outliers):
-                        outlier_benchmarks = [self.data.iloc[j]['benchmark'] for j in range(len(outliers)) if outliers[j]]
+                        outlier_benchmarks = [sorted_data.iloc[j]['benchmark'] for j in range(len(outliers)) if outliers[j]]
                         outlier_values = [metric_data[approach][j] for j in range(len(outliers)) if outliers[j]]
                         for bench, val in zip(outlier_benchmarks, outlier_values):
                             outlier_info.append(f"{self.labels[approach]} {bench}: {val:.0f}")
@@ -173,7 +174,7 @@ class BenchmarkVisualizer:
         fig, ax = plt.subplots(figsize=figsize)
         
         # Calculate bar positions
-        n_benchmarks = len(self.data)
+        n_benchmarks = len(sorted_data)
         n_approaches = len(approaches)
         bar_width = 0.15
         positions = np.arange(n_benchmarks)
@@ -199,14 +200,18 @@ class BenchmarkVisualizer:
             ylabel += " (log scale)"
         
         # Customize the plot
-        ax.set_xlabel('Benchmark Graphs\n(nodes, edges, colors)', fontsize=12, fontweight='bold')
-        ax.set_ylabel(ylabel, fontsize=12, fontweight='bold')
-        ax.set_title(title, fontsize=14, fontweight='bold', pad=20)
+        ax.set_xlabel('Benchmark Graphs\n(nodes, edges, colors)', fontsize=16, fontweight='bold')
+        ax.set_ylabel(ylabel, fontsize=16, fontweight='bold')
+        ax.set_title(title, fontsize=20, fontweight='bold', pad=20)
         ax.set_xticks(positions)
-        ax.set_xticklabels(graph_labels, rotation=45, ha='right', fontsize=10)
+        ax.set_xticklabels(graph_labels, rotation=25, ha='right', fontsize=15)
+        
+        
+        # Add this line to set y-axis tick label font size
+        ax.tick_params(axis='y', labelsize=14)
         
         # Add legend
-        ax.legend(loc='upper left', frameon=True, fancybox=True, shadow=True)
+        ax.legend(loc='upper left', frameon=True, fancybox=True, shadow=True, fontsize=18)
         
         # Add grid for better readability
         ax.grid(True, alpha=0.3, axis='y')
@@ -220,15 +225,24 @@ class BenchmarkVisualizer:
                     # Adjust label positioning for log scale
                     if log_scale:
                         label_y = height * 1.05
-                        fontsize = 7
+                        fontsize = 14
                     else:
                         label_y = height + max(height * 0.01, 1)
-                        fontsize = 8
+                        fontsize = 10
                     
                     ax.annotate(f'{int(height)}',
                               xy=(bar.get_x() + bar.get_width()/2, label_y),
                               ha='center', va='bottom',
-                              fontsize=fontsize, rotation=90 if not log_scale else 0)
+                              fontsize=fontsize, rotation=90)
+        
+        # Adjust y-axis limits to prevent label cutoff
+        if log_scale:
+            # For log scale, extend the upper limit by a multiplicative factor
+            ax.set_ylim(bottom=ax.get_ylim()[0], top=ax.get_ylim()[1] * 4)
+        else:
+            # For linear scale, add some padding at the top
+            y_max = ax.get_ylim()[1]
+            ax.set_ylim(bottom=0, top=y_max * 1.1)
         
         # Adjust layout to prevent label cutoff
         plt.tight_layout()
@@ -247,90 +261,40 @@ class BenchmarkVisualizer:
         if self.data is None:
             raise ValueError("No data loaded. Call load_csv_data() or load_json_data() first.")
         
-        # Chart 1: Qubits (with normalization options)
+        # Chart 1: Width (with normalization options)
         if normalize_all:
             # Create both log scale and outlier-excluded versions
             self.create_grouped_bar_chart(
-                metric='qubits',
-                title='Quantum Circuit Comparison: Number of Qubits (Log Scale)\nVCGC vs Saha-Belletti Approaches',
-                ylabel='Number of Qubits',
-                filename='qubits_comparison_log.png' if save_charts else None,
+                metric='width',
+                title='Circuit Width Comparison',
+                ylabel='Circuit Width',
+                filename='width_comparison_log.png' if save_charts else None,
                 log_scale=True
             )
             
             self.create_grouped_bar_chart(
-                metric='qubits',
-                title='Quantum Circuit Comparison: Number of Qubits (Outliers Capped)\nVCGC vs Saha-Belletti Approaches',
-                ylabel='Number of Qubits',
-                filename='qubits_comparison_normalized.png' if save_charts else None,
+                metric='width',
+                title='Quantum Circuit Comparison: Circuit Width (Outliers Capped)\nVCGC vs Saha-Belletti Approaches',
+                ylabel='Circuit Width',
+                filename='width_comparison_normalized.png' if save_charts else None,
                 exclude_outliers=True,
                 outlier_threshold=2.0
             )
         else:
             # Original chart
             self.create_grouped_bar_chart(
-                metric='qubits',
-                title='Quantum Circuit Comparison: Number of Qubits\nVCGC vs Saha-Belletti Approaches',
-                ylabel='Number of Qubits',
-                filename='qubits_comparison.png' if save_charts else None
+                metric='width',
+                title='Quantum Circuit Comparison: Circuit Width\nVCGC vs Saha-Belletti Approaches',
+                ylabel='Circuit Width',
+                filename='width_comparison.png' if save_charts else None
             )
         
-        # Chart 2: Total Qubits (including ancilla)
-        if normalize_all:
-            self.create_grouped_bar_chart(
-                metric='total_qubits',
-                title='Quantum Circuit Comparison: Total Qubits with Ancilla (Log Scale)\nVCGC vs Saha-Belletti Approaches',
-                ylabel='Total Qubits (including ancilla)',
-                filename='total_qubits_comparison_log.png' if save_charts else None,
-                log_scale=True
-            )
-            
-            self.create_grouped_bar_chart(
-                metric='total_qubits',
-                title='Quantum Circuit Comparison: Total Qubits with Ancilla (Outliers Capped)\nVCGC vs Saha-Belletti Approaches',
-                ylabel='Total Qubits (including ancilla)',
-                filename='total_qubits_comparison_normalized.png' if save_charts else None,
-                exclude_outliers=True,
-                outlier_threshold=2.0
-            )
-        else:
-            self.create_grouped_bar_chart(
-                metric='total_qubits',
-                title='Quantum Circuit Comparison: Total Qubits with Ancilla\nVCGC vs Saha-Belletti Approaches',
-                ylabel='Total Qubits (including ancilla)',
-                filename='total_qubits_comparison.png' if save_charts else None
-            )
-        
-        # Chart 3: Ancilla Qubits
-        if normalize_all:
-            self.create_grouped_bar_chart(
-                metric='ancilla',
-                title='Quantum Circuit Comparison: Ancilla Qubits for MCX Decomposition (Log Scale)\nVCGC vs Saha-Belletti Approaches',
-                ylabel='Ancilla Qubits',
-                filename='ancilla_comparison_log.png' if save_charts else None,
-                log_scale=True
-            )
-            
-            self.create_grouped_bar_chart(
-                metric='ancilla',
-                title='Quantum Circuit Comparison: Ancilla Qubits for MCX Decomposition\nVCGC vs Saha-Belletti Approaches',
-                ylabel='Ancilla Qubits',
-                filename='ancilla_comparison.png' if save_charts else None
-            )
-        else:
-            self.create_grouped_bar_chart(
-                metric='ancilla',
-                title='Quantum Circuit Comparison: Ancilla Qubits for MCX Decomposition\nVCGC vs Saha-Belletti Approaches',
-                ylabel='Ancilla Qubits',
-                filename='ancilla_comparison.png' if save_charts else None
-            )
-        
-        # Chart 4: Depth (with normalization options)
+        # Chart 2: Depth (with normalization options)
         if normalize_all:
             # Create both log scale and outlier-excluded versions
             self.create_grouped_bar_chart(
                 metric='depth',
-                title='Quantum Circuit Comparison: Circuit Depth (Log Scale)\nVCGC vs Saha-Belletti Approaches',
+                title='Circuit Depth Comparison',
                 ylabel='Circuit Depth',
                 filename='depth_comparison_log.png' if save_charts else None,
                 log_scale=True
@@ -342,7 +306,7 @@ class BenchmarkVisualizer:
                 ylabel='Circuit Depth',
                 filename='depth_comparison_normalized.png' if save_charts else None,
                 exclude_outliers=True,
-                outlier_threshold=2.0  # 2 standard deviations
+                outlier_threshold=2.0
             )
         else:
             # Original chart
@@ -353,12 +317,12 @@ class BenchmarkVisualizer:
                 filename='depth_comparison.png' if save_charts else None
             )
         
-        # Chart 5: Gates (with normalization options)
+        # Chart 3: Gates (with normalization options)
         if normalize_all:
             # Create both log scale and outlier-excluded versions
             self.create_grouped_bar_chart(
                 metric='gates',
-                title='Quantum Circuit Comparison: Number of Gates (Log Scale)\nVCGC vs Saha-Belletti Approaches',
+                title='Number of Gates Comparsion',
                 ylabel='Number of Gates',
                 filename='gates_comparison_log.png' if save_charts else None,
                 log_scale=True
@@ -388,7 +352,7 @@ class BenchmarkVisualizer:
         
         print("Creating alternative visualizations for all metrics...")
         
-        metrics = ['qubits', 'total_qubits', 'ancilla', 'depth', 'gates']
+        metrics = ['width', 'depth', 'gates']
         
         for metric in metrics:
             print(f"\nCreating {metric} visualizations...")
@@ -449,8 +413,10 @@ class BenchmarkVisualizer:
             print(f"No outliers found for {metric} focused chart")
             return
         
-        # Create subset data
+        # Create subset data and sort by VCGC metric values
         outlier_data = self.data[outlier_mask].copy()
+        vcgc_metric_col = f'vcgc_{metric}'
+        outlier_data = outlier_data.sort_values(by=vcgc_metric_col).reset_index(drop=True)
         
         fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(16, 6))
         
@@ -615,7 +581,7 @@ class BenchmarkVisualizer:
         print(f"   Colors: {self.data['colors'].min()}-{self.data['colors'].max()} (avg: {self.data['colors'].mean():.1f})")
         
         # Metrics summary
-        metrics = ['qubits', 'total_qubits', 'ancilla', 'depth', 'gates']
+        metrics = ['width', 'depth', 'gates']
         approaches = ['vcgc', 'sb_original', 'sb_minimal', 'sb_simple', 'sb_balanced']
         
         for metric in metrics:
@@ -631,9 +597,9 @@ class BenchmarkVisualizer:
         if self.data is None:
             raise ValueError("No data loaded. Call load_csv_data() or load_json_data() first.")
         
-        fig, axes = plt.subplots(2, 3, figsize=(18, 12))
+        fig, axes = plt.subplots(1, 3, figsize=(18, 6))
         axes = axes.flatten()  # Flatten for easy indexing
-        metrics = ['qubits', 'total_qubits', 'ancilla', 'depth', 'gates']
+        metrics = ['width', 'depth', 'gates']
         sb_approaches = ['sb_original', 'sb_minimal', 'sb_simple', 'sb_balanced']
         
         for i, metric in enumerate(metrics):
@@ -695,31 +661,148 @@ class BenchmarkVisualizer:
         
         plt.show()
     
-    def create_total_qubits_chart(self, save_chart: bool = True):
-        """Create a focused chart for total qubits comparison"""
-        self.create_grouped_bar_chart(
-            metric='total_qubits',
-            title='Total Qubits Comparison (Including MCX Ancilla)\nVCGC vs Saha-Belletti Approaches',
-            ylabel='Total Qubits (including ancilla for MCX decomposition)',
-            filename='total_qubits_with_ancilla.png' if save_chart else None,
-            figsize=(16, 8)
-        )
-    
-    def create_ancilla_chart(self, save_chart: bool = True):
-        """Create a focused chart for ancilla qubits comparison"""
-        self.create_grouped_bar_chart(
-            metric='ancilla',
-            title='MCX Ancilla Qubits Comparison\nVCGC vs Saha-Belletti Approaches',
-            ylabel='Additional Qubits Needed for MCX Decomposition',
-            filename='mcx_ancilla_qubits.png' if save_chart else None,
-            figsize=(16, 8)
-        )
+    def create_pareto_frontier_plot(self, save_chart: bool = True, figsize: tuple = (14, 10)):
+        """
+        Create a scatter plot showing the trade-off between circuit depth and total qubits
+        with Pareto frontier visualization.
+        
+        Args:
+            save_chart: Whether to save the chart to a file
+            figsize: Figure size as (width, height)
+        """
+        if self.data is None:
+            raise ValueError("No data loaded. Call load_csv_data() or load_json_data() first.")
+        
+        fig, ax = plt.subplots(figsize=figsize)
+        
+        approaches = ['vcgc', 'sb_original', 'sb_minimal', 'sb_simple', 'sb_balanced']
+        
+        # Collect all points for each approach
+        all_points = []
+        
+        for approach in approaches:
+            depth_col = f'{approach}_depth'
+            width_col = f'{approach}_width'
+            gates_col = f'{approach}_gates'
+            
+            if depth_col not in self.data.columns or width_col not in self.data.columns:
+                continue
+            
+            for idx, row in self.data.iterrows():
+                depth = row[depth_col]
+                width = row[width_col]
+                gates = row[gates_col] if gates_col in self.data.columns else 100
+                benchmark = row['benchmark']
+                
+                all_points.append({
+                    'approach': approach,
+                    'depth': depth,
+                    'width': width,
+                    'gates': gates,
+                    'benchmark': benchmark
+                })
+        
+        # Plot points for each approach
+        for approach in approaches:
+            approach_points = [p for p in all_points if p['approach'] == approach]
+            
+            if not approach_points:
+                continue
+            
+            depths = [p['depth'] for p in approach_points]
+            widths = [p['width'] for p in approach_points]
+            gates = [p['gates'] for p in approach_points]
+            
+            # Normalize gate counts for bubble size (scale between 50 and 500)
+            max_gates = max(gates) if gates else 1
+            min_gates = min(gates) if gates else 0
+            gate_range = max_gates - min_gates if max_gates != min_gates else 1
+            sizes = [50 + 450 * (g - min_gates) / gate_range for g in gates]
+            
+            # Plot with semi-transparent bubbles
+            scatter = ax.scatter(
+                depths, 
+                widths, 
+                s=sizes,
+                c=self.colors[approach],
+                alpha=0.6,
+                edgecolors='black',
+                linewidth=0.5,
+                label=self.labels[approach]
+            )
+        
+        # Calculate and plot Pareto frontier
+        # A point is on the Pareto frontier if no other point is better in both dimensions
+        pareto_points = []
+        for point in all_points:
+            is_dominated = False
+            for other in all_points:
+                # A point is dominated if another point has both lower depth AND lower width
+                if other['depth'] < point['depth'] and other['width'] < point['width']:
+                    is_dominated = True
+                    break
+            if not is_dominated:
+                pareto_points.append(point)
+        
+        # Sort Pareto points by depth for drawing the frontier line
+        pareto_points.sort(key=lambda p: p['depth'])
+        
+        if pareto_points:
+            pareto_depths = [p['depth'] for p in pareto_points]
+            pareto_widths = [p['width'] for p in pareto_points]
+            
+            # Draw Pareto frontier as a stepped line
+            ax.plot(pareto_depths, pareto_widths, 
+                   'k--', linewidth=2, alpha=0.5, 
+                   label='Pareto Frontier', zorder=1)
+            
+            # Highlight Pareto optimal points
+            ax.scatter(pareto_depths, pareto_widths,
+                      s=100, facecolors='none', edgecolors='black',
+                      linewidth=2, zorder=10)
+        
+        # Customize the plot
+        ax.set_xlabel('Circuit Depth (log scale)', fontsize=12, fontweight='bold')
+        ax.set_ylabel('Circuit Width', fontsize=12, fontweight='bold')
+        ax.set_title('Depth-Width Trade-Off Space\nVCGC vs Saha-Belletti Approaches\n(Bubble size = Gate Count)', 
+                    fontsize=14, fontweight='bold', pad=20)
+        
+        # Use log scale for depth
+        ax.set_xscale('log')
+        
+        # Add legend
+        ax.legend(loc='upper right', frameon=True, fancybox=True, shadow=True, fontsize=10)
+        
+        # Add grid
+        ax.grid(True, alpha=0.3, which='both')
+        ax.set_axisbelow(True)
+        
+        # Adjust layout
+        plt.tight_layout()
+        
+        # Save if requested
+        if save_chart:
+            save_path = self.results_dir / 'pareto_frontier_trade_off.png'
+            plt.savefig(save_path, dpi=300, bbox_inches='tight')
+            print(f"Pareto frontier plot saved to: {save_path}")
+        
+        plt.show()
+        
+        # Print Pareto optimal points summary
+        print("\n" + "="*80)
+        print("PARETO OPTIMAL POINTS")
+        print("="*80)
+        print(f"\nFound {len(pareto_points)} Pareto optimal (Method, Benchmark) combinations:\n")
+        for p in pareto_points:
+            print(f"  {self.labels[p['approach']]:15} | {p['benchmark']:20} | "
+                  f"Depth: {p['depth']:6.0f} | Width: {p['width']:4.0f} | Gates: {p['gates']:6.0f}")
+        print("="*80)
 
 
 def main():
     """Main function to run the visualization"""
     parser = argparse.ArgumentParser(description="Visualize VCGC vs Saha-Belletti benchmark results")
-    parser.add_argument("--results-dir", "-r", default="../data/vcgc_vs_saha_belletti",
+    parser.add_argument("--results-dir", "-r", default="../data/output",
                        help="Directory containing benchmark results")
     parser.add_argument("--format", "-f", choices=['csv', 'json'], default='csv',
                        help="Input file format")
@@ -731,12 +814,10 @@ def main():
                        help="Create alternative normalized depth charts")
     parser.add_argument("--all-alternatives", action="store_true",
                        help="Create alternative normalized charts for all metrics")
-    parser.add_argument("--metric", "-m", choices=['qubits', 'total_qubits', 'ancilla', 'depth', 'gates'],
+    parser.add_argument("--metric", "-m", choices=['width', 'depth', 'gates'],
                        help="Create chart for a specific metric only")
-    parser.add_argument("--total-qubits-only", action="store_true",
-                       help="Create only total qubits charts")
-    parser.add_argument("--ancilla-only", action="store_true",
-                       help="Create only ancilla qubits charts")
+    parser.add_argument("--pareto-frontier", action="store_true",
+                       help="Create Pareto frontier trade-off plot")
     
     args = parser.parse_args()
     
@@ -765,29 +846,9 @@ def main():
                 ylabel=args.metric.replace("_", " ").title(),
                 filename=f'{args.metric}_comparison.png' if not args.no_save else None
             )
-        elif args.total_qubits_only:
-            # Create only total qubits charts
-            visualizer.create_grouped_bar_chart(
-                metric='total_qubits',
-                title='Quantum Circuit Comparison: Total Qubits with Ancilla\nVCGC vs Saha-Belletti Approaches',
-                ylabel='Total Qubits (including ancilla)',
-                filename='total_qubits_comparison.png' if not args.no_save else None
-            )
-            visualizer.create_grouped_bar_chart(
-                metric='total_qubits',
-                title='Quantum Circuit Comparison: Total Qubits with Ancilla (Log Scale)\nVCGC vs Saha-Belletti Approaches',
-                ylabel='Total Qubits (including ancilla)',
-                filename='total_qubits_comparison_log.png' if not args.no_save else None,
-                log_scale=True
-            )
-        elif args.ancilla_only:
-            # Create only ancilla charts
-            visualizer.create_grouped_bar_chart(
-                metric='ancilla',
-                title='Quantum Circuit Comparison: Ancilla Qubits for MCX Decomposition\nVCGC vs Saha-Belletti Approaches',
-                ylabel='Ancilla Qubits',
-                filename='ancilla_comparison.png' if not args.no_save else None
-            )
+        elif args.pareto_frontier:
+            # Create Pareto frontier trade-off plot
+            visualizer.create_pareto_frontier_plot(save_chart=not args.no_save)
         elif args.all_alternatives:
             # Create alternative visualizations for all metrics
             visualizer.create_all_comparison_alternatives()
@@ -797,15 +858,19 @@ def main():
         else:
             # Create all charts with normalization
             visualizer.create_all_charts(save_charts=not args.no_save, normalize_all=True)
+            
+            # Create Pareto frontier plot
+            print("\nCreating Pareto frontier trade-off plot...")
+            visualizer.create_pareto_frontier_plot(save_chart=not args.no_save)
         
         # Create improvement analysis
         visualizer.create_improvement_analysis()
 
 
 def example_usage():
-    """Example of how to use the new total_qubits metric visualization"""
+    """Example of how to use the visualizer"""
     # Create visualizer
-    visualizer = BenchmarkVisualizer("../data/vcgc_vs_saha_belletti")
+    visualizer = BenchmarkVisualizer("../data/output")
     
     # Load data (try CSV first, then JSON)
     try:
@@ -817,23 +882,18 @@ def example_usage():
             print("No benchmark data found. Run generate_benchmarks.py first.")
             return
     
-    # Create total qubits comparison
-    print("Creating total qubits comparison...")
-    visualizer.create_total_qubits_chart()
-    
-    # Create ancilla qubits comparison
-    print("Creating ancilla qubits comparison...")
-    visualizer.create_ancilla_chart()
-    
-    # Create specific metric chart
-    print("Creating total qubits with log scale...")
+    # Create width comparison
+    print("Creating width comparison...")
     visualizer.create_grouped_bar_chart(
-        metric='total_qubits',
-        title='Total Qubits (Log Scale): VCGC vs Saha-Belletti',
-        ylabel='Total Qubits (log scale)',
-        filename='total_qubits_log.png',
-        log_scale=True
+        metric='width',
+        title='Circuit Width Comparison: VCGC vs Saha-Belletti',
+        ylabel='Circuit Width',
+        filename='width_comparison.png'
     )
+    
+    # Create Pareto frontier plot
+    print("Creating Pareto frontier plot...")
+    visualizer.create_pareto_frontier_plot()
 
 
 if __name__ == "__main__":

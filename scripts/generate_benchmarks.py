@@ -76,12 +76,10 @@ def count_ancilla_for_mcx_decomposition(circuit, exclude_diffusion=True):
 class CircuitMetrics:
     """Data class to store circuit metrics"""
     name: str
-    num_qubits: int
+    width: int
     depth: int
     num_gates: int
     oracle_type: Optional[str] = None
-    mcx_ancilla_qubits: int = 0
-    total_qubits_with_ancilla: int = 0
 
 
 @dataclass
@@ -183,22 +181,20 @@ class BenchmarkGenerator:
             with open(qasm_filename, "w") as f:
                 dump(circuit=vcgc_grover_circuit, stream=f)
             
-            # Count ancilla qubits for MCX gates (VCGC typically doesn't use MCX)
+            # Calculate total width (qubits + ancilla for MCX gates)
             ancilla_count, _ = count_ancilla_for_mcx_decomposition(vcgc_grover_circuit)
             
             return CircuitMetrics(
                 name="VCGC",
-                num_qubits=vcgc_grover_circuit.num_qubits,
+                width=vcgc_grover_circuit.num_qubits + ancilla_count,
                 depth=vcgc_grover_circuit.depth(mcx_decomposition=True),
-                num_gates=len(vcgc_grover_circuit),
-                mcx_ancilla_qubits=ancilla_count,
-                total_qubits_with_ancilla=vcgc_grover_circuit.num_qubits + ancilla_count
+                num_gates=len(vcgc_grover_circuit)
             )
             
         except Exception as e:
             print(f"Error generating VCGC circuit for {filename}: {str(e)}")
             traceback.print_exc()
-            return CircuitMetrics(name="VCGC", num_qubits=0, depth=0, num_gates=0, mcx_ancilla_qubits=0, total_qubits_with_ancilla=0)
+            return CircuitMetrics(name="VCGC", width=0, depth=0, num_gates=0)
     
     def generate_saha_belletti_circuits(self, network: VCPNetwork, filename: str) -> Dict[str, CircuitMetrics]:
         """
@@ -227,17 +223,15 @@ class BenchmarkGenerator:
                     grover_iterations=1
                 )
                 
-                # Count ancilla qubits for MCX gates
+                # Calculate total width (qubits + ancilla for MCX gates)
                 ancilla_count, mcx_info = count_ancilla_for_mcx_decomposition(sb_circuit)
                 
                 sb_metrics[oracle_type] = CircuitMetrics(
                     name=f"Saha-Belletti-{oracle_type}",
-                    num_qubits=sb_circuit.num_qubits,
+                    width=sb_circuit.num_qubits + ancilla_count,
                     depth=sb_circuit.depth(mcx_decomposition=True),
                     num_gates=len(sb_circuit),
-                    oracle_type=oracle_type,
-                    mcx_ancilla_qubits=ancilla_count,
-                    total_qubits_with_ancilla=sb_circuit.num_qubits + ancilla_count
+                    oracle_type=oracle_type
                 )
                 
                 # Save QASM file for this oracle type
@@ -249,12 +243,10 @@ class BenchmarkGenerator:
                 print(f"Error generating Saha-Belletti {oracle_type} circuit for {filename}: {str(e)}")
                 sb_metrics[oracle_type] = CircuitMetrics(
                     name=f"Saha-Belletti-{oracle_type}",
-                    num_qubits=0,
+                    width=0,
                     depth=0,
                     num_gates=0,
-                    oracle_type=oracle_type,
-                    mcx_ancilla_qubits=0,
-                    total_qubits_with_ancilla=0
+                    oracle_type=oracle_type
                 )
         
         return sb_metrics
@@ -316,11 +308,11 @@ class BenchmarkGenerator:
         with open(csv_path, 'w', newline='') as csvfile:
             fieldnames = [
                 'benchmark', 'nodes', 'edges', 'colors',
-                'vcgc_qubits', 'vcgc_depth', 'vcgc_gates', 'vcgc_ancilla', 'vcgc_total_qubits',
-                'sb_original_qubits', 'sb_original_depth', 'sb_original_gates', 'sb_original_ancilla', 'sb_original_total_qubits',
-                'sb_minimal_qubits', 'sb_minimal_depth', 'sb_minimal_gates', 'sb_minimal_ancilla', 'sb_minimal_total_qubits',
-                'sb_simple_qubits', 'sb_simple_depth', 'sb_simple_gates', 'sb_simple_ancilla', 'sb_simple_total_qubits',
-                'sb_balanced_qubits', 'sb_balanced_depth', 'sb_balanced_gates', 'sb_balanced_ancilla', 'sb_balanced_total_qubits'
+                'vcgc_width', 'vcgc_depth', 'vcgc_gates',
+                'sb_original_width', 'sb_original_depth', 'sb_original_gates',
+                'sb_minimal_width', 'sb_minimal_depth', 'sb_minimal_gates',
+                'sb_simple_width', 'sb_simple_depth', 'sb_simple_gates',
+                'sb_balanced_width', 'sb_balanced_depth', 'sb_balanced_gates'
             ]
             
             writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
@@ -332,28 +324,22 @@ class BenchmarkGenerator:
                     'nodes': result.graph_nodes,
                     'edges': result.graph_edges,
                     'colors': result.available_colors,
-                    'vcgc_qubits': result.vcgc_metrics.num_qubits,
+                    'vcgc_width': result.vcgc_metrics.width,
                     'vcgc_depth': result.vcgc_metrics.depth,
                     'vcgc_gates': result.vcgc_metrics.num_gates,
-                    'vcgc_ancilla': result.vcgc_metrics.mcx_ancilla_qubits,
-                    'vcgc_total_qubits': result.vcgc_metrics.total_qubits_with_ancilla,
                 }
                 
                 # Add Saha-Belletti metrics
                 for oracle_type in self.sb_oracle_types:
                     if oracle_type in result.saha_belletti_metrics:
                         metrics = result.saha_belletti_metrics[oracle_type]
-                        row[f'sb_{oracle_type}_qubits'] = metrics.num_qubits
+                        row[f'sb_{oracle_type}_width'] = metrics.width
                         row[f'sb_{oracle_type}_depth'] = metrics.depth
                         row[f'sb_{oracle_type}_gates'] = metrics.num_gates
-                        row[f'sb_{oracle_type}_ancilla'] = metrics.mcx_ancilla_qubits
-                        row[f'sb_{oracle_type}_total_qubits'] = metrics.total_qubits_with_ancilla
                     else:
-                        row[f'sb_{oracle_type}_qubits'] = 0
+                        row[f'sb_{oracle_type}_width'] = 0
                         row[f'sb_{oracle_type}_depth'] = 0
                         row[f'sb_{oracle_type}_gates'] = 0
-                        row[f'sb_{oracle_type}_ancilla'] = 0
-                        row[f'sb_{oracle_type}_total_qubits'] = 0
                 
                 writer.writerow(row)
     
@@ -370,22 +356,18 @@ class BenchmarkGenerator:
                     'colors': result.available_colors
                 },
                 'vcgc': {
-                    'qubits': result.vcgc_metrics.num_qubits,
+                    'width': result.vcgc_metrics.width,
                     'depth': result.vcgc_metrics.depth,
-                    'gates': result.vcgc_metrics.num_gates,
-                    'mcx_ancilla_qubits': result.vcgc_metrics.mcx_ancilla_qubits,
-                    'total_qubits_with_ancilla': result.vcgc_metrics.total_qubits_with_ancilla
+                    'gates': result.vcgc_metrics.num_gates
                 },
                 'saha_belletti': {}
             }
             
             for oracle_type, metrics in result.saha_belletti_metrics.items():
                 results_dict[result.filename]['saha_belletti'][oracle_type] = {
-                    'qubits': metrics.num_qubits,
+                    'width': metrics.width,
                     'depth': metrics.depth,
-                    'gates': metrics.num_gates,
-                    'mcx_ancilla_qubits': metrics.mcx_ancilla_qubits,
-                    'total_qubits_with_ancilla': metrics.total_qubits_with_ancilla
+                    'gates': metrics.num_gates
                 }
         
         with open(json_path, 'w') as f:
@@ -400,14 +382,12 @@ class BenchmarkGenerator:
         for result in results:
             print(f"\n📊 {result.filename}")
             print(f"   Graph: {result.graph_nodes} nodes, {result.graph_edges} edges, {result.available_colors} colors")
-            print(f"   VCGC: {result.vcgc_metrics.num_qubits} qubits, {result.vcgc_metrics.depth} depth, {result.vcgc_metrics.num_gates} gates")
-            print(f"         {result.vcgc_metrics.mcx_ancilla_qubits} ancilla, {result.vcgc_metrics.total_qubits_with_ancilla} total qubits")
+            print(f"   VCGC: {result.vcgc_metrics.width} width, {result.vcgc_metrics.depth} depth, {result.vcgc_metrics.num_gates} gates")
             
             for oracle_type in self.sb_oracle_types:
                 if oracle_type in result.saha_belletti_metrics:
                     metrics = result.saha_belletti_metrics[oracle_type]
-                    print(f"   SB-{oracle_type}: {metrics.num_qubits} qubits, {metrics.depth} depth, {metrics.num_gates} gates")
-                    print(f"            {metrics.mcx_ancilla_qubits} ancilla, {metrics.total_qubits_with_ancilla} total qubits")
+                    print(f"   SB-{oracle_type}: {metrics.width} width, {metrics.depth} depth, {metrics.num_gates} gates")
     
     def run_all_benchmarks(self) -> List[BenchmarkResult]:
         """

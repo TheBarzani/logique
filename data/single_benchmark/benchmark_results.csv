@@ -1,0 +1,2 @@
+benchmark,nodes,edges,colors,vcgc_width,vcgc_depth,vcgc_gates,sb_original_width,sb_original_depth,sb_original_gates,sb_minimal_width,sb_minimal_depth,sb_minimal_gates,sb_simple_width,sb_simple_depth,sb_simple_gates,sb_balanced_width,sb_balanced_depth,sb_balanced_gates
+test,50,1225,50,7649,2675,45754,33941,33410,132421,962699,564277,4785451,0,0,0,34778,2696,137280

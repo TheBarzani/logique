@@ -98,7 +98,7 @@ class ResultsAnalyzer:
         
         # Larger font sizes
         plt.xlabel('Number of Vertices', fontsize=16)
-        plt.ylabel('Success Quasi-Probability', fontsize=16)
+        plt.ylabel('Total Probability of the Desired States', fontsize=16)
         plt.title('Success Probability vs Graph Size', fontsize=18, pad=20)
         
         # Adjust legend
@@ -146,8 +146,8 @@ class ResultsAnalyzer:
                     markersize=7, linestyle='--', markerfacecolor='white', 
                     markeredgewidth=2, markeredgecolor=color)
         
-        plt.xlabel('Number of Vertices', fontsize=14, weight='bold')
-        plt.ylabel('Success Quasi-Probability', fontsize=14, weight='bold')
+        plt.xlabel('Number of Vertices', fontsize=10, weight='bold')
+        plt.ylabel('Total Probability of the Desired Solution States', fontsize=10, weight='bold')
         
         # Smaller legend with abbreviated names
         method_abbrev = {

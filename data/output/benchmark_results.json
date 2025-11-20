@@ -6,40 +6,64 @@
       "colors": 4
     },
     "vcgc": {
-      "qubits": 217,
+      "width": 217,
       "depth": 174,
-      "gates": 1238,
-      "mcx_ancilla_qubits": 0,
-      "total_qubits_with_ancilla": 217
+      "gates": 1238
     },
     "saha_belletti": {
       "original": {
-        "qubits": 112,
+        "width": 165,
         "depth": 896,
-        "gates": 2862,
-        "mcx_ancilla_qubits": 53,
-        "total_qubits_with_ancilla": 165
+        "gates": 2862
       },
       "minimal": {
-        "qubits": 83,
+        "width": 333,
         "depth": 3152,
-        "gates": 19099,
-        "mcx_ancilla_qubits": 250,
-        "total_qubits_with_ancilla": 333
+        "gates": 19099
       },
       "simple": {
-        "qubits": 147,
+        "width": 217,
         "depth": 107,
-        "gates": 1817,
-        "mcx_ancilla_qubits": 70,
-        "total_qubits_with_ancilla": 217
+        "gates": 1817
       },
       "balanced": {
-        "qubits": 88,
+        "width": 202,
         "depth": 184,
-        "gates": 3014,
-        "mcx_ancilla_qubits": 114,
-        "total_qubits_with_ancilla": 202
+        "gates": 3014
+      }
+    }
+  },
+  "grid6": {
+    "graph_info": {
+      "nodes": 6,
+      "edges": 7,
+      "colors": 2
+    },
+    "vcgc": {
+      "width": 12,
+      "depth": 42,
+      "gates": 74
+    },
+    "saha_belletti": {
+      "original": {
+        "width": 17,
+        "depth": 90,
+        "gates": 145
+      },
+      "minimal": {
+        "width": 14,
+        "depth": 98,
+        "gates": 221
+      },
+      "simple": {
+        "width": 19,
+        "depth": 40,
+        "gates": 118
+      },
+      "balanced": {
+        "width": 15,
+        "depth": 60,
+        "gates": 173
       }
     }
   },
@@ -50,40 +74,30 @@
       "colors": 4
     },
     "vcgc": {
-      "qubits": 65,
+      "width": 65,
       "depth": 91,
-      "gates": 378,
-      "mcx_ancilla_qubits": 0,
-      "total_qubits_with_ancilla": 65
+      "gates": 378
     },
     "saha_belletti": {
       "original": {
-        "qubits": 34,
+        "width": 59,
         "depth": 382,
-        "gates": 834,
-        "mcx_ancilla_qubits": 25,
-        "total_qubits_with_ancilla": 59
+        "gates": 834
       },
       "minimal": {
-        "qubits": 29,
+        "width": 58,
         "depth": 520,
-        "gates": 2433,
-        "mcx_ancilla_qubits": 29,
-        "total_qubits_with_ancilla": 58
+        "gates": 2433
       },
       "simple": {
-        "qubits": 45,
+        "width": 65,
         "depth": 83,
-        "gates": 555,
-        "mcx_ancilla_qubits": 20,
-        "total_qubits_with_ancilla": 65
+        "gates": 555
       },
       "balanced": {
-        "qubits": 30,
+        "width": 55,
         "depth": 154,
-        "gates": 920,
-        "mcx_ancilla_qubits": 25,
-        "total_qubits_with_ancilla": 55
+        "gates": 920
       }
     }
   },
@@ -94,40 +108,30 @@
       "colors": 6
     },
     "vcgc": {
-      "qubits": 848,
+      "width": 848,
       "depth": 554,
-      "gates": 5004,
-      "mcx_ancilla_qubits": 0,
-      "total_qubits_with_ancilla": 848
+      "gates": 5004
     },
     "saha_belletti": {
       "original": {
-        "qubits": 191,
+        "width": 1980,
         "depth": 5005,
-        "gates": 12822,
-        "mcx_ancilla_qubits": 1789,
-        "total_qubits_with_ancilla": 1980
+        "gates": 12822
       },
       "minimal": {
-        "qubits": 152,
+        "width": 22110,
         "depth": 36731,
-        "gates": 198309,
-        "mcx_ancilla_qubits": 21958,
-        "total_qubits_with_ancilla": 22110
+        "gates": 198309
       },
       "simple": {
-        "qubits": 472,
+        "width": 1460,
         "depth": 310,
-        "gates": 7693,
-        "mcx_ancilla_qubits": 988,
-        "total_qubits_with_ancilla": 1460
+        "gates": 7693
       },
       "balanced": {
-        "qubits": 169,
+        "width": 2069,
         "depth": 602,
-        "gates": 13944,
-        "mcx_ancilla_qubits": 1900,
-        "total_qubits_with_ancilla": 2069
+        "gates": 13944
       }
     }
   },
@@ -138,84 +142,30 @@
       "colors": 5
     },
     "vcgc": {
-      "qubits": 281,
+      "width": 281,
       "depth": 192,
-      "gates": 1650,
-      "mcx_ancilla_qubits": 0,
-      "total_qubits_with_ancilla": 281
+      "gates": 1650
     },
     "saha_belletti": {
       "original": {
-        "qubits": 96,
+        "width": 838,
         "depth": 1455,
-        "gates": 4256,
-        "mcx_ancilla_qubits": 742,
-        "total_qubits_with_ancilla": 838
+        "gates": 4256
       },
       "minimal": {
-        "qubits": 79,
+        "width": 6746,
         "depth": 10930,
-        "gates": 53391,
-        "mcx_ancilla_qubits": 6667,
-        "total_qubits_with_ancilla": 6746
+        "gates": 53391
       },
       "simple": {
-        "qubits": 210,
+        "width": 628,
         "depth": 170,
-        "gates": 2727,
-        "mcx_ancilla_qubits": 418,
-        "total_qubits_with_ancilla": 628
+        "gates": 2727
       },
       "balanced": {
-        "qubits": 88,
+        "width": 884,
         "depth": 384,
-        "gates": 4809,
-        "mcx_ancilla_qubits": 796,
-        "total_qubits_with_ancilla": 884
-      }
-    }
-  },
-  "grid6_2_colored": {
-    "graph_info": {
-      "nodes": 6,
-      "edges": 7,
-      "colors": 2
-    },
-    "vcgc": {
-      "qubits": 12,
-      "depth": 42,
-      "gates": 74,
-      "mcx_ancilla_qubits": 0,
-      "total_qubits_with_ancilla": 12
-    },
-    "saha_belletti": {
-      "original": {
-        "qubits": 13,
-        "depth": 90,
-        "gates": 145,
-        "mcx_ancilla_qubits": 4,
-        "total_qubits_with_ancilla": 17
-      },
-      "minimal": {
-        "qubits": 11,
-        "depth": 98,
-        "gates": 221,
-        "mcx_ancilla_qubits": 3,
-        "total_qubits_with_ancilla": 14
-      },
-      "simple": {
-        "qubits": 14,
-        "depth": 40,
-        "gates": 118,
-        "mcx_ancilla_qubits": 5,
-        "total_qubits_with_ancilla": 19
-      },
-      "balanced": {
-        "qubits": 11,
-        "depth": 60,
-        "gates": 173,
-        "mcx_ancilla_qubits": 4,
-        "total_qubits_with_ancilla": 15
+        "gates": 4809
       }
     }
   },
@@ -226,128 +176,98 @@
       "colors": 4
     },
     "vcgc": {
-      "qubits": 61,
+      "width": 61,
       "depth": 73,
-      "gates": 354,
-      "mcx_ancilla_qubits": 0,
-      "total_qubits_with_ancilla": 61
+      "gates": 354
     },
     "saha_belletti": {
       "original": {
-        "qubits": 34,
+        "width": 53,
         "depth": 312,
-        "gates": 708,
-        "mcx_ancilla_qubits": 19,
-        "total_qubits_with_ancilla": 53
+        "gates": 708
       },
       "minimal": {
-        "qubits": 29,
+        "width": 57,
         "depth": 496,
-        "gates": 2359,
-        "mcx_ancilla_qubits": 28,
-        "total_qubits_with_ancilla": 57
+        "gates": 2359
       },
       "simple": {
-        "qubits": 43,
+        "width": 61,
         "depth": 73,
-        "gates": 517,
-        "mcx_ancilla_qubits": 18,
-        "total_qubits_with_ancilla": 61
+        "gates": 517
       },
       "balanced": {
-        "qubits": 30,
+        "width": 54,
         "depth": 142,
-        "gates": 844,
-        "mcx_ancilla_qubits": 24,
-        "total_qubits_with_ancilla": 54
+        "gates": 844
       }
     }
   },
-  "1-FullIns_3": {
+  "K20": {
     "graph_info": {
-      "nodes": 30,
-      "edges": 100,
-      "colors": 4
+      "nodes": 20,
+      "edges": 190,
+      "colors": 20
     },
     "vcgc": {
-      "qubits": 259,
-      "depth": 231,
-      "gates": 1504,
-      "mcx_ancilla_qubits": 0,
-      "total_qubits_with_ancilla": 259
+      "width": 1049,
+      "depth": 478,
+      "gates": 6224
     },
     "saha_belletti": {
       "original": {
-        "qubits": 91,
-        "depth": 1318,
-        "gates": 3491,
-        "mcx_ancilla_qubits": 114,
-        "total_qubits_with_ancilla": 205
+        "width": 5793,
+        "depth": 5095,
+        "gates": 19199
       },
       "minimal": {
-        "qubits": 69,
-        "depth": 4035,
-        "gates": 24565,
-        "mcx_ancilla_qubits": 325,
-        "total_qubits_with_ancilla": 394
+        "width": 75359,
+        "depth": 56510,
+        "gates": 357331
       },
       "simple": {
-        "qubits": 161,
-        "depth": 136,
-        "gates": 2265,
-        "mcx_ancilla_qubits": 98,
-        "total_qubits_with_ancilla": 259
+        "width": 3539,
+        "depth": 439,
+        "gates": 11095
       },
       "balanced": {
-        "qubits": 76,
-        "depth": 253,
-        "gates": 3930,
-        "mcx_ancilla_qubits": 163,
-        "total_qubits_with_ancilla": 239
+        "width": 6039,
+        "depth": 1213,
+        "gates": 20793
       }
     }
   },
-  "linear_2_colored": {
+  "K10": {
     "graph_info": {
-      "nodes": 5,
-      "edges": 4,
-      "colors": 2
+      "nodes": 10,
+      "edges": 45,
+      "colors": 10
     },
     "vcgc": {
-      "qubits": 8,
-      "depth": 27,
-      "gates": 51,
-      "mcx_ancilla_qubits": 0,
-      "total_qubits_with_ancilla": 8
+      "width": 219,
+      "depth": 145,
+      "gates": 1294
     },
     "saha_belletti": {
       "original": {
-        "qubits": 11,
-        "depth": 39,
-        "gates": 70,
-        "mcx_ancilla_qubits": 3,
-        "total_qubits_with_ancilla": 14
+        "width": 973,
+        "depth": 977,
+        "gates": 3509
       },
       "minimal": {
-        "qubits": 9,
-        "depth": 39,
-        "gates": 99,
-        "mcx_ancilla_qubits": 1,
-        "total_qubits_with_ancilla": 10
+        "width": 5713,
+        "depth": 5273,
+        "gates": 29627
       },
       "simple": {
-        "qubits": 10,
-        "depth": 29,
-        "gates": 79,
-        "mcx_ancilla_qubits": 2,
-        "total_qubits_with_ancilla": 12
+        "width": 669,
+        "depth": 190,
+        "gates": 2280
       },
       "balanced": {
-        "qubits": 9,
-        "depth": 39,
-        "gates": 102,
-        "mcx_ancilla_qubits": 1,
-        "total_qubits_with_ancilla": 10
+        "width": 1053,
+        "depth": 483,
+        "gates": 4142
       }
     }
   },
@@ -358,40 +278,30 @@
       "colors": 3
     },
     "vcgc": {
-      "qubits": 11,
+      "width": 11,
       "depth": 30,
-      "gates": 73,
-      "mcx_ancilla_qubits": 0,
-      "total_qubits_with_ancilla": 11
+      "gates": 73
     },
     "saha_belletti": {
       "original": {
-        "qubits": 11,
+        "width": 15,
         "depth": 28,
-        "gates": 76,
-        "mcx_ancilla_qubits": 4,
-        "total_qubits_with_ancilla": 15
+        "gates": 76
       },
       "minimal": {
-        "qubits": 11,
+        "width": 13,
         "depth": 90,
-        "gates": 211,
-        "mcx_ancilla_qubits": 2,
-        "total_qubits_with_ancilla": 13
+        "gates": 211
       },
       "simple": {
-        "qubits": 13,
+        "width": 17,
         "depth": 40,
-        "gates": 107,
-        "mcx_ancilla_qubits": 4,
-        "total_qubits_with_ancilla": 17
+        "gates": 107
       },
       "balanced": {
-        "qubits": 11,
+        "width": 15,
         "depth": 64,
-        "gates": 147,
-        "mcx_ancilla_qubits": 4,
-        "total_qubits_with_ancilla": 15
+        "gates": 147
       }
     }
   },
@@ -402,40 +312,30 @@
       "colors": 5
     },
     "vcgc": {
-      "qubits": 44,
+      "width": 44,
       "depth": 58,
-      "gates": 264,
-      "mcx_ancilla_qubits": 0,
-      "total_qubits_with_ancilla": 44
+      "gates": 264
     },
     "saha_belletti": {
       "original": {
-        "qubits": 24,
+        "width": 132,
         "depth": 191,
-        "gates": 540,
-        "mcx_ancilla_qubits": 108,
-        "total_qubits_with_ancilla": 132
+        "gates": 540
       },
       "minimal": {
-        "qubits": 22,
+        "width": 347,
         "depth": 783,
-        "gates": 2527,
-        "mcx_ancilla_qubits": 325,
-        "total_qubits_with_ancilla": 347
+        "gates": 2527
       },
       "simple": {
-        "qubits": 41,
+        "width": 114,
         "depth": 94,
-        "gates": 450,
-        "mcx_ancilla_qubits": 73,
-        "total_qubits_with_ancilla": 114
+        "gates": 450
       },
       "balanced": {
-        "qubits": 24,
+        "width": 151,
         "depth": 180,
-        "gates": 761,
-        "mcx_ancilla_qubits": 127,
-        "total_qubits_with_ancilla": 151
+        "gates": 761
       }
     }
   }

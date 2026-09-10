@@ -73,6 +73,19 @@ python examples/run_benchmarks.py --output results.csv
 Check out `examples/comparing_vcgc_to_saha_belletti.ipynb`.
 
 
+## Boolean Benchmark Tutorial
+
+The [Boolean synthesis and conditional workspace notebook](examples/boolean_synthesis_workspace.ipynb)
+imports pinned EPFL benchmarks and compares XAG, AIG/Bennett, XAG/Bennett,
+k-LUT, and best-fit LHRS synthesis. It includes Qiskit circuit drawings and a
+verified conditional-workspace borrowing example. See the
+[setup and execution guide](data/boolean_benchmarks/README.md).
+
+The [two-benchmark visual study](examples/boolean_synthesis_visual_study.ipynb)
+follows int2float and cavlc output cones through factored LaTeX, Schemdraw
+logic symbols, connected Graphviz networks, and all five quantum methods.
+It also compares and exports both complete benchmarks.
+
 ## Library Components
 
 - **`VCPNetwork`**: Graph parsing and management (DIMACS support)

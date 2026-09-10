@@ -1,1 +1,1 @@
-# Test module for vcgc package
+# Test module for logique package

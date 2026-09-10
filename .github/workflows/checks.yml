@@ -21,18 +21,18 @@ jobs:
       - run: uv build --no-sources
       - name: Check installed wheel outside the checkout
         run: |
-          uv venv /tmp/vcgc-wheel --python 3.10
-          uv pip install --python /tmp/vcgc-wheel/bin/python dist/*.whl
+          uv venv /tmp/logique-wheel --python 3.10
+          uv pip install --python /tmp/logique-wheel/bin/python dist/*.whl
           cd /tmp
-          /tmp/vcgc-wheel/bin/python -c 'import vcgc; from vcgc.benchmarks.datasets import benchmark_manifest; assert benchmark_manifest()["revision"]'
-          /tmp/vcgc-wheel/bin/vcgc --help
+          /tmp/logique-wheel/bin/python -c 'import logique; from logique.benchmarks.datasets import benchmark_manifest; assert benchmark_manifest()["revision"]'
+          /tmp/logique-wheel/bin/logique --help
   research:
     runs-on: ubuntu-latest
     env:
       CMAKE_BUILD_PARALLEL_LEVEL: '2'
       MPLBACKEND: Agg
-      VCGC_NATIVE_EXECUTABLE: ${{ github.workspace }}/native/boolean_synthesis/build/boolean_synthesis
-      VCGC_CACHE: ${{ github.workspace }}/.cache/epfl
+      LOGIQUE_NATIVE_EXECUTABLE: ${{ github.workspace }}/native/boolean_synthesis/build/boolean_synthesis
+      LOGIQUE_CACHE: ${{ github.workspace }}/.cache/epfl
     steps:
       - uses: actions/checkout@v4
         with:
@@ -42,13 +42,13 @@ jobs:
           version: '0.8.4'
       - run: sudo apt-get update && sudo apt-get install -y graphviz cmake ninja-build pkg-config
       - run: python3 tools/sync.py --all-extras
-      - run: uv run --no-sync vcgc native build --source native/boolean_synthesis
-      - run: uv run --no-sync vcgc datasets fetch ctrl int2float cavlc router --cache .cache/epfl
+      - run: uv run --no-sync logique native build --source native/boolean_synthesis
+      - run: uv run --no-sync logique datasets fetch ctrl int2float cavlc router --cache .cache/epfl
       - run: uv run --no-sync pytest
-      - run: uv run --no-sync vcgc benchmark run --config configs/boolean_teaching.json
+      - run: uv run --no-sync logique benchmark run --config configs/boolean_teaching.json
       - name: Execute maintained notebooks offline
         run: |
-          uv run --no-sync vcgc notebook run notebooks/tutorials/graph_coloring.ipynb --offline
-          uv run --no-sync vcgc notebook run notebooks/tutorials/boolean_workspace.ipynb --offline
-          uv run --no-sync vcgc notebook run notebooks/studies/coloring_comparison.ipynb --offline
-          uv run --no-sync vcgc notebook run notebooks/studies/boolean_visual_study.ipynb --offline
+          uv run --no-sync logique notebook run notebooks/tutorials/graph_coloring.ipynb --offline
+          uv run --no-sync logique notebook run notebooks/tutorials/boolean_workspace.ipynb --offline
+          uv run --no-sync logique notebook run notebooks/studies/coloring_comparison.ipynb --offline
+          uv run --no-sync logique notebook run notebooks/studies/boolean_visual_study.ipynb --offline

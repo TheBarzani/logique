@@ -9,13 +9,13 @@ from qiskit import QuantumCircuit
 from qiskit.quantum_info import Operator
 
 from pathlib import Path
-from vcgc.synthesis import METHODS, synthesize
-from vcgc.paths import native_executable, cache_directory
-from vcgc.circuits.records import records_to_qiskit
-from vcgc.verification import validate, truth_outputs, verify_small_quantum
-from vcgc.verification.classical import input_assignments
-from vcgc.workspace import workspace_analysis, verify_borrowing
-from vcgc.benchmarks.datasets import download_benchmarks
+from logique.synthesis import METHODS, synthesize
+from logique.paths import native_executable, cache_directory
+from logique.circuits.records import records_to_qiskit
+from logique.verification import validate, truth_outputs, verify_small_quantum
+from logique.verification.classical import input_assignments
+from logique.workspace import workspace_analysis, verify_borrowing
+from logique.benchmarks.datasets import download_benchmarks
 
 ROOT = Path(__file__).resolve().parents[1]
 

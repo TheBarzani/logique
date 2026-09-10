@@ -3,8 +3,8 @@
 from types import SimpleNamespace
 from unittest.mock import Mock
 import pytest
-from vcgc import ColoringProblem, encode_coloring
-from vcgc.execution.local import success_probability
+from logique import ColoringProblem, encode_coloring
+from logique.execution.local import success_probability
 
 
 def test_success_probability_counts_precolors_and_unused_codes():
@@ -18,7 +18,7 @@ def test_success_probability_counts_precolors_and_unused_codes():
 
 def test_ibm_submit_and_retrieve_use_explicit_backend_and_shots(monkeypatch):
     runtime = pytest.importorskip("qiskit_ibm_runtime")
-    from vcgc.execution import ibm
+    from logique.execution import ibm
 
     backend, prepared = object(), SimpleNamespace(num_qubits=6, depth=lambda: 9)
     service = Mock()

@@ -1,7 +1,7 @@
 """Independent domain regressions for parsing, mapping, and coloring semantics."""
 
 import pytest
-from vcgc import ColoringProblem, encode_coloring, read_dimacs
+from logique import ColoringProblem, encode_coloring, read_dimacs
 
 
 def test_dimacs_whitespace_isolates_precolors_and_repeated_reads(tmp_path):

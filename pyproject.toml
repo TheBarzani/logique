@@ -3,7 +3,7 @@ requires = ["setuptools>=77", "wheel"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "vcgc"
+name = "logique"
 version = "0.2.0"
 description = "Reproducible graph-coloring and Boolean quantum-oracle research"
 readme = "README.md"
@@ -13,18 +13,18 @@ dependencies = ["networkx==3.4.2"]
 
 [project.optional-dependencies]
 synthesis = ["qiskit==2.1.1", "numpy==2.2.6", "tweedledum==1.1.1"]
-benchmarks = ["vcgc[synthesis]", "pandas==2.3.1"]
-comparison = ["vcgc[benchmarks]", "saha-belleti==0.1.0"]
+benchmarks = ["logique[synthesis]", "pandas==2.3.1"]
+comparison = ["logique[benchmarks]", "saha-belleti==0.1.0"]
 visualization = ["matplotlib==3.10.5", "numpy==2.2.6", "graphviz==0.21", "schemdraw==0.23", "pylatexenc==2.10"]
-notebooks = ["vcgc[benchmarks,visualization]", "nbformat==5.10.4", "nbclient==0.10.2", "ipykernel==6.30.0"]
-simulation = ["vcgc[synthesis]", "qiskit-aer>=0.17,<0.18"]
-ibm = ["vcgc[synthesis]", "qiskit-ibm-runtime>=0.40,<0.42", "python-dotenv>=1,<2"]
+notebooks = ["logique[benchmarks,visualization]", "nbformat==5.10.4", "nbclient==0.10.2", "ipykernel==6.30.0"]
+simulation = ["logique[synthesis]", "qiskit-aer>=0.17,<0.18"]
+ibm = ["logique[synthesis]", "qiskit-ibm-runtime>=0.40,<0.42", "python-dotenv>=1,<2"]
 
 [dependency-groups]
 dev = ["pytest>=8,<9", "pytest-cov>=6,<7", "black>=25,<26", "ruff>=0.12,<0.13", "mypy>=1.17,<1.18"]
 
 [project.scripts]
-vcgc = "vcgc.cli.main:main"
+logique = "logique.cli.main:main"
 
 [tool.uv.sources]
 tweedledum = {path = "tweedledum", editable = false}
@@ -32,10 +32,10 @@ saha-belleti = {path = "saha-belletti", editable = false}
 
 [tool.setuptools.packages.find]
 where = ["src"]
-include = ["vcgc*"]
+include = ["logique*"]
 
 [tool.setuptools.package-data]
-"vcgc.benchmarks" = ["epfl.json"]
+"logique.benchmarks" = ["epfl.json"]
 
 [tool.black]
 line-length = 88
@@ -56,7 +56,7 @@ markers = ["integration: requires the compiled native bridge", "workflow: execut
 [tool.mypy]
 python_version = "3.10"
 ignore_missing_imports = true
-files = ["src/vcgc/coloring", "src/vcgc/paths.py"]
+files = ["src/logique/coloring", "src/logique/paths.py"]
 
 [tool.ruff.lint.per-file-ignores]
 "tests/test_benchmark_synthesis.py" = ["E402"]

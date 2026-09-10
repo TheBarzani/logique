@@ -1,6 +1,6 @@
-# VCGC
+# Logique
 
-VCGC is a research toolkit for compiling graph-coloring predicates and Boolean functions into quantum oracles. It includes five synthesis methods, phase and workspace verification, conditional-workspace studies, and reproducible comparisons with Saha-Belletti.
+Logique is a research toolkit for compiling graph-coloring predicates and Boolean functions into quantum oracles. It includes five synthesis methods, phase and workspace verification, conditional-workspace studies, and reproducible comparisons with Saha-Belletti.
 
 ## Start here
 
@@ -22,9 +22,9 @@ Use Python 3.10, uv, CMake, a C++17 compiler, and pkg-config. Install system Gra
 git submodule update --init --recursive
 uv python install 3.10
 python3 tools/sync.py --all-extras
-uv run --no-sync vcgc native build --source native/boolean_synthesis
-export VCGC_NATIVE_EXECUTABLE="$PWD/native/boolean_synthesis/build/boolean_synthesis"
-export VCGC_CACHE="$PWD/.cache/epfl"
+uv run --no-sync logique native build --source native/boolean_synthesis
+export LOGIQUE_NATIVE_EXECUTABLE="$PWD/native/boolean_synthesis/build/boolean_synthesis"
+export LOGIQUE_CACHE="$PWD/.cache/epfl"
 ```
 
 The sync helper runs `uv sync --locked` using tweedledum's bundled C++ headers. It avoids accidentally selecting an incompatible system fmt installation. It does not modify dependency source files. See [setup details](docs/setup.md) for smaller installations and native-build troubleshooting.
@@ -32,13 +32,13 @@ The sync helper runs `uv sync --locked` using tweedledum's bundled C++ headers. 
 ## Compile a graph
 
 ```bash
-uv run --no-sync vcgc synthesize datasets/graphs/teaching/edge.col --view grover
+uv run --no-sync logique synthesize datasets/graphs/teaching/edge.col --view grover
 ```
 
 ```python
-from vcgc import read_dimacs, encode_coloring
-from vcgc.synthesis import synthesize
-from vcgc.verification import validate
+from logique import read_dimacs, encode_coloring
+from logique.synthesis import synthesize
+from logique.verification import validate
 
 encoding = encode_coloring(read_dimacs("datasets/graphs/teaching/edge.col"))
 result = synthesize(encoding, method="xag")
@@ -49,16 +49,16 @@ phase_oracle = result.phase_oracle()
 ## Run a study
 
 ```bash
-uv run --no-sync vcgc benchmark run --config configs/boolean_teaching.json
-uv run --no-sync vcgc datasets fetch --cache .cache/epfl
-uv run --no-sync vcgc notebook run notebooks/tutorials/boolean_workspace.ipynb --offline
+uv run --no-sync logique benchmark run --config configs/boolean_teaching.json
+uv run --no-sync logique datasets fetch --cache .cache/epfl
+uv run --no-sync logique notebook run notebooks/tutorials/boolean_workspace.ipynb --offline
 ```
 
 New outputs go to unique directories under `results/`. Source notebooks remain unexecuted in Git. Historical results are retained separately and are not overwritten by new experiments.
 
-The library lives in `src/vcgc/`; inputs in `datasets/`; active notebooks in `notebooks/`; and documentation in `docs/`. Optional quantum, visualization, and hardware dependencies are loaded only by the features that need them.
+The library lives in `src/logique/`; inputs in `datasets/`; active notebooks in `notebooks/`; and documentation in `docs/`. Optional quantum, visualization, and hardware dependencies are loaded only by the features that need them.
 
-VCGC reports logical gate counts unless an explicit decomposition is requested. Conditional-state candidates are analysis results, not automatically certified borrowing transformations. The small borrowing demonstration has separate phase and restoration checks.
+Logique reports logical gate counts unless an explicit decomposition is requested. Conditional-state candidates are analysis results, not automatically certified borrowing transformations. The small borrowing demonstration has separate phase and restoration checks.
 
 ## Research and licensing
 

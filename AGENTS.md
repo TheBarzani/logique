@@ -1,10 +1,10 @@
 # Repository guidelines
 
-VCGC compiles graph-coloring predicates and general Boolean functions into quantum circuits. It is a Python 3.10 research toolkit with optional native synthesis, plotting, notebook, simulation, and IBM dependencies.
+Logique compiles graph-coloring predicates and general Boolean functions into quantum circuits. It is a Python 3.10 research toolkit with optional native synthesis, plotting, notebook, simulation, and IBM dependencies.
 
 ## Navigation
 
-- `src/vcgc/`: maintained library. Follow the package boundaries in `docs/architecture.md`.
+- `src/logique/`: maintained library. Follow the package boundaries in `docs/architecture.md`.
 - `notebooks/tutorials/` and `notebooks/studies/`: four maintained notebooks; source outputs stay empty.
 - `configs/`: JSON experiment configurations; paths resolve relative to the config.
 - `datasets/`: source inputs. New generated outputs belong in ignored `results/`.
@@ -16,9 +16,9 @@ VCGC compiles graph-coloring predicates and general Boolean functions into quant
 
 ```bash
 python3 tools/sync.py --all-extras
-uv run --no-sync vcgc native build --source native/boolean_synthesis
-export VCGC_NATIVE_EXECUTABLE="$PWD/native/boolean_synthesis/build/boolean_synthesis"
-export VCGC_CACHE="$PWD/.cache/epfl"
+uv run --no-sync logique native build --source native/boolean_synthesis
+export LOGIQUE_NATIVE_EXECUTABLE="$PWD/native/boolean_synthesis/build/boolean_synthesis"
+export LOGIQUE_CACHE="$PWD/.cache/epfl"
 uv run --no-sync pytest
 uv run --no-sync black --check src tests tools examples
 uv run --no-sync ruff check src tests tools examples

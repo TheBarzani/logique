@@ -1,5 +1,5 @@
 include README.md pyproject.toml
-recursive-include src/vcgc *.py *.json
+recursive-include src/logique *.py *.json
 prune archive
 prune datasets
 prune docs
@@ -13,7 +13,7 @@ prune tests
 prune tools
 prune tweedledum
 prune saha-belletti
-prune vcgc
+prune logique
 prune data
 prune images
 global-exclude *.pyc *.so

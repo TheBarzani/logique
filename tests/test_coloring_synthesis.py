@@ -5,11 +5,11 @@ import pytest
 np = pytest.importorskip("numpy")
 pytest.importorskip("qiskit")
 pytest.importorskip("tweedledum")
-from vcgc import ColoringProblem, encode_coloring
-from vcgc.synthesis import synthesize, METHODS
-from vcgc.paths import native_executable
-from vcgc.verification import validate, truth_outputs
-from vcgc.verification.classical import input_assignments
+from logique import ColoringProblem, encode_coloring
+from logique.synthesis import synthesize, METHODS
+from logique.paths import native_executable
+from logique.verification import validate, truth_outputs
+from logique.verification.classical import input_assignments
 
 pytestmark = pytest.mark.integration
 
@@ -51,7 +51,7 @@ def test_synthesis_matches_graph_predicate(problem, method):
 @pytest.mark.parametrize("iterations", [0, 1, 2, 3])
 def test_grover_matches_independent_amplitude_amplification(iterations):
     from qiskit.quantum_info import Statevector
-    from vcgc.circuits.grover import coloring_preparation, grover_circuit
+    from logique.circuits.grover import coloring_preparation, grover_circuit
 
     encoding = encode_coloring(ColoringProblem((1, 2), ((1, 2),), 3, {1: 0}))
     result = synthesize(encoding)

@@ -25,7 +25,7 @@ def test_notebook_runner_keeps_source_and_records_failure(tmp_path):
     nbformat = pytest.importorskip("nbformat")
     pytest.importorskip("nbclient")
     from nbclient.exceptions import CellExecutionError
-    from vcgc.benchmarks.notebooks import execute_notebook
+    from logique.benchmarks.notebooks import execute_notebook
 
     source = tmp_path / "example.ipynb"
     nbformat.write(

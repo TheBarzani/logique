@@ -1,6 +1,6 @@
 # Architecture
 
-VCGC has two input paths: a graph-coloring problem is encoded as structural Verilog, while a Boolean benchmark supplies Verilog or combinational AIGER directly. Both use the same synthesis, verification, and export pipeline.
+Logique has two input paths: a graph-coloring problem is encoded as structural Verilog, while a Boolean benchmark supplies Verilog or combinational AIGER directly. Both use the same synthesis, verification, and export pipeline.
 
 | Package | Responsibility |
 | --- | --- |
@@ -22,7 +22,7 @@ The predicate checks edge inequalities, unused color codes, and precolors. `prob
 
 `SynthesisResult.circuit` is the raw clean-output computation and may retain intermediate workspace or phase. `oracle()` appends arbitrary XOR targets and computes/copies/uncomputes. `phase_oracle(output=0)` marks one output and restores computational workspace. Wire roles and source/mapped networks remain explicit in metadata.
 
-`grover_circuit()` uses the phase wrapper and a reflection about its supplied preparation. `coloring_preparation()` prepares valid colors and fixes precolors. Comparison runs use an all-bitstrings preparation for both VCGC and Saha-Belletti, so initialization is not an uncontrolled difference between methods.
+`grover_circuit()` uses the phase wrapper and a reflection about its supplied preparation. `coloring_preparation()` prepares valid colors and fixes precolors. Comparison runs use an all-bitstrings preparation for both Logique and Saha-Belletti, so initialization is not an uncontrolled difference between methods.
 
 The native protocol remains JSON over stdin/stdout with diagnostics on stderr. C++ input parsing, mapping, serialization, and request handling are separate. Existing Caterpillar compatibility overlays remain limited to the two documented cleanup corrections.
 

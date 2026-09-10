@@ -18,7 +18,7 @@ def test_archive_hashes():
 
 def test_historical_csv_and_json_agree():
     pytest.importorskip("pandas")
-    from vcgc.benchmarks.results import load_results
+    from logique.benchmarks.results import load_results
 
     root = Path(__file__).resolve().parents[1] / "archive/research/data/output"
     csv = load_results(root / "benchmark_results.csv")

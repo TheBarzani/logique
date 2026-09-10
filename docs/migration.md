@@ -1,18 +1,18 @@
-# Migration from the original layout
+# Migration from VCGC to Logique
 
-The toolkit keeps the `vcgc` package name but changes its imports and commands. Historical modules and script entry points are archived, without compatibility aliases.
+The project, Python package, and CLI are now named `logique`. Imports, environment variables, and commands have changed. Historical modules and script entry points are archived, without compatibility aliases.
 
 | Previous entry | Maintained replacement |
 | --- | --- |
 | `VCPNetwork` / `vcgc.network` | `ColoringProblem`, `read_dimacs`, `problem.to_networkx()` |
 | `BooleanFunction` / `vcgc.boolean` | `encode_coloring(problem)` and `encoding.verilog()` |
-| `Synthesizer` / `vcgc.synthesis.Synthesizer` | `vcgc.synthesis.synthesize(source, method=...)` |
+| `Synthesizer` / `vcgc.synthesis.Synthesizer` | `logique.synthesis.synthesize(source, method=...)` |
 | `vcgc.benchmark_synthesis` | `synthesis`, `verification`, `workspace`, `benchmarks` |
-| `vcgc.boolean_visuals` | `vcgc.visualization.boolean` |
+| `vcgc.boolean_visuals` | `logique.visualization.boolean` |
 | Grover glue functions in `vcgc.circuit` | `coloring_preparation()` and `grover_circuit()` |
-| Benchmark generation scripts | `vcgc benchmark run --config FILE` |
-| Plotting scripts | `vcgc plot TABLE --metric METRIC --output FILE` |
-| Notebook runner script | `vcgc notebook run NOTEBOOK` |
+| Benchmark generation scripts | `logique benchmark run --config FILE` |
+| Plotting scripts | `logique plot TABLE --metric METRIC --output FILE` |
+| Notebook runner script | `logique notebook run NOTEBOOK` |
 | `data/benchmarks/` | `datasets/graphs/benchmarks/` |
 | `data/execution/*.col` | `datasets/graphs/execution/` |
 | Original `examples/` and `experiments/` | `archive/research/`; four curated notebooks in `notebooks/` |

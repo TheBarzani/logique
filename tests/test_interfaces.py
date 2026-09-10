@@ -4,16 +4,16 @@ import json
 import subprocess
 import sys
 import pytest
-from vcgc.cli.main import main
-from vcgc.paths import native_executable
-from vcgc.benchmarks.runner import load_config, new_run_directory
+from logique.cli.main import main
+from logique.paths import native_executable
+from logique.benchmarks.runner import load_config, new_run_directory
 
 
 def test_minimal_import_does_not_load_optional_stacks(tmp_path):
-    code = "import sys, vcgc; from vcgc.cli.main import parser; parser(); assert not any(m in sys.modules for m in ['qiskit','tweedledum','matplotlib','pandas','qiskit_ibm_runtime'])"
+    code = "import sys, logique; from logique.cli.main import parser; parser(); assert not any(m in sys.modules for m in ['qiskit','tweedledum','matplotlib','pandas','qiskit_ibm_runtime'])"
     subprocess.run([sys.executable, "-c", code], cwd=tmp_path, check=True)
     subprocess.run(
-        [sys.executable, "-m", "vcgc", "--help"],
+        [sys.executable, "-m", "logique", "--help"],
         cwd=tmp_path,
         check=True,
         capture_output=True,
@@ -23,7 +23,7 @@ def test_minimal_import_does_not_load_optional_stacks(tmp_path):
 def test_native_resolution_is_explicit(tmp_path, monkeypatch):
     path = tmp_path / "bridge"
     path.write_text("test")
-    monkeypatch.setenv("VCGC_NATIVE_EXECUTABLE", str(path))
+    monkeypatch.setenv("LOGIQUE_NATIVE_EXECUTABLE", str(path))
     assert native_executable() == path
     with pytest.raises(FileNotFoundError):
         native_executable(tmp_path / "missing")

@@ -10,8 +10,8 @@ np = pytest.importorskip("numpy")
 pytest.importorskip("qiskit")
 pytest.importorskip("tweedledum")
 
-from vcgc.verification.classical import input_assignments, truth_outputs
-from vcgc.visualization import boolean as bv
+from logique.verification.classical import input_assignments, truth_outputs
+from logique.visualization import boolean as bv
 
 
 def check_connected_wiring(graph):

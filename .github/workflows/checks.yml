@@ -1,0 +1,54 @@
+name: Research toolkit checks
+on: [push, pull_request]
+permissions:
+  contents: read
+jobs:
+  core:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: recursive
+      - uses: astral-sh/setup-uv@v6
+        with:
+          version: '0.8.4'
+      - run: uv sync --locked
+      - run: uv run --no-sync pytest
+      - run: uv run --no-sync black --check src tests tools examples
+      - run: uv run --no-sync ruff check src tests tools examples
+      - run: uv run --no-sync mypy
+      - run: python3 tools/check_archive.py
+      - run: uv build --no-sources
+      - name: Check installed wheel outside the checkout
+        run: |
+          uv venv /tmp/vcgc-wheel --python 3.10
+          uv pip install --python /tmp/vcgc-wheel/bin/python dist/*.whl
+          cd /tmp
+          /tmp/vcgc-wheel/bin/python -c 'import vcgc; from vcgc.benchmarks.datasets import benchmark_manifest; assert benchmark_manifest()["revision"]'
+          /tmp/vcgc-wheel/bin/vcgc --help
+  research:
+    runs-on: ubuntu-latest
+    env:
+      CMAKE_BUILD_PARALLEL_LEVEL: '2'
+      MPLBACKEND: Agg
+      VCGC_NATIVE_EXECUTABLE: ${{ github.workspace }}/native/boolean_synthesis/build/boolean_synthesis
+      VCGC_CACHE: ${{ github.workspace }}/.cache/epfl
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: recursive
+      - uses: astral-sh/setup-uv@v6
+        with:
+          version: '0.8.4'
+      - run: sudo apt-get update && sudo apt-get install -y graphviz cmake ninja-build pkg-config
+      - run: python3 tools/sync.py --all-extras
+      - run: uv run --no-sync vcgc native build --source native/boolean_synthesis
+      - run: uv run --no-sync vcgc datasets fetch ctrl int2float cavlc router --cache .cache/epfl
+      - run: uv run --no-sync pytest
+      - run: uv run --no-sync vcgc benchmark run --config configs/boolean_teaching.json
+      - name: Execute maintained notebooks offline
+        run: |
+          uv run --no-sync vcgc notebook run notebooks/tutorials/graph_coloring.ipynb --offline
+          uv run --no-sync vcgc notebook run notebooks/tutorials/boolean_workspace.ipynb --offline
+          uv run --no-sync vcgc notebook run notebooks/studies/coloring_comparison.ipynb --offline
+          uv run --no-sync vcgc notebook run notebooks/studies/boolean_visual_study.ipynb --offline

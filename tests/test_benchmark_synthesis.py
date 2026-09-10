@@ -1,33 +1,48 @@
 """Regression checks for phase-preserving benchmark synthesis and borrowing."""
 
-import numpy as np
 import pytest
+
+np = pytest.importorskip("numpy")
+pytest.importorskip("qiskit")
+pytest.importorskip("tweedledum")
 from qiskit import QuantumCircuit
 from qiskit.quantum_info import Operator
 
-from vcgc import benchmark_synthesis as bs
+from pathlib import Path
+from vcgc.synthesis import METHODS, synthesize
+from vcgc.paths import native_executable, cache_directory
+from vcgc.circuits.records import records_to_qiskit
+from vcgc.verification import validate, truth_outputs, verify_small_quantum
+from vcgc.verification.classical import input_assignments
+from vcgc.workspace import workspace_analysis, verify_borrowing
+from vcgc.benchmarks.datasets import download_benchmarks
+
+ROOT = Path(__file__).resolve().parents[1]
 
 
 @pytest.fixture(scope="module")
 def native():
-    if not (bs.NATIVE / "build" / "boolean_synthesis").exists():
+    try:
+        native_executable()
+    except FileNotFoundError:
         pytest.skip("Build native/boolean_synthesis before integration tests")
 
 
-@pytest.mark.parametrize("method", bs.METHODS)
+@pytest.mark.parametrize("method", METHODS)
 @pytest.mark.parametrize("name", ["xor_and", "and4", "shared"])
 def test_teaching_functions(native, method, name):
-    result = bs.synthesize(
-        bs.ROOT / "examples" / "boolean_functions" / f"{name}.v", method
+    result = synthesize(
+        ROOT / "datasets" / "boolean" / "teaching" / f"{name}.v", method
     )
-    assert bs.validate(result)["wrapped_restoration"]
-    bs.verify_small_quantum(result)
+    assert validate(result)["wrapped_restoration"]
+    verify_small_quantum(result)
 
 
-@pytest.mark.parametrize("method", bs.METHODS)
+@pytest.mark.parametrize("method", METHODS)
 def test_constants_aliases_and_output_order(native, tmp_path, method):
     path = tmp_path / "edge.v"
-    path.write_text("""module top(a, b, u, v, w, x, y, z);
+    path.write_text(
+        """module top(a, b, u, v, w, x, y, z);
 input a, b;
 output u, v, w, x, y, z;
 wire p;
@@ -39,12 +54,13 @@ assign x = ~p;
 assign y = 1'b0;
 assign z = 1'b1;
 endmodule
-""")
-    result = bs.synthesize(path, method)
-    bs.validate(result)
-    projected = bs.synthesize(path, method, outputs=[5, 2, 0, 2])
-    bs.validate(projected)
-    bs.verify_small_quantum(projected)
+"""
+    )
+    result = synthesize(path, method)
+    validate(result)
+    projected = synthesize(path, method, outputs=[5, 2, 0, 2])
+    validate(projected)
+    verify_small_quantum(projected)
 
 
 def test_rotation_export_preserves_phase():
@@ -57,7 +73,7 @@ def test_rotation_export_preserves_phase():
             "target": 2,
         }
     ]
-    actual = bs.records_to_qiskit(records, 3)
+    actual = records_to_qiskit(records, 3)
     ideal = QuantumCircuit(3)
     ideal.x(0)
     ideal.mcrx(np.pi, [0, 1], 2)
@@ -80,7 +96,7 @@ def test_lut_lowering_bit_order_and_negative_controls(truth):
         "polarity": [i % 2 == 0 for i in range(n)],
         "target": n,
     }
-    matrix = Operator(bs.records_to_qiskit([record], n + 1)).data
+    matrix = Operator(records_to_qiskit([record], n + 1)).data
     for basis in range(1 << (n + 1)):
         index = sum(
             (((basis >> i) & 1) ^ (not record["polarity"][i])) << i for i in range(n)
@@ -90,13 +106,13 @@ def test_lut_lowering_bit_order_and_negative_controls(truth):
 
 
 def test_borrowing_restores_entanglement_and_phase():
-    checks = bs.verify_borrowing()
+    checks = verify_borrowing()
     assert checks["conditional_workspace"]["clean_workspace"] == 1
 
 
 def test_workspace_facts(native):
-    result = bs.synthesize(bs.ROOT / "examples/boolean_functions/and4.v", "aig_bennett")
-    report = bs.workspace_analysis(result)
+    result = synthesize(ROOT / "datasets/boolean/teaching/and4.v", "aig_bennett")
+    report = workspace_analysis(result)
     assert report["candidates"]
     assert all(row["before_gate"] > row["after_gate"] for row in report["candidates"])
     assert report["peak_nonzero_workspace"] == 2
@@ -104,60 +120,60 @@ def test_workspace_facts(native):
 
 def test_offline_missing_and_corrupt_cache(tmp_path):
     with pytest.raises(FileNotFoundError, match="Offline cache"):
-        bs.download_benchmarks(offline=True, cache=tmp_path)
+        download_benchmarks(offline=True, cache=tmp_path)
     (tmp_path / "LICENSE").write_text("not the license")
     with pytest.raises(ValueError, match="Checksum mismatch"):
-        bs.download_benchmarks(offline=True, cache=tmp_path)
+        download_benchmarks(offline=True, cache=tmp_path)
 
 
 @pytest.mark.parametrize("name", ["ctrl", "int2float", "cavlc"])
 def test_epfl_methods_and_formats(native, name):
-    path = bs.DATA / "cache/random_control" / f"{name}.aig"
+    path = cache_directory() / "random_control" / f"{name}.aig"
     if not path.exists():
         pytest.skip("Download the pinned EPFL benchmarks before integration tests")
     reference = None
-    for method, k in [(m, 4) for m in bs.METHODS] + [
+    for method, k in [(m, 4) for m in METHODS] + [
         ("klut_bennett", 3),
         ("klut_bennett", 6),
     ]:
-        result = bs.synthesize(path, method, k=k)
-        assert bs.validate(result)["status"] == "exhaustive"
+        result = synthesize(path, method, k=k)
+        assert validate(result)["status"] == "exhaustive"
         if reference is None:
             reference = result.metadata["source_network"]
-    verilog = bs.synthesize(path.with_suffix(".v"))
-    assignments = bs._assignments(len(reference["inputs"]))
+    verilog = synthesize(path.with_suffix(".v"))
+    assignments = input_assignments(len(reference["inputs"]))
     assert np.array_equal(
-        bs.truth_outputs(reference, assignments),
-        bs.truth_outputs(verilog.metadata["source_network"], assignments),
+        truth_outputs(reference, assignments),
+        truth_outputs(verilog.metadata["source_network"], assignments),
     )
 
 
 def test_invalid_inputs(native, tmp_path):
     with pytest.raises(ValueError):
-        bs.synthesize("unused", "not_a_method")
-    source = bs.ROOT / "examples/boolean_functions/and4.v"
+        synthesize("unused", "not_a_method")
+    source = ROOT / "datasets/boolean/teaching/and4.v"
     with pytest.raises(RuntimeError, match="Output index"):
-        bs.synthesize(source, outputs=[99])
+        synthesize(source, outputs=[99])
     with pytest.raises(RuntimeError, match="k must"):
-        bs.synthesize(source, "klut_bennett", k=17)
+        synthesize(source, "klut_bennett", k=17)
     path = tmp_path / "bad.v"
     path.write_text("invalid verilog")
     with pytest.raises(RuntimeError, match="parse failed"):
-        bs.synthesize(path)
+        synthesize(path)
 
 
 def test_best_fit_nested_cleanup(native):
-    path = bs.DATA / "cache/random_control/ctrl.aig"
+    path = cache_directory() / "random_control/ctrl.aig"
     if not path.exists():
         pytest.skip("Download ctrl for nested best-fit regression")
-    result = bs.synthesize(path, "best_fit", outer_cut=6, inner_cut=2)
-    assert bs.validate(result)["wrapped_restoration"]
+    result = synthesize(path, "best_fit", outer_cut=6, inner_cut=2)
+    assert validate(result)["wrapped_restoration"]
 
 
 def test_best_fit_router_stack_regression(native):
-    path = bs.DATA / "cache/random_control/router.aig"
+    path = cache_directory() / "random_control/router.aig"
     if not path.exists():
         pytest.skip("Download optional router for reference stack regression")
-    result = bs.synthesize(path, "best_fit")
+    result = synthesize(path, "best_fit")
     assert all(g["target"] not in g["controls"] for g in result.metadata["gates"])
-    assert bs.validate(result, sampled=True, samples=1024)["wrapped_restoration"]
+    assert validate(result, sampled=True, samples=1024)["wrapped_restoration"]

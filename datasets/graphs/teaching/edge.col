@@ -1,0 +1,4 @@
+c Two vertices with one edge, without precolors
+p edge 2 1
+e 1 2
+x colors 3

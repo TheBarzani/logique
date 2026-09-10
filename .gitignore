@@ -179,3 +179,7 @@ manuscript/
 # DRAWIO stuff
 *.bkp
 *.dtmp
+# Toolkit runs and preserved local generated artifacts
+results/
+archive/local/
+src/vcgc/_version.py

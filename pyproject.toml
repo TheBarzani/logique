@@ -1,91 +1,64 @@
 [build-system]
-requires = ["setuptools>=45", "wheel", "setuptools_scm"]
+requires = ["setuptools>=77", "wheel"]
 build-backend = "setuptools.build_meta"
 
 [project]
 name = "vcgc"
-dynamic = ["version"]
-description = "Vertex Coloring Problem with Quantum Computing"
+version = "0.2.0"
+description = "Reproducible graph-coloring and Boolean quantum-oracle research"
 readme = "README.md"
-requires-python = ">=3.8"
-license = {text = "MIT"}
-authors = [
-    {name = "Ismael Barzani", email = "i_ridha@live.concordia.ca"},
-]
-maintainers = [
-    {name = "Ismael Barzani", email = "i_ridha@live.concordia.ca"},
-]
-keywords = ["quantum computing", "graph coloring", "vertex coloring", "quantum circuits"]
-classifiers = [
-    "Development Status :: 2 - Pre-Alpha",
-    "Intended Audience :: Developers",
-    "Intended Audience :: Science/Research", 
-    "License :: OSI Approved :: MIT License",
-    "Operating System :: OS Independent",
-    "Programming Language :: Python :: 3",
-    "Programming Language :: Python :: 3.8",
-    "Programming Language :: Python :: 3.9",
-    "Programming Language :: Python :: 3.10",
-    "Programming Language :: Python :: 3.11",
-    "Topic :: Scientific/Engineering :: Mathematics",
-    "Topic :: Scientific/Engineering :: Physics",
-]
-dependencies = [
-    "networkx",
-    "matplotlib",
-]
+requires-python = ">=3.10,<3.11"
+authors = [{name = "Ismael Barzani", email = "i_ridha@live.concordia.ca"}]
+dependencies = ["networkx==3.4.2"]
 
 [project.optional-dependencies]
-dev = [
-    "pytest>=6.0",
-    "pytest-cov",
-    "black",
-    "flake8",
-    "mypy",
-]
-docs = [
-    "sphinx",
-    "sphinx-rtd-theme",
-]
+synthesis = ["qiskit==2.1.1", "numpy==2.2.6", "tweedledum==1.1.1"]
+benchmarks = ["vcgc[synthesis]", "pandas==2.3.1"]
+comparison = ["vcgc[benchmarks]", "saha-belleti==0.1.0"]
+visualization = ["matplotlib==3.10.5", "numpy==2.2.6", "graphviz==0.21", "schemdraw==0.23", "pylatexenc==2.10"]
+notebooks = ["vcgc[benchmarks,visualization]", "nbformat==5.10.4", "nbclient==0.10.2", "ipykernel==6.30.0"]
+simulation = ["vcgc[synthesis]", "qiskit-aer>=0.17,<0.18"]
+ibm = ["vcgc[synthesis]", "qiskit-ibm-runtime>=0.40,<0.42", "python-dotenv>=1,<2"]
 
-[project.urls]
-Homepage = "https://github.com/TheBarzani/vcgc"
-Repository = "https://github.com/TheBarzani/vcgc.git"
-Documentation = "https://github.com/TheBarzani/vcgc#readme"
-"Bug Tracker" = "https://github.com/TheBarzani/vcgc/issues"
+[dependency-groups]
+dev = ["pytest>=8,<9", "pytest-cov>=6,<7", "black>=25,<26", "ruff>=0.12,<0.13", "mypy>=1.17,<1.18"]
 
-[tool.setuptools_scm]
-write_to = "src/vcgc/_version.py"
+[project.scripts]
+vcgc = "vcgc.cli.main:main"
+
+[tool.uv.sources]
+tweedledum = {path = "tweedledum", editable = false}
+saha-belleti = {path = "saha-belletti", editable = false}
 
 [tool.setuptools.packages.find]
 where = ["src"]
 include = ["vcgc*"]
 
+[tool.setuptools.package-data]
+"vcgc.benchmarks" = ["epfl.json"]
+
 [tool.black]
 line-length = 88
-target-version = ['py38']
-include = '\.pyi?$'
-extend-exclude = '''
-/(
-  # directories
-  \.eggs
-  | \.git
-  | \.hg
-  | \.mypy_cache
-  | \.tox
-  | \.venv
-  | build
-  | dist
-)/
-'''
+target-version = ["py310"]
+
+[tool.ruff]
+line-length = 88
+target-version = "py310"
+
+[tool.ruff.lint]
+select = ["E4", "E7", "E9", "F"]
 
 [tool.pytest.ini_options]
-minversion = "6.0"
-addopts = "-ra -q --strict-markers"
-testpaths = [
-    "tests",
-]
-python_files = [
-    "test_*.py",
-    "*_test.py",
-]
+addopts = "-ra --strict-markers"
+testpaths = ["tests"]
+markers = ["integration: requires the compiled native bridge", "workflow: executes maintained research workflows"]
+
+[tool.mypy]
+python_version = "3.10"
+ignore_missing_imports = true
+files = ["src/vcgc/coloring", "src/vcgc/paths.py"]
+
+[tool.ruff.lint.per-file-ignores]
+"tests/test_benchmark_synthesis.py" = ["E402"]
+"tests/test_boolean_visuals.py" = ["E402"]
+"tests/test_coloring_synthesis.py" = ["E402"]

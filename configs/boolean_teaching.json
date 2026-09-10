@@ -1,0 +1,19 @@
+{
+  "inputs": [
+    "../datasets/boolean/teaching/xor_and.v",
+    "../datasets/boolean/teaching/and4.v",
+    "../datasets/boolean/teaching/shared.v"
+  ],
+  "methods": [
+    "xag",
+    "aig_bennett",
+    "xag_bennett",
+    "klut_bennett",
+    "best_fit"
+  ],
+  "parameters": {
+    "k": 4
+  },
+  "seed": 7,
+  "validation": "exhaustive"
+}

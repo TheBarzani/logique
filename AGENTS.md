@@ -1,49 +1,38 @@
-# Repository Guidelines
+# Repository guidelines
 
-## Project Structure & Module Organization
+VCGC compiles graph-coloring predicates and general Boolean functions into quantum circuits. It is a Python 3.10 research toolkit with optional native synthesis, plotting, notebook, simulation, and IBM dependencies.
 
-VCGC compiles vertex-coloring problems into quantum circuits and benchmarks synthesis methods.
+## Navigation
 
-- `vcgc/`: library code for DIMACS parsing, graph management, Boolean constraints, synthesis, and circuit utilities.
-- `tests/`: pytest import and basic object-construction tests.
-- `examples/` and `experiments/`: usage examples, notebooks, and research workflows; `scripts/` contains benchmark and plotting utilities.
-- `data/`: graph inputs, generated circuits, benchmark results, and plots. `docs/`, `images/`, and `manuscript/` hold diagrams and publication assets.
-- `tweedledum/` and `saha-belletti/`: Git submodules. Keep dependency changes separate from changes to VCGC.
+- `src/vcgc/`: maintained library. Follow the package boundaries in `docs/architecture.md`.
+- `notebooks/tutorials/` and `notebooks/studies/`: four maintained notebooks; source outputs stay empty.
+- `configs/`: JSON experiment configurations; paths resolve relative to the config.
+- `datasets/`: source inputs. New generated outputs belong in ignored `results/`.
+- `archive/`: historical research and tooling. Preserve indexed files byte-for-byte; use `archive/index.json` to find old paths.
+- `native/boolean_synthesis/`: C++17 bridge with pinned Caterpillar dependencies.
+- `tweedledum/` and `saha-belletti/`: unchanged dependency submodules. Keep their changes separate.
 
-## Build, Test, and Development Commands
-
-Use Python 3.10, as recommended in `README.md` for tweedledum compatibility. Run commands from the repository root.
+## Setup and checks
 
 ```bash
-git submodule update --init --recursive
-python3.10 -m venv .venv
-source .venv/bin/activate
-python -m pip install -r requirements.txt
-python -m pip install -e '.[dev]'
+python3 tools/sync.py --all-extras
+uv run --no-sync vcgc native build --source native/boolean_synthesis
+export VCGC_NATIVE_EXECUTABLE="$PWD/native/boolean_synthesis/build/boolean_synthesis"
+export VCGC_CACHE="$PWD/.cache/epfl"
+uv run --no-sync pytest
+uv run --no-sync black --check src tests tools examples
+uv run --no-sync ruff check src tests tools examples
+uv run --no-sync mypy
+uv build --no-sources
+python3 tools/check_archive.py
 ```
 
-Install the submodule packages following their own installation instructions when using synthesis or comparison workflows.
+Initialize submodules first. The sync helper chooses bundled C++ headers without changing dependencies. Use `uv sync --locked` for the minimal environment. Avoid plain uv runs that synchronize away optional research extras.
 
-- `python -m pytest`: run the configured test suite.
-- `python -m pytest tests/test_basic.py -v`: run focused basic checks.
-- `python -m pytest --cov=vcgc`: collect library coverage; no minimum threshold is configured.
-- `python -m black --check vcgc tests`: check formatting.
-- `python -m pip wheel . --no-deps -w dist`: build a package wheel.
+## Changes
 
-`build.py` references obsolete root-level scripts; use the direct commands above.
+Use four-space indentation, snake_case functions, PascalCase classes, descriptive public docstrings and annotations, and Black's 88-column style. Limit formatting to maintained relevant code; never format archived files. Library code must not depend on notebooks or archived scripts. Optional features must not become import-time dependencies of the core package.
 
-## Coding Style & Naming Conventions
+Add deterministic regression tests for parsing, encoding, synthesis, phase, or workspace changes. Use small graphs and local execution. Keep correctness changes and any changed research metrics traceable in separate commits; never overwrite historical results.
 
-Use four-space indentation, `snake_case` for functions and variables, and `PascalCase` for classes such as `VCPNetwork`. Follow Black's configured 88-character line length. Add descriptive docstrings and type annotations to public interfaces. The development extras include Flake8 and mypy; no repository-specific configuration is provided for them. Limit formatting changes to relevant files.
-
-## Testing Guidelines
-
-Name tests `test_*.py` or `*_test.py`, with functions named `test_<behavior>`. Add focused regression tests for parsing, coloring constraints, and synthesis changes. Prefer small deterministic graphs and local execution; keep hardware experiments outside routine tests.
-
-## Commit & Pull Request Guidelines
-
-History uses short imperative subjects, such as `Improve figures formatting`; follow that style. PRs should explain the change, report validation commands, and link relevant issues. For benchmark changes, identify graph inputs, parameters, and dependency versions; include comparison plots when results change.
-
-## Configuration
-
-Use `.env.example` as the template for local IBM Quantum settings. Keep tokens out of commits and notebook outputs. Review backend and shot settings before running hardware experiments.
+Use short imperative commit subjects. PR descriptions explain behavior, validation commands, and relevant benchmark inputs, configuration, and dependency versions. Tokens belong only in local environment configuration based on `.env.example`; never include tokens in notebook output or metadata. Hardware submission must be an explicit requested operation with backend and shots specified.

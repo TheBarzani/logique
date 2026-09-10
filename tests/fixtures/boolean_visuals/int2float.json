@@ -1,0 +1,711 @@
+{
+  "benchmark": "int2float",
+  "revision": "82d8cc6910419298e713a46644ed59fd3df53038",
+  "outputs": [
+    3
+  ],
+  "networks": {
+    "xag": {
+      "inputs": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10,
+        11
+      ],
+      "nodes": [
+        {
+          "fanins": [],
+          "id": 0,
+          "kind": "constant",
+          "value": false
+        },
+        {
+          "fanins": [],
+          "id": 1,
+          "kind": "input"
+        },
+        {
+          "fanins": [],
+          "id": 2,
+          "kind": "input"
+        },
+        {
+          "fanins": [],
+          "id": 3,
+          "kind": "input"
+        },
+        {
+          "fanins": [],
+          "id": 4,
+          "kind": "input"
+        },
+        {
+          "fanins": [],
+          "id": 5,
+          "kind": "input"
+        },
+        {
+          "fanins": [],
+          "id": 6,
+          "kind": "input"
+        },
+        {
+          "fanins": [],
+          "id": 7,
+          "kind": "input"
+        },
+        {
+          "fanins": [],
+          "id": 8,
+          "kind": "input"
+        },
+        {
+          "fanins": [],
+          "id": 9,
+          "kind": "input"
+        },
+        {
+          "fanins": [],
+          "id": 10,
+          "kind": "input"
+        },
+        {
+          "fanins": [],
+          "id": 11,
+          "kind": "input"
+        },
+        {
+          "fanins": [
+            {
+              "inverted": false,
+              "node": 3
+            },
+            {
+              "inverted": false,
+              "node": 9
+            }
+          ],
+          "id": 12,
+          "kind": "and",
+          "truth": "1000"
+        },
+        {
+          "fanins": [
+            {
+              "inverted": false,
+              "node": 9
+            },
+            {
+              "inverted": false,
+              "node": 8
+            }
+          ],
+          "id": 13,
+          "kind": "xor",
+          "truth": "0110"
+        },
+        {
+          "fanins": [
+            {
+              "inverted": true,
+              "node": 12
+            },
+            {
+              "inverted": true,
+              "node": 13
+            }
+          ],
+          "id": 14,
+          "kind": "and",
+          "truth": "1000"
+        },
+        {
+          "fanins": [
+            {
+              "inverted": false,
+              "node": 9
+            },
+            {
+              "inverted": false,
+              "node": 6
+            }
+          ],
+          "id": 15,
+          "kind": "xor",
+          "truth": "0110"
+        },
+        {
+          "fanins": [
+            {
+              "inverted": false,
+              "node": 14
+            },
+            {
+              "inverted": true,
+              "node": 15
+            }
+          ],
+          "id": 16,
+          "kind": "and",
+          "truth": "1000"
+        },
+        {
+          "fanins": [
+            {
+              "inverted": false,
+              "node": 9
+            },
+            {
+              "inverted": false,
+              "node": 5
+            }
+          ],
+          "id": 17,
+          "kind": "xor",
+          "truth": "0110"
+        },
+        {
+          "fanins": [
+            {
+              "inverted": false,
+              "node": 9
+            },
+            {
+              "inverted": false,
+              "node": 7
+            }
+          ],
+          "id": 18,
+          "kind": "xor",
+          "truth": "0110"
+        },
+        {
+          "fanins": [
+            {
+              "inverted": true,
+              "node": 17
+            },
+            {
+              "inverted": true,
+              "node": 18
+            }
+          ],
+          "id": 19,
+          "kind": "and",
+          "truth": "1000"
+        },
+        {
+          "fanins": [
+            {
+              "inverted": false,
+              "node": 16
+            },
+            {
+              "inverted": false,
+              "node": 19
+            }
+          ],
+          "id": 20,
+          "kind": "and",
+          "truth": "1000"
+        },
+        {
+          "fanins": [
+            {
+              "inverted": true,
+              "node": 10
+            },
+            {
+              "inverted": false,
+              "node": 20
+            }
+          ],
+          "id": 21,
+          "kind": "and",
+          "truth": "1000"
+        },
+        {
+          "fanins": [
+            {
+              "inverted": true,
+              "node": 11
+            },
+            {
+              "inverted": false,
+              "node": 21
+            }
+          ],
+          "id": 22,
+          "kind": "and",
+          "truth": "1000"
+        },
+        {
+          "fanins": [
+            {
+              "inverted": true,
+              "node": 4
+            },
+            {
+              "inverted": false,
+              "node": 22
+            }
+          ],
+          "id": 23,
+          "kind": "and",
+          "truth": "1000"
+        }
+      ],
+      "outputs": [
+        {
+          "inverted": true,
+          "node": 23
+        }
+      ]
+    },
+    "aig": {
+      "inputs": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10,
+        11
+      ],
+      "nodes": [
+        {
+          "fanins": [],
+          "id": 0,
+          "kind": "constant",
+          "value": false
+        },
+        {
+          "fanins": [],
+          "id": 1,
+          "kind": "input"
+        },
+        {
+          "fanins": [],
+          "id": 2,
+          "kind": "input"
+        },
+        {
+          "fanins": [],
+          "id": 3,
+          "kind": "input"
+        },
+        {
+          "fanins": [],
+          "id": 4,
+          "kind": "input"
+        },
+        {
+          "fanins": [],
+          "id": 5,
+          "kind": "input"
+        },
+        {
+          "fanins": [],
+          "id": 6,
+          "kind": "input"
+        },
+        {
+          "fanins": [],
+          "id": 7,
+          "kind": "input"
+        },
+        {
+          "fanins": [],
+          "id": 8,
+          "kind": "input"
+        },
+        {
+          "fanins": [],
+          "id": 9,
+          "kind": "input"
+        },
+        {
+          "fanins": [],
+          "id": 10,
+          "kind": "input"
+        },
+        {
+          "fanins": [],
+          "id": 11,
+          "kind": "input"
+        },
+        {
+          "fanins": [
+            {
+              "inverted": false,
+              "node": 7
+            },
+            {
+              "inverted": false,
+              "node": 8
+            }
+          ],
+          "id": 12,
+          "kind": "and",
+          "truth": "1000"
+        },
+        {
+          "fanins": [
+            {
+              "inverted": true,
+              "node": 3
+            },
+            {
+              "inverted": false,
+              "node": 12
+            }
+          ],
+          "id": 13,
+          "kind": "and",
+          "truth": "1000"
+        },
+        {
+          "fanins": [
+            {
+              "inverted": false,
+              "node": 5
+            },
+            {
+              "inverted": false,
+              "node": 9
+            }
+          ],
+          "id": 14,
+          "kind": "and",
+          "truth": "1000"
+        },
+        {
+          "fanins": [
+            {
+              "inverted": false,
+              "node": 6
+            },
+            {
+              "inverted": false,
+              "node": 14
+            }
+          ],
+          "id": 15,
+          "kind": "and",
+          "truth": "1000"
+        },
+        {
+          "fanins": [
+            {
+              "inverted": false,
+              "node": 13
+            },
+            {
+              "inverted": false,
+              "node": 15
+            }
+          ],
+          "id": 16,
+          "kind": "and",
+          "truth": "1000"
+        },
+        {
+          "fanins": [
+            {
+              "inverted": true,
+              "node": 7
+            },
+            {
+              "inverted": true,
+              "node": 8
+            }
+          ],
+          "id": 17,
+          "kind": "and",
+          "truth": "1000"
+        },
+        {
+          "fanins": [
+            {
+              "inverted": true,
+              "node": 5
+            },
+            {
+              "inverted": true,
+              "node": 9
+            }
+          ],
+          "id": 18,
+          "kind": "and",
+          "truth": "1000"
+        },
+        {
+          "fanins": [
+            {
+              "inverted": true,
+              "node": 6
+            },
+            {
+              "inverted": false,
+              "node": 18
+            }
+          ],
+          "id": 19,
+          "kind": "and",
+          "truth": "1000"
+        },
+        {
+          "fanins": [
+            {
+              "inverted": false,
+              "node": 17
+            },
+            {
+              "inverted": false,
+              "node": 19
+            }
+          ],
+          "id": 20,
+          "kind": "and",
+          "truth": "1000"
+        },
+        {
+          "fanins": [
+            {
+              "inverted": true,
+              "node": 16
+            },
+            {
+              "inverted": true,
+              "node": 20
+            }
+          ],
+          "id": 21,
+          "kind": "and",
+          "truth": "1000"
+        },
+        {
+          "fanins": [
+            {
+              "inverted": true,
+              "node": 10
+            },
+            {
+              "inverted": true,
+              "node": 21
+            }
+          ],
+          "id": 22,
+          "kind": "and",
+          "truth": "1000"
+        },
+        {
+          "fanins": [
+            {
+              "inverted": true,
+              "node": 11
+            },
+            {
+              "inverted": false,
+              "node": 22
+            }
+          ],
+          "id": 23,
+          "kind": "and",
+          "truth": "1000"
+        },
+        {
+          "fanins": [
+            {
+              "inverted": true,
+              "node": 4
+            },
+            {
+              "inverted": false,
+              "node": 23
+            }
+          ],
+          "id": 24,
+          "kind": "and",
+          "truth": "1000"
+        }
+      ],
+      "outputs": [
+        {
+          "inverted": true,
+          "node": 24
+        }
+      ]
+    },
+    "klut": {
+      "inputs": [
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10,
+        11,
+        12
+      ],
+      "nodes": [
+        {
+          "fanins": [],
+          "id": 0,
+          "kind": "constant",
+          "value": false
+        },
+        {
+          "fanins": [],
+          "id": 1,
+          "kind": "constant",
+          "value": true
+        },
+        {
+          "fanins": [],
+          "id": 2,
+          "kind": "input"
+        },
+        {
+          "fanins": [],
+          "id": 3,
+          "kind": "input"
+        },
+        {
+          "fanins": [],
+          "id": 4,
+          "kind": "input"
+        },
+        {
+          "fanins": [],
+          "id": 5,
+          "kind": "input"
+        },
+        {
+          "fanins": [],
+          "id": 6,
+          "kind": "input"
+        },
+        {
+          "fanins": [],
+          "id": 7,
+          "kind": "input"
+        },
+        {
+          "fanins": [],
+          "id": 8,
+          "kind": "input"
+        },
+        {
+          "fanins": [],
+          "id": 9,
+          "kind": "input"
+        },
+        {
+          "fanins": [],
+          "id": 10,
+          "kind": "input"
+        },
+        {
+          "fanins": [],
+          "id": 11,
+          "kind": "input"
+        },
+        {
+          "fanins": [],
+          "id": 12,
+          "kind": "input"
+        },
+        {
+          "fanins": [
+            {
+              "inverted": false,
+              "node": 4
+            },
+            {
+              "inverted": false,
+              "node": 7
+            },
+            {
+              "inverted": false,
+              "node": 9
+            },
+            {
+              "inverted": false,
+              "node": 10
+            }
+          ],
+          "id": 13,
+          "kind": "lut",
+          "truth": "0100000000000011"
+        },
+        {
+          "fanins": [
+            {
+              "inverted": false,
+              "node": 6
+            },
+            {
+              "inverted": false,
+              "node": 8
+            },
+            {
+              "inverted": false,
+              "node": 10
+            },
+            {
+              "inverted": false,
+              "node": 13
+            }
+          ],
+          "id": 14,
+          "kind": "lut",
+          "truth": "1000000100000000"
+        },
+        {
+          "fanins": [
+            {
+              "inverted": false,
+              "node": 5
+            },
+            {
+              "inverted": false,
+              "node": 11
+            },
+            {
+              "inverted": false,
+              "node": 12
+            },
+            {
+              "inverted": false,
+              "node": 14
+            }
+          ],
+          "id": 15,
+          "kind": "lut",
+          "truth": "1111111011111111"
+        }
+      ],
+      "outputs": [
+        {
+          "inverted": false,
+          "node": 15
+        }
+      ]
+    }
+  }
+}

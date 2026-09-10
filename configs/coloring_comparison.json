@@ -1,0 +1,16 @@
+{
+  "kind": "comparison",
+  "inputs": [
+    "../datasets/graphs/teaching/edge.col"
+  ],
+  "methods": [
+    "xag",
+    "sb_original",
+    "sb_simple",
+    "sb_minimal",
+    "sb_balanced"
+  ],
+  "iterations": 1,
+  "seed": 7,
+  "validation": "exhaustive"
+}

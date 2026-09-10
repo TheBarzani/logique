@@ -2,6 +2,8 @@
 
 Logique is a research toolkit for compiling graph-coloring predicates and Boolean functions into quantum oracles. It includes five synthesis methods, phase and workspace verification, conditional-workspace studies, and reproducible comparisons with Saha-Belletti.
 
+The original VCGC version is preserved on the [`legacy/vcgc` branch](https://github.com/TheBarzani/logique/tree/legacy/vcgc). See the [migration guide](docs/migration.md) for the changes to imports, commands, and scientific behavior.
+
 ## Start here
 
 | Task | Entry point |

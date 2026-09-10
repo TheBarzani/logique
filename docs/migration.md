@@ -19,7 +19,7 @@ The project, Python package, and CLI are now named `logique`. Imports, environme
 | `data/output/` and historical result directories | `archive/research/data/` |
 | New generated results | `results/` |
 
-The complete [path and hash inventory](../archive/index.json) covers historical artifacts. Submodule paths and revisions remain unchanged; manuscript files remain local and ignored.
+The original `main` branch is preserved as [`legacy/vcgc`](https://github.com/TheBarzani/logique/tree/legacy/vcgc). The complete [path and hash inventory](../archive/index.json) covers historical artifacts. Submodule paths remain unchanged; the Saha-Belletti revision advances only to ignore macOS metadata files. Manuscript files remain local and ignored.
 
 ## Scientific behavior changes
 

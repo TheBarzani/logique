@@ -55,9 +55,10 @@ Documentation = "https://github.com/TheBarzani/vcgc#readme"
 "Bug Tracker" = "https://github.com/TheBarzani/vcgc/issues"
 
 [tool.setuptools_scm]
-write_to = "vcgc/_version.py"
+write_to = "src/vcgc/_version.py"
 
 [tool.setuptools.packages.find]
+where = ["src"]
 include = ["vcgc*"]
 
 [tool.black]

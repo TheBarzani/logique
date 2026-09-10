@@ -19,7 +19,7 @@ import numpy as np
 from qiskit import QuantumCircuit
 from qiskit.circuit.library import RXGate, XGate
 
-ROOT = Path(__file__).resolve().parents[1]
+ROOT = Path(__file__).resolve().parents[2]
 DATA = ROOT / "data" / "boolean_benchmarks"
 NATIVE = ROOT / "native" / "boolean_synthesis"
 METHODS = ("xag", "aig_bennett", "xag_bennett", "klut_bennett", "best_fit")

@@ -174,7 +174,12 @@ pyrightconfig.json
 .venv/
 .vscode/
 *.DS_Store
+manuscript/
 
 # DRAWIO stuff
 *.bkp
 *.dtmp
+# Toolkit runs and preserved local generated artifacts
+results/
+archive/local/
+src/logique/_version.py

@@ -1,9 +1,19 @@
-include README.md
-include LICENSE
-include requirements.txt
-include pyproject.toml
-recursive-include vcgc *.py
-recursive-include docs *
-recursive-include examples *
-recursive-exclude * __pycache__
-recursive-exclude * *.py[co]
+include README.md pyproject.toml
+recursive-include src/logique *.py *.json
+prune archive
+prune datasets
+prune docs
+prune examples
+prune experiments
+prune native
+prune notebooks
+prune results
+prune scripts
+prune tests
+prune tools
+prune tweedledum
+prune saha-belletti
+prune logique
+prune data
+prune images
+global-exclude *.pyc *.so

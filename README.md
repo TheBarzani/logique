@@ -1,132 +1,67 @@
-# VCGC: High-Level Synthesis and Benchmarking for Quantum Vertex Coloring
+# Logique
 
-[![MIT License](https://img.shields.io/badge/License-MIT-green.svg)](https://choosealicense.com/licenses/mit/)
-[![Python 3.10+](https://img.shields.io/badge/python-3.10+-blue.svg)](https://www.python.org/downloads/)
-[![Qiskit](https://img.shields.io/badge/Qiskit-1.3.2-6929C4)](https://qiskit.org/)
+Logique is a research toolkit for compiling graph-coloring predicates and Boolean functions into quantum oracles. It includes five synthesis methods, phase and workspace verification, conditional-workspace studies, and reproducible comparisons with Saha-Belletti.
 
-## Overview
+The original VCGC version is preserved on the [`legacy/vcgc` branch](https://github.com/TheBarzani/logique/tree/legacy/vcgc). See the [migration guide](docs/migration.md) for the changes to imports, commands, and scientific behavior.
 
-**VCGC** is a research-driven Python library and experimental suite for compiling vertex coloring problems into quantum circuits, leveraging Grover's algorithm. It provides:
+## Start here
 
-- An automated high-level synthesis (HLS) flow from graph instances to quantum circuits
-- Extensive benchmarking and comparison to state-of-the-art (Saha-Belletti) methods
-- Tools for reproducible experiments and quantum hardware execution
+| Task | Entry point |
+| --- | --- |
+| Understand graph coloring | [Graph-coloring tutorial](notebooks/tutorials/graph_coloring.ipynb) |
+| Explore Boolean synthesis and workspace | [Boolean workspace tutorial](notebooks/tutorials/boolean_workspace.ipynb) |
+| Compare synthesis representations | [Boolean visual study](notebooks/studies/boolean_visual_study.ipynb) |
+| Compare coloring circuits | [Coloring comparison](notebooks/studies/coloring_comparison.ipynb) |
+| Repeat an experiment | [Workflow guide](docs/workflows.md) and [configurations](configs/README.md) |
+| Change the library | [Architecture](docs/architecture.md) and [development guide](docs/development.md) |
+| Find an old file or paper result | [Migration guide](docs/migration.md) and [research archive](archive/README.md) |
 
+## Install
 
-## Key Contributions
-
-- **Automated Quantum Circuit Generation**: End-to-end pipeline from DIMACS graph files to Grover oracles and full quantum circuits.
-- **Benchmark Suite**: Includes real-world and synthetic graphs, with results on circuit size, depth, and quantum resource counts.
-- **State-of-the-Art Comparison**: Direct, scriptable comparison to the Saha-Belletti approach.
-- **Experimental Results**: Extensive data on circuit synthesis, hardware runs, and quantum/classical performance.
-- **Reproducibility**: All experiments, data, and scripts are included for full reproducibility.
-
-
-## Installation
- > **Note**: Because the `tweedledum` library has not been updated for python versions >3.10, I recommend to use python 3.10 for this project. 
-
-### Using uv (Recommended)
+Use Python 3.10, uv, CMake, a C++17 compiler, and pkg-config. Install system Graphviz for the visual notebooks. Both submodules must be initialized.
 
 ```bash
-git clone --recursive https://github.com/TheBarzani/vcgc.git
-cd vcgc
-uv venv --python 3.10
-uv sync
-uv pip install -e .
+git submodule update --init --recursive
+uv python install 3.10
+python3 tools/sync.py --all-extras
+uv run --no-sync logique native build --source native/boolean_synthesis
+export LOGIQUE_NATIVE_EXECUTABLE="$PWD/native/boolean_synthesis/build/boolean_synthesis"
+export LOGIQUE_CACHE="$PWD/.cache/epfl"
 ```
 
-### Using pip
+The sync helper runs `uv sync --locked` using tweedledum's bundled C++ headers. It avoids accidentally selecting an incompatible system fmt installation. It does not modify dependency source files. See [setup details](docs/setup.md) for smaller installations and native-build troubleshooting.
+
+## Compile a graph
 
 ```bash
-git clone --recursive https://github.com/TheBarzani/vcgc.git
-cd vcgc
-python -m venv .venv
-source .venv/bin/activate
-pip install -r requirements.txt 
-pip install -e .
+uv run --no-sync logique synthesize datasets/graphs/teaching/edge.col --view grover
 ```
-
-
-## Quick Start
-
-### 1. Generate a Quantum Circuit from a Graph
 
 ```python
-import vcgc
-network = vcgc.VCPNetwork()
-network.read_dimacs("data/benchmarks/myciel3.col")
-bf = vcgc.BooleanFunction()
-expr, vars = bf.generate_coloring_expression(network)
-synth = vcgc.Synthesizer()
-qc = synth.synthesize_with_xag(expr, vars)
-qc.draw()
+from logique import read_dimacs, encode_coloring
+from logique.synthesis import synthesize
+from logique.verification import validate
+
+encoding = encode_coloring(read_dimacs("datasets/graphs/teaching/edge.col"))
+result = synthesize(encoding, method="xag")
+print(validate(result))
+phase_oracle = result.phase_oracle()
 ```
 
-### 2. Run Benchmarks
+## Run a study
 
 ```bash
-python examples/run_benchmarks.py --output results.csv
+uv run --no-sync logique benchmark run --config configs/boolean_teaching.json
+uv run --no-sync logique datasets fetch --cache .cache/epfl
+uv run --no-sync logique notebook run notebooks/tutorials/boolean_workspace.ipynb --offline
 ```
 
-### 3. Compare to Saha-Belletti
+New outputs go to unique directories under `results/`. Source notebooks remain unexecuted in Git. Historical results are retained separately and are not overwritten by new experiments.
 
-Check out `examples/comparing_vcgc_to_saha_belletti.ipynb`.
+The library lives in `src/logique/`; inputs in `datasets/`; active notebooks in `notebooks/`; and documentation in `docs/`. Optional quantum, visualization, and hardware dependencies are loaded only by the features that need them.
 
+Logique reports logical gate counts unless an explicit decomposition is requested. Conditional-state candidates are analysis results, not automatically certified borrowing transformations. The small borrowing demonstration has separate phase and restoration checks.
 
-## Library Components
+## Research and licensing
 
-- **`VCPNetwork`**: Graph parsing and management (DIMACS support)
-- **`BooleanFunction`**: Boolean constraint generation for coloring
-- **`Synthesizer`**: Logic network synthesis to quantum circuits (XAG, etc.)
-- **Benchmark Scripts**: Automated evaluation and comparison
-- **Visualization**: Circuit and result plotting utilities
-
-
-## Experimental Results
-
-### Performance Improvements over Saha-Belletti
-
-Our approach demonstrates significant improvements across all key quantum circuit metrics:
-
-![VCGC Improvements](data/output/improvement_analysis.png)
-
-- **Circuit Depth**: 62.1% average reduction (up to 80.3% in SB-Minimal variant)
-- **Gate Count**: 47.2% average reduction (up to 82.1% in SB-Minimal variant)  
-- **Qubit Usage**: More efficient in most cases, with strategic trade-offs
-
-### Detailed Circuit Comparisons
-
-#### Qubit Count Comparison
-![Width Comparison](data/output/width_comparison_log.png)
-
-#### Gate Count Comparison
-![Gate Comparison](data/output/gates_comparison_log.png)
-
-#### Circuit Depth Comparison
-![Depth Comparison](data/output/depth_comparison_log.png)
-
-### Data and Resources
-
-The repository includes:
-
-- **Raw and processed benchmark data** (see `data/` and `output/`)
-- **Comparison plots**: VCGC vs. Saha-Belletti (see `examples/` and `output/`)
-- **Quantum resource counts**: Qubits, gates, depth, etc.
-- **Hardware execution scripts**: For IBM Quantum and simulators
-
-
-## Reproducibility
-
-All experiments can be reproduced using the provided scripts and data. To reproduce the main results:
-
-1. Install dependencies and the package (see above)
-2. Run `examples/run_benchmarks.py` and `examples/comparing_vcgc_to_saha_belletti.py`
-3. See `output/` for results and plots
-
-## Citing
-
-If you use this code or data, please cite the paper draft or this repository.
-
-## License
-
-TODO
+The existing paper material is indexed in the [research roadmap](docs/research/README.md). Cite the repository and the relevant source publications when using these experiments. Earlier packaging claimed an MIT license, but no root license text was present; this refactor does not invent a license grant. Dependency licenses and pinned EPFL source-license verification are retained.

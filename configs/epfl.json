@@ -1,0 +1,16 @@
+{
+  "inputs": [
+    "../.cache/epfl/random_control/ctrl.aig",
+    "../.cache/epfl/random_control/int2float.aig",
+    "../.cache/epfl/random_control/cavlc.aig"
+  ],
+  "methods": [
+    "xag",
+    "aig_bennett",
+    "xag_bennett",
+    "klut_bennett",
+    "best_fit"
+  ],
+  "seed": 7,
+  "validation": "exhaustive"
+}

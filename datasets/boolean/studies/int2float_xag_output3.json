@@ -1,0 +1,671 @@
+{
+  "description": "Exact saved input for the int2float output-3 conditional-workspace notebook; original rotations retained.",
+  "provenance": {
+    "svg": "results/20260915T005414Z-91b33972/int2float_xag_circuit.svg",
+    "svg_sha256": "a6caddbeca2216f39e027eadece101174e10565b5a50b74f9ffe0c7b78ca38bd",
+    "qpy_sha256": "9e103bd13fbe804eb7ab998839567510f93d682cb6e4fcb8eb47c21fbb9a870c",
+    "source_sha256": "ad280bdb8331591998b8184ff70ad00d31184649c245796965fc6777e3016bab",
+    "benchmark_revision": "82d8cc6910419298e713a46644ed59fd3df53038"
+  },
+  "num_qubits": 19,
+  "input_qubits": [
+    0,
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    8,
+    9,
+    10
+  ],
+  "output_qubits": [
+    11
+  ],
+  "selected_outputs": [
+    3
+  ],
+  "gates": [
+    {
+      "kind": "rx",
+      "controls": [
+        2,
+        8
+      ],
+      "polarity": [
+        true,
+        true
+      ],
+      "target": 12,
+      "angle": 3.141592653589793
+    },
+    {
+      "kind": "x",
+      "controls": [
+        7
+      ],
+      "polarity": [
+        true
+      ],
+      "target": 8
+    },
+    {
+      "kind": "rx",
+      "controls": [
+        8,
+        12
+      ],
+      "polarity": [
+        false,
+        false
+      ],
+      "target": 13,
+      "angle": 3.141592653589793
+    },
+    {
+      "kind": "x",
+      "controls": [
+        7
+      ],
+      "polarity": [
+        true
+      ],
+      "target": 8
+    },
+    {
+      "kind": "x",
+      "controls": [
+        5
+      ],
+      "polarity": [
+        true
+      ],
+      "target": 8
+    },
+    {
+      "kind": "rx",
+      "controls": [
+        8,
+        13
+      ],
+      "polarity": [
+        false,
+        true
+      ],
+      "target": 14,
+      "angle": 3.141592653589793
+    },
+    {
+      "kind": "x",
+      "controls": [
+        5
+      ],
+      "polarity": [
+        true
+      ],
+      "target": 8
+    },
+    {
+      "kind": "x",
+      "controls": [
+        8
+      ],
+      "polarity": [
+        true
+      ],
+      "target": 4
+    },
+    {
+      "kind": "x",
+      "controls": [
+        6
+      ],
+      "polarity": [
+        true
+      ],
+      "target": 8
+    },
+    {
+      "kind": "rx",
+      "controls": [
+        4,
+        8
+      ],
+      "polarity": [
+        false,
+        false
+      ],
+      "target": 15,
+      "angle": 3.141592653589793
+    },
+    {
+      "kind": "x",
+      "controls": [
+        6
+      ],
+      "polarity": [
+        true
+      ],
+      "target": 8
+    },
+    {
+      "kind": "x",
+      "controls": [
+        8
+      ],
+      "polarity": [
+        true
+      ],
+      "target": 4
+    },
+    {
+      "kind": "rx",
+      "controls": [
+        14,
+        15
+      ],
+      "polarity": [
+        true,
+        true
+      ],
+      "target": 16,
+      "angle": 3.141592653589793
+    },
+    {
+      "kind": "rx",
+      "controls": [
+        9,
+        16
+      ],
+      "polarity": [
+        false,
+        true
+      ],
+      "target": 17,
+      "angle": 3.141592653589793
+    },
+    {
+      "kind": "rx",
+      "controls": [
+        10,
+        17
+      ],
+      "polarity": [
+        false,
+        true
+      ],
+      "target": 18,
+      "angle": 3.141592653589793
+    },
+    {
+      "kind": "x",
+      "controls": [
+        3,
+        18
+      ],
+      "polarity": [
+        false,
+        true
+      ],
+      "target": 11
+    },
+    {
+      "kind": "rx",
+      "controls": [
+        10,
+        17
+      ],
+      "polarity": [
+        false,
+        true
+      ],
+      "target": 18,
+      "angle": -3.141592653589793
+    },
+    {
+      "kind": "rx",
+      "controls": [
+        9,
+        16
+      ],
+      "polarity": [
+        false,
+        true
+      ],
+      "target": 17,
+      "angle": -3.141592653589793
+    },
+    {
+      "kind": "rx",
+      "controls": [
+        14,
+        15
+      ],
+      "polarity": [
+        true,
+        true
+      ],
+      "target": 16,
+      "angle": -3.141592653589793
+    },
+    {
+      "kind": "x",
+      "controls": [
+        8
+      ],
+      "polarity": [
+        true
+      ],
+      "target": 4
+    },
+    {
+      "kind": "x",
+      "controls": [
+        6
+      ],
+      "polarity": [
+        true
+      ],
+      "target": 8
+    },
+    {
+      "kind": "rx",
+      "controls": [
+        4,
+        8
+      ],
+      "polarity": [
+        false,
+        false
+      ],
+      "target": 15,
+      "angle": -3.141592653589793
+    },
+    {
+      "kind": "x",
+      "controls": [
+        6
+      ],
+      "polarity": [
+        true
+      ],
+      "target": 8
+    },
+    {
+      "kind": "x",
+      "controls": [
+        8
+      ],
+      "polarity": [
+        true
+      ],
+      "target": 4
+    },
+    {
+      "kind": "x",
+      "controls": [
+        5
+      ],
+      "polarity": [
+        true
+      ],
+      "target": 8
+    },
+    {
+      "kind": "rx",
+      "controls": [
+        8,
+        13
+      ],
+      "polarity": [
+        false,
+        true
+      ],
+      "target": 14,
+      "angle": -3.141592653589793
+    },
+    {
+      "kind": "x",
+      "controls": [
+        5
+      ],
+      "polarity": [
+        true
+      ],
+      "target": 8
+    },
+    {
+      "kind": "x",
+      "controls": [
+        7
+      ],
+      "polarity": [
+        true
+      ],
+      "target": 8
+    },
+    {
+      "kind": "rx",
+      "controls": [
+        8,
+        12
+      ],
+      "polarity": [
+        false,
+        false
+      ],
+      "target": 13,
+      "angle": -3.141592653589793
+    },
+    {
+      "kind": "x",
+      "controls": [
+        7
+      ],
+      "polarity": [
+        true
+      ],
+      "target": 8
+    },
+    {
+      "kind": "rx",
+      "controls": [
+        2,
+        8
+      ],
+      "polarity": [
+        true,
+        true
+      ],
+      "target": 12,
+      "angle": -3.141592653589793
+    },
+    {
+      "kind": "x",
+      "controls": [],
+      "polarity": [],
+      "target": 11
+    }
+  ],
+  "source_network": {
+    "inputs": [
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7,
+      8,
+      9,
+      10,
+      11
+    ],
+    "nodes": [
+      {
+        "fanins": [],
+        "id": 0,
+        "kind": "constant",
+        "value": false
+      },
+      {
+        "fanins": [],
+        "id": 1,
+        "kind": "input"
+      },
+      {
+        "fanins": [],
+        "id": 2,
+        "kind": "input"
+      },
+      {
+        "fanins": [],
+        "id": 3,
+        "kind": "input"
+      },
+      {
+        "fanins": [],
+        "id": 4,
+        "kind": "input"
+      },
+      {
+        "fanins": [],
+        "id": 5,
+        "kind": "input"
+      },
+      {
+        "fanins": [],
+        "id": 6,
+        "kind": "input"
+      },
+      {
+        "fanins": [],
+        "id": 7,
+        "kind": "input"
+      },
+      {
+        "fanins": [],
+        "id": 8,
+        "kind": "input"
+      },
+      {
+        "fanins": [],
+        "id": 9,
+        "kind": "input"
+      },
+      {
+        "fanins": [],
+        "id": 10,
+        "kind": "input"
+      },
+      {
+        "fanins": [],
+        "id": 11,
+        "kind": "input"
+      },
+      {
+        "fanins": [
+          {
+            "inverted": false,
+            "node": 7
+          },
+          {
+            "inverted": false,
+            "node": 8
+          }
+        ],
+        "id": 12,
+        "kind": "and",
+        "truth": "1000"
+      },
+      {
+        "fanins": [
+          {
+            "inverted": true,
+            "node": 3
+          },
+          {
+            "inverted": false,
+            "node": 12
+          }
+        ],
+        "id": 13,
+        "kind": "and",
+        "truth": "1000"
+      },
+      {
+        "fanins": [
+          {
+            "inverted": false,
+            "node": 5
+          },
+          {
+            "inverted": false,
+            "node": 9
+          }
+        ],
+        "id": 14,
+        "kind": "and",
+        "truth": "1000"
+      },
+      {
+        "fanins": [
+          {
+            "inverted": false,
+            "node": 6
+          },
+          {
+            "inverted": false,
+            "node": 14
+          }
+        ],
+        "id": 15,
+        "kind": "and",
+        "truth": "1000"
+      },
+      {
+        "fanins": [
+          {
+            "inverted": false,
+            "node": 13
+          },
+          {
+            "inverted": false,
+            "node": 15
+          }
+        ],
+        "id": 16,
+        "kind": "and",
+        "truth": "1000"
+      },
+      {
+        "fanins": [
+          {
+            "inverted": true,
+            "node": 7
+          },
+          {
+            "inverted": true,
+            "node": 8
+          }
+        ],
+        "id": 17,
+        "kind": "and",
+        "truth": "1000"
+      },
+      {
+        "fanins": [
+          {
+            "inverted": true,
+            "node": 5
+          },
+          {
+            "inverted": true,
+            "node": 9
+          }
+        ],
+        "id": 18,
+        "kind": "and",
+        "truth": "1000"
+      },
+      {
+        "fanins": [
+          {
+            "inverted": true,
+            "node": 6
+          },
+          {
+            "inverted": false,
+            "node": 18
+          }
+        ],
+        "id": 19,
+        "kind": "and",
+        "truth": "1000"
+      },
+      {
+        "fanins": [
+          {
+            "inverted": false,
+            "node": 17
+          },
+          {
+            "inverted": false,
+            "node": 19
+          }
+        ],
+        "id": 20,
+        "kind": "and",
+        "truth": "1000"
+      },
+      {
+        "fanins": [
+          {
+            "inverted": true,
+            "node": 16
+          },
+          {
+            "inverted": true,
+            "node": 20
+          }
+        ],
+        "id": 21,
+        "kind": "and",
+        "truth": "1000"
+      },
+      {
+        "fanins": [
+          {
+            "inverted": true,
+            "node": 10
+          },
+          {
+            "inverted": true,
+            "node": 21
+          }
+        ],
+        "id": 22,
+        "kind": "and",
+        "truth": "1000"
+      },
+      {
+        "fanins": [
+          {
+            "inverted": true,
+            "node": 11
+          },
+          {
+            "inverted": false,
+            "node": 22
+          }
+        ],
+        "id": 23,
+        "kind": "and",
+        "truth": "1000"
+      },
+      {
+        "fanins": [
+          {
+            "inverted": true,
+            "node": 4
+          },
+          {
+            "inverted": false,
+            "node": 23
+          }
+        ],
+        "id": 24,
+        "kind": "and",
+        "truth": "1000"
+      }
+    ],
+    "outputs": [
+      {
+        "inverted": true,
+        "node": 24
+      }
+    ]
+  }
+}

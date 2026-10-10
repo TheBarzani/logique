@@ -5,7 +5,72 @@ This study starts by reproducing the original manuscript on
 revisions follow the verified historical baseline. The manuscript remains local
 in ignored `docs/manuscript/`.
 
-## Run
+## Maintained implementation
+
+The revision now regenerates all nine graphs and five methods using
+[`tools/generate_paper_benchmarks.py`](../../tools/generate_paper_benchmarks.py).
+It imports the checkout's `src/logique/` directly. The legacy CSV supplies graph
+names and expected values; no legacy implementation is imported and no old
+metric is substituted into a generated result.
+
+```bash
+.venv/bin/python tools/patch_qiskit_depth.py
+.venv/bin/python tools/generate_paper_benchmarks.py --output dump/paper-revision
+.venv/bin/python tools/plot_paper_benchmarks.py dump/paper-revision
+```
+
+The output directory must be new. Omitting `--output` creates a unique directory
+under `dump/`. Use `--graphs K3` for a small, fully verified example. The native
+bridge must be built at `external/native/boolean_synthesis/build/boolean_synthesis`,
+or selected through `LOGIQUE_NATIVE_EXECUTABLE`.
+
+The generator has two functions: `paper_metrics` and `generate`. Its sequence is:
+
+1. Read a maintained DIMACS input and remove its precolors in memory **for all
+   five methods**, as agreed for this comparison. Source datasets are unchanged.
+2. Encode with `encode_coloring`, synthesize using the maintained specialized
+   `xag` implementation, and verify the raw reversible circuit and phase oracle.
+3. Build one Grover iteration with `grover_circuit` and build the original four
+   baselines with the maintained `comparison_circuit` adapter.
+4. Export all five circuits as OpenQASM 3, measure them, and write the new CSV
+   and the old/new/delta table. `run.json` records versions, source checksum,
+   checkout, removed precolors, and verification coverage.
+
+The `vcgc_*` CSV prefix is retained for column alignment; it now represents
+maintained Logique XAG synthesis. The plotting script uses
+`logique.visualization.results.plot_results` on the **fresh CSV** and exports
+three log-scale PNGs. These are revised figures, not pixel matches to the old
+figures.
+
+This is a methodology revision after the exact historical reproduction below:
+
+- All five methods receive unprecolored problems and prepare all input bitstrings.
+- Logique uses a compute–Z–uncompute phase oracle with restored workspace and
+  reflection matched to its Hadamard preparation.
+- The baseline adapter relabels vertices to zero-based indices and strips final
+  measurements. The original Saha implementation iterates zero-based vertex
+  pairs; passing the old one-based graphs skipped edges incident on the last
+  vertex. This explains substantial changes to the original baseline. Removing
+  measurements also changes reported gate counts and depths.
+- Metric definitions stay as described below: the historical MCX width allowance,
+  the requested analytical tree-weighted depth, and logical operation count.
+  The width allowance is accounting, not a realized decomposition, and excludes
+  the last operation named `mcx` under the original diffusion assumption.
+
+The completed maintained run rebuilt **45 circuits** and compared **135 metrics**.
+**34 match**, all widths; every depth and gate count differs. The maintained K3
+Logique circuit has width/depth/gates **17/57/124**, versus historical **11/30/73**.
+[`maintained-comparison.csv`](maintained-comparison.csv) preserves each comparison;
+[`maintained-status.json`](maintained-status.json) records the new run independently
+of the unchanged historical reports.
+
+Logique's K3 phase check is exhaustive over 64 assignments, including six marked
+colorings. Larger graphs use 256 random assignments with seed 7; most have no
+valid coloring in that sample. Those checks establish restoration and marking
+only on the tested inputs, not complete correctness. This run does not independently
+verify the baseline phase oracles or simulate large Grover circuits.
+
+## Historical reproduction
 
 Use the existing Python 3.10 research environment without synchronizing it:
 

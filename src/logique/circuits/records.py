@@ -48,7 +48,7 @@ def _qiskit_records(circuit):
         qs = [circuit.find_bit(q).index for q in item.qubits]
         count = op.num_ctrl_qubits if isinstance(op, ControlledGate) else 0
         base = op.base_gate if count else op
-        if base.name not in ("x", "rx"):
+        if base.name not in ("x", "rx", "z"):
             raise ValueError(f"Cannot track phases for {op.name}")
         rec = {
             "kind": base.name,

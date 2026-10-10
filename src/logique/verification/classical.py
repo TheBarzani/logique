@@ -43,6 +43,11 @@ def _apply_record(bits, phases, rec, *, inverse=False):
             if values
             else np.ones(bits.shape[1], dtype=bool)
         )
+        if rec["kind"] == "z":
+            phases[mask & bits[rec["target"]]] *= -1
+            return
+        if rec["kind"] not in ("x", "rx"):
+            raise ValueError(f"Cannot track gate kind {rec['kind']}")
         if rec["kind"] == "rx":
             angle = rec["angle"] * (-1 if inverse else 1)
             if not np.isclose(abs(angle), np.pi):

@@ -1,6 +1,6 @@
 # Architecture
 
-Logique has two input paths: a graph-coloring problem is encoded as structural Verilog, while a Boolean benchmark supplies Verilog or combinational AIGER directly. Both use the same synthesis, verification, and export pipeline.
+Logique accepts graph-coloring problems and general Boolean functions. Coloring predicates use structural Verilog; Boolean functions can supply Verilog, combinational AIGER, or an ordered expression. The expression frontend preserves tweedledum's original logic-tree construction for reproducible specialized XAG synthesis.
 
 | Package | Responsibility |
 | --- | --- |
@@ -23,6 +23,8 @@ The predicate checks edge inequalities, unused color codes, and precolors. `prob
 `SynthesisResult.circuit` is the raw clean-output computation and may retain intermediate workspace or phase. `oracle()` appends arbitrary XOR targets and computes/copies/uncomputes. `phase_oracle(output=0)` marks one output and restores computational workspace. Wire roles and source/mapped networks remain explicit in metadata.
 
 `grover_circuit()` uses the phase wrapper and a reflection about its supplied preparation. `coloring_preparation()` prepares valid colors and fixes precolors. Comparison runs use an all-bitstrings preparation for both Logique and Saha-Belletti, so initialization is not an uncontrolled difference between methods.
+
+Historical paper replay explicitly uses `edge_coloring_expression()` and `synthesize_expression()`, followed by `kickback_grover_circuit()`. This path ignores precolors and unused binary color codes, reproduces the original valid-color initialization and H-based diffusion, and applies the internally cleaned XAG once with an output in `|minus>`. `verify_kickback_oracle()` checks both initial target bits, including phases and workspace restoration. The baseline adapter can explicitly preserve labels and measurements for replay; its default behavior still normalizes labels and omits measurements. The paper runner saves the original measurement accounting separately from a table that measures every method's data register.
 
 The native protocol remains JSON over stdin/stdout with diagnostics on stderr. C++ input parsing, mapping, serialization, and request handling are separate. Existing Caterpillar compatibility overlays remain limited to the two documented cleanup corrections.
 

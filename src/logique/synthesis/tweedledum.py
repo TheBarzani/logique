@@ -3,9 +3,15 @@
 from logique.circuits.records import _tweedledum_records
 
 
+def _network_records(network):
+    from tweedledum.synthesis import xag_synth
+
+    circuit = xag_synth(network)
+    return _tweedledum_records(circuit), circuit.num_qubits()
+
+
 def _xag_records(graph):
     from tweedledum.classical import LogicNetwork
-    from tweedledum.synthesis import xag_synth
 
     network = LogicNetwork()
     signals = {}
@@ -25,5 +31,4 @@ def _xag_records(graph):
         network.create_po(
             ~signals[out["node"]] if out["inverted"] else signals[out["node"]]
         )
-    circuit = xag_synth(network)
-    return _tweedledum_records(circuit), circuit.num_qubits()
+    return _network_records(network)

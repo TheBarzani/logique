@@ -8,7 +8,7 @@ from logique.coloring import ColoringEncoding
 from logique.benchmarks.provenance import environment
 from logique.circuits.records import records_to_qiskit
 from .native import METHODS, run_native
-from .tweedledum import _xag_records
+from .tweedledum import _network_records, _xag_records
 from .result import SynthesisResult
 
 
@@ -73,3 +73,40 @@ def synthesize(
         versions=environment(),
     )
     return SynthesisResult(qc, md)
+
+
+def synthesize_expression(
+    expression: str, variable_order: list[str], *, executable=None
+) -> SynthesisResult:
+    """Preserve expression-tree construction and input order for specialized XAG.
+
+    Compile directly with tweedledum's expression frontend. The native bridge
+    exports the Boolean reference for verification; it does not rebuild the XAG
+    that is passed to synthesis.
+    """
+    from tweedledum.bool_function_compiler.bool_function import BoolFunction
+    from tweedledum.classical import write_verilog
+
+    start = time.perf_counter()
+    function = BoolFunction.from_expression(expression, variable_order)
+    network = function.logic_network()
+    with tempfile.TemporaryDirectory(prefix="logique-expression-") as directory:
+        path = Path(directory) / "expression.v"
+        write_verilog(network, str(path))
+        md = run_native(path, "xag", executable=executable)
+        source_verilog = path.read_text()
+    md["gates"], md["num_qubits"] = _network_records(network)
+    n, m = network.num_pis(), network.num_pos()
+    md.update(
+        input_qubits=list(range(n)),
+        output_qubits=list(range(n, n + m)),
+        steps=[],
+        parameters={"variable_order": variable_order},
+        seconds=time.perf_counter() - start,
+        source="Boolean expression",
+        expression=expression,
+        source_sha256=hashlib.sha256(source_verilog.encode()).hexdigest(),
+        source_verilog=source_verilog,
+        versions=environment(),
+    )
+    return SynthesisResult(records_to_qiskit(md["gates"], md["num_qubits"]), md)

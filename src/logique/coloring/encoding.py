@@ -113,3 +113,21 @@ class ColoringEncoding:
 def encode_coloring(problem: ColoringProblem) -> ColoringEncoding:
     """Encode all vertices, valid colors, precolors, and edge inequalities."""
     return ColoringEncoding(problem)
+
+
+def edge_coloring_expression(problem: ColoringProblem) -> tuple[str, list[str]]:
+    """Build the paper's edge-only expression with its original tree/input order.
+
+    Include only vertices incident on edges. Precolors and unused binary color
+    codes are deliberately unconstrained, matching the historical encoding.
+    """
+    if problem.colors < 2 or not problem.edges:
+        raise ValueError("Edge-only expression requires edges and at least two colors")
+    bits = (problem.colors - 1).bit_length()
+    vertices = sorted({v for edge in problem.edges for v in edge})
+    variables = [f"v{v}_{bit}" for v in vertices for bit in range(bits)]
+    expression = " & ".join(
+        "(" + " | ".join(f"(v{u}_{bit} ^ v{v}_{bit})" for bit in range(bits)) + ")"
+        for u, v in problem.to_networkx().edges()
+    )
+    return expression, variables

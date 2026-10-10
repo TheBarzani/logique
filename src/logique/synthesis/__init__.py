@@ -2,7 +2,7 @@
 
 from .native import METHODS
 
-__all__ = ["METHODS", "synthesize", "SynthesisResult"]
+__all__ = ["METHODS", "synthesize", "synthesize_expression", "SynthesisResult"]
 
 
 def __getattr__(name):
@@ -14,4 +14,8 @@ def __getattr__(name):
         from .result import SynthesisResult
 
         return SynthesisResult
+    if name == "synthesize_expression":
+        from .api import synthesize_expression
+
+        return synthesize_expression
     raise AttributeError(name)

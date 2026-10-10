@@ -1,0 +1,34 @@
+{
+  "kind": "phase_oracle",
+  "inputs": [
+    "../datasets/graphs/benchmarks/K3.col",
+    "../datasets/graphs/benchmarks/K5.col",
+    "../datasets/graphs/benchmarks/K10.col",
+    "../datasets/graphs/benchmarks/K20.col",
+    "../datasets/graphs/benchmarks/myciel3.col",
+    "../datasets/graphs/benchmarks/myciel4.col",
+    "../datasets/graphs/benchmarks/myciel5.col",
+    "../datasets/graphs/benchmarks/2-Insertions_3.col",
+    "../datasets/graphs/benchmarks/zed-city_2019.col"
+  ],
+  "methods": [
+    "xag",
+    "aig_bennett",
+    "xag_bennett",
+    "klut_bennett",
+    "best_fit"
+  ],
+  "parameters": {
+    "k": 4,
+    "outer_cut": 16,
+    "inner_cut": 4
+  },
+  "seed": 7,
+  "validation": "auto",
+  "samples": 256,
+  "basis_gates": [
+    "u",
+    "cx"
+  ],
+  "optimization_level": 1
+}

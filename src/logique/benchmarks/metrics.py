@@ -17,13 +17,23 @@ def circuit_metrics(circuit) -> dict:
     }
 
 
-def decomposed_metrics(circuit, *, basis_gates: list[str], seed: int = 7) -> dict:
-    """Report separately labeled metrics in a caller-selected basis."""
+def lower_circuit(
+    circuit, *, basis_gates: list[str], seed: int = 7, optimization_level: int = 1
+):
+    """Lower into an explicit basis without a hardware target or routing."""
     from qiskit import transpile
 
-    lowered = transpile(
-        circuit, basis_gates=basis_gates, seed_transpiler=seed, optimization_level=1
+    return transpile(
+        circuit,
+        basis_gates=basis_gates,
+        seed_transpiler=seed,
+        optimization_level=optimization_level,
     )
+
+
+def decomposed_metrics(circuit, *, basis_gates: list[str], seed: int = 7) -> dict:
+    """Report separately labeled metrics in a caller-selected basis."""
+    lowered = lower_circuit(circuit, basis_gates=basis_gates, seed=seed)
     return {
         **circuit_metrics(lowered),
         "metric_level": "decomposed",

@@ -41,6 +41,8 @@ def load_config(path: str | Path, **overrides) -> dict:
         "samples",
         "output",
         "kind",
+        "basis_gates",
+        "optimization_level",
     }
     unknown = set(config) - allowed
     if unknown:
@@ -71,14 +73,22 @@ def run_benchmarks(config: dict, *, executable=None) -> Path:
     if not methods or not set(methods) <= known:
         raise ValueError(f"methods must be selected from {sorted(known)}")
     validation = config.get("validation", "exhaustive")
-    if validation not in ("exhaustive", "sampled", "none"):
-        raise ValueError("validation must be exhaustive, sampled, or none")
-    if config.get("kind", "synthesis") not in ("synthesis", "comparison"):
-        raise ValueError("kind must be synthesis or comparison")
+    if validation not in ("auto", "exhaustive", "sampled", "none"):
+        raise ValueError("validation must be auto, exhaustive, sampled, or none")
+    if config.get("kind", "synthesis") not in (
+        "synthesis",
+        "comparison",
+        "phase_oracle",
+    ):
+        raise ValueError("kind must be synthesis, comparison, or phase_oracle")
     if config.get("kind", "synthesis") != "comparison" and any(
         m.startswith("sb_") for m in methods
     ):
         raise ValueError("Saha-Belletti returns full circuits; use kind=comparison")
+    if config.get("kind") == "phase_oracle":
+        from .phase import run_phase_benchmarks
+
+        return run_phase_benchmarks(config, executable=executable)
     output = new_run_directory(config.get("output"))
     manifest = {
         "schema_version": 1,
@@ -123,7 +133,11 @@ def run_benchmarks(config: dict, *, executable=None) -> Path:
                     if validation != "none":
                         validate(
                             result,
-                            sampled=validation == "sampled",
+                            sampled=validation == "sampled"
+                            or (
+                                validation == "auto"
+                                and len(result.metadata["input_qubits"]) > 12
+                            ),
                             samples=config.get("samples", 256),
                             seed=config.get("seed", 7),
                         )

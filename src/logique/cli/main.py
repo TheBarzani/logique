@@ -64,6 +64,7 @@ def parser() -> argparse.ArgumentParser:
     plot.add_argument("--output", type=Path, required=True)
     plot.add_argument("--normalize", action="store_true")
     plot.add_argument("--log", action="store_true")
+    plot.add_argument("--metric-level", choices=["logical", "decomposed", "historical"])
     notebook = commands.add_parser(
         "notebook", help="Execute a maintained notebook"
     ).add_subparsers(dest="action", required=True)
@@ -72,6 +73,7 @@ def parser() -> argparse.ArgumentParser:
     execute.add_argument("--output", type=Path)
     execute.add_argument("--workspace", type=Path)
     execute.add_argument("--offline", action="store_true")
+    execute.add_argument("--timeout", type=int, default=300, help="Seconds per cell")
     hardware = commands.add_parser(
         "hardware", help="Explicit IBM submission or local analysis"
     ).add_subparsers(dest="action", required=True)
@@ -183,6 +185,7 @@ def dispatch(args) -> None:
             output=args.output,
             normalize=args.normalize,
             log=args.log,
+            metric_level=args.metric_level,
         )
         plt.close(figure)
         print(args.output)
@@ -195,6 +198,7 @@ def dispatch(args) -> None:
                 output=args.output,
                 offline=args.offline,
                 workspace=args.workspace,
+                timeout=args.timeout,
             )
         )
     elif args.command == "hardware":

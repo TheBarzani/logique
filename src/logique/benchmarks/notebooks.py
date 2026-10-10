@@ -16,12 +16,15 @@ def execute_notebook(
     output: str | Path | None = None,
     offline: bool = False,
     workspace: str | Path | None = None,
+    timeout: int = 300,
 ) -> Path:
     """Execute a notebook in a temporary kernel; keep source outputs untouched."""
     import nbformat
     from nbclient import NotebookClient
     from jupyter_client.kernelspec import KernelSpecManager
 
+    if timeout < 1:
+        raise ValueError("timeout must be positive")
     source = Path(source).resolve()
     root = Path(workspace).resolve() if workspace else Path.cwd().resolve()
     notebook = nbformat.read(source, as_version=4)
@@ -32,6 +35,7 @@ def execute_notebook(
         "source": str(source),
         "source_sha256": hashlib.sha256(source.read_bytes()).hexdigest(),
         "offline": offline,
+        "cell_timeout_seconds": timeout,
         "versions": environment(),
         "checkout": checkout_revision(root),
         "status": "running",
@@ -64,7 +68,7 @@ def execute_notebook(
         )
         client = NotebookClient(
             notebook,
-            timeout=300,
+            timeout=timeout,
             kernel_name="logique-local",
             resources={"metadata": {"path": str(root)}},
         )

@@ -16,6 +16,13 @@ FetchContent_Declare(caterpillar
   URL https://github.com/gmeuli/caterpillar/archive/4c6f766cd0ffc62d37ab45edfe80c9f1eae44764.tar.gz
   SOURCE_SUBDIR logique_no_upstream_build)
 FetchContent_MakeAvailable(caterpillar)
+# Keep the effective header source explicit alongside each executable. An
+# overridden FetchContent source may differ from the declared reference pin.
+file(SHA256 ${caterpillar_SOURCE_DIR}/include/caterpillar/synthesis/lhrs.hpp lhrs_sha256)
+file(SHA256 ${caterpillar_SOURCE_DIR}/lib/mockturtle/mockturtle/networks/xag.hpp mockturtle_sha256)
+file(SHA256 ${caterpillar_SOURCE_DIR}/lib/kitty/kitty/dynamic_truth_table.hpp kitty_sha256)
+file(WRITE ${CMAKE_CURRENT_BINARY_DIR}/build_provenance.json
+  "{\n  \"caterpillar_source\": \"${caterpillar_SOURCE_DIR}\",\n  \"declared_reference_revision\": \"4c6f766cd0ffc62d37ab45edfe80c9f1eae44764\",\n  \"mockturtle_source\": \"${caterpillar_SOURCE_DIR}/lib/mockturtle\",\n  \"kitty_source\": \"${caterpillar_SOURCE_DIR}/lib/kitty\",\n  \"lhrs_source_sha256\": \"${lhrs_sha256}\",\n  \"mockturtle_xag_sha256\": \"${mockturtle_sha256}\",\n  \"kitty_truth_table_sha256\": \"${kitty_sha256}\",\n  \"compiler\": \"${CMAKE_CXX_COMPILER_ID} ${CMAKE_CXX_COMPILER_VERSION}\",\n  \"fixes\": [\"lhrs_uncompute_stack_pop\", \"best_fit_cell_fanout\"]\n}\n")
 # The reference uncompute handler frees a wire but leaves its stale stack entry.
 # Nested best-fit recomputation must expose the previous mapping after cleanup.
 file(COPY ${caterpillar_SOURCE_DIR}/include/caterpillar

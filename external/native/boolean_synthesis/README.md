@@ -25,6 +25,11 @@ The optional `router` regression exercises both problems. The
 downloaded reference and repository submodules remain unchanged. This fix is
 recorded as `lhrs_uncompute_stack_pop` and `best_fit_cell_fanout` in result
 metadata. The reference strategies run with these corrections.
+Each fresh build writes `build_provenance.json` beside the executable, identifying
+the effective Caterpillar, bundled Mockturtle and Kitty source paths, representative
+header hashes, compiler, and applied fixes. Phase benchmark manifests retain this
+record together with the executable SHA-256. The declared reference revision is
+not a claim that an arbitrary FetchContent source override matches that revision.
 `RecordingCircuit` and `RecordLut`
 export gate semantics instead of linking the older quantum IR into Python.
 

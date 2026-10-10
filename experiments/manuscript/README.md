@@ -5,70 +5,101 @@ This study starts by reproducing the original manuscript on
 revisions follow the verified historical baseline. The manuscript remains local
 in ignored `docs/manuscript/`.
 
-## Maintained implementation
+## Maintained historical replay
 
-The revision now regenerates all nine graphs and five methods using
-[`tools/generate_paper_benchmarks.py`](../../tools/generate_paper_benchmarks.py).
-It imports the checkout's `src/logique/` directly. The legacy CSV supplies graph
-names and expected values; no legacy implementation is imported and no old
-metric is substituted into a generated result.
+[`tools/generate_paper_benchmarks.py`](../../tools/generate_paper_benchmarks.py)
+now reproduces the original methodology through the maintained `src/logique/`
+implementation. It imports no historical VCGC code. The archived CSV supplies
+benchmark names and expected values; every new value is measured from a freshly
+built circuit.
 
 ```bash
 .venv/bin/python tools/patch_qiskit_depth.py
-.venv/bin/python tools/generate_paper_benchmarks.py --output dump/paper-revision
-.venv/bin/python tools/plot_paper_benchmarks.py dump/paper-revision
+.venv/bin/python tools/generate_paper_benchmarks.py
+.venv/bin/python tools/plot_paper_benchmarks.py dump/MMDDHHMMSS-paper-benchmarks --measured
 ```
 
-The output directory must be new. Omitting `--output` creates a unique directory
-under `dump/`. Use `--graphs K3` for a small, fully verified example. The native
-bridge must be built at `external/native/boolean_synthesis/build/boolean_synthesis`,
-or selected through `LOGIQUE_NATIVE_EXECUTABLE`.
+The generator prints its new output directory. Use `--graphs K3` for a small
+example. The native bridge must be built at
+`external/native/boolean_synthesis/build/boolean_synthesis`, or selected through
+`LOGIQUE_NATIVE_EXECUTABLE`. Explicit output directories must not already exist.
 
-The generator has two functions: `paper_metrics` and `generate`. Its sequence is:
+The replay restores these original choices:
 
-1. Read a maintained DIMACS input and remove its precolors in memory **for all
-   five methods**, as agreed for this comparison. Source datasets are unchanged.
-2. Encode with `encode_coloring`, synthesize using the maintained specialized
-   `xag` implementation, and verify the raw reversible circuit and phase oracle.
-3. Build one Grover iteration with `grover_circuit` and build the original four
-   baselines with the maintained `comparison_circuit` adapter.
-4. Export all five circuits as OpenQASM 3, measure them, and write the new CSV
-   and the old/new/delta table. `run.json` records versions, source checksum,
-   checkout, removed precolors, and verification coverage.
+1. **Encoding:** edge inequalities only, with the original variable order and
+   tweedledum expression-tree construction. Precolors and unused binary color
+   codes are not constraints in the original Boolean function. The source
+   datasets remain unchanged.
+2. **Preparation:** VCGC prepares each vertex over its valid colors using the
+   original decomposed `UniformSuperpositionGate`. The four baselines retain
+   their original Hadamard preparation over all bitstrings.
+3. **Oracle:** prepare the XAG output in `|minus>` and apply the synthesized XAG
+   once. Internal XAG cleanup restores workspace; there is no additional inverse
+   of the whole oracle. The replay verifies raw XOR action, exact phase, and
+   restoration for **both** initial output-target bits before building Grover.
+4. **Diffusion:** reproduce the original H-based reflection. The old generator
+   did not pass its valid-color preparation into its diffusion helper, so the
+   replay explicitly preserves that choice.
+5. **Indexing:** pass the original one-based graph labels to every baseline.
+   This reproduces the historical original-Saha indexing mismatch: that
+   dependency loops over zero-based labels and omits edges incident on vertex
+   `n` for a one-based graph. Exact replay preserves it; the default maintained
+   adapter continues to normalize labels for other studies.
 
-The `vcgc_*` CSV prefix is retained for column alignment; it now represents
-maintained Logique XAG synthesis. The plotting script uses
-`logique.visualization.results.plot_results` on the **fresh CSV** and exports
-three log-scale PNGs. These are revised figures, not pixel matches to the old
-figures.
+### Measurements and exact comparison
 
-This is a methodology revision after the exact historical reproduction below:
+The legacy generator left VCGC unmeasured but measured the data register for all
+four baselines. Consistent measurement accounting therefore changes the original
+VCGC numbers. The new run saves both evaluations explicitly:
 
-- All five methods receive unprecolored problems and prepare all input bitstrings.
-- Logique uses a compute–Z–uncompute phase oracle with restored workspace and
-  reflection matched to its Hadamard preparation.
-- The baseline adapter relabels vertices to zero-based indices and strips final
-  measurements. The original Saha implementation iterates zero-based vertex
-  pairs; passing the old one-based graphs skipped edges incident on the last
-  vertex. This explains substantial changes to the original baseline. Removing
-  measurements also changes reported gate counts and depths.
-- Metric definitions stay as described below: the historical MCX width allowance,
-  the requested analytical tree-weighted depth, and logical operation count.
-  The width allowance is accounting, not a realized decomposition, and excludes
-  the last operation named `mcx` under the original diffusion assumption.
+- `benchmark_results.csv`: the original measurement choices, including graph
+  metadata. This reproduces **all 135 metrics exactly**, and the CSV is
+  **byte-identical** to the historical reference.
+- `comparison.csv`: all 135 original/new/delta pairs; every delta is zero.
+- `measurement_consistent_results.csv`: all five methods measure every data
+  qubit. Baseline metrics are unchanged. VCGC gains one depth layer and
+  `input_count + 1` instructions (measurements plus a final barrier); width is
+  unchanged. Its K3 width/depth/gates become **11/31/80**, versus **11/30/73** in
+  the exact historical replay.
+- `<graph>_<method>.qasm`: the 45 historical circuits.
+- `<graph>_vcgc_measured.qasm`: nine VCGC circuits with the same measurement step
+  as the baselines; reuse the baseline QASM files for the consistent comparison.
+- `<graph>.v` and `run.json`: rebuilt encodings, environment/source provenance,
+  removed precolors, and verification coverage.
 
-The completed maintained run rebuilt **45 circuits** and compared **135 metrics**.
-**34 match**, all widths; every depth and gate count differs. The maintained K3
-Logique circuit has width/depth/gates **17/57/124**, versus historical **11/30/73**.
-[`maintained-comparison.csv`](maintained-comparison.csv) preserves each comparison;
-[`maintained-status.json`](maintained-status.json) records the new run independently
-of the unchanged historical reports.
+Metric formulas retain the historical MCX width allowance, requested analytical
+MCX tree-weighted depth, and `len(circuit)` instruction count. The latter includes
+barriers and measurements. These are the original accounting definitions, not
+costs of explicitly decomposed hardware circuits.
 
-Logique's K3 phase check is exhaustive over 64 assignments, including six marked
-colorings. Larger graphs use 256 random assignments with seed 7; most have no
-valid coloring in that sample. Those checks establish restoration and marking
-only on the tested inputs, not complete correctness. This run does not independently
-verify the baseline phase oracles or simulate large Grover circuits.
+The full maintained replay is in `dump/1010174305-paper-benchmarks/`.
+Its `validation.json` records source/dependency fingerprints and the checks.
+All three benchmark figures generated from the fresh CSV match the original
+RGBA pixels exactly. The saved-measurement hardware figure also matches; its
+measurements were not rerun. All 158 tests passed across the suite and the
+notebook rerun outside the sandbox; Black, Ruff, mypy, and the package build pass.
+`tools/plot_paper_benchmarks.py --measured` plots the consistent-measurement CSV
+through the maintained plotting implementation. Without `--measured`, it plots
+historical accounting. The original figure functions can also be applied to the
+fresh historical CSV through `tools/reproduce_manuscript.py`'s `plots` function;
+this checks the original figure pixels independently of circuit generation.
+
+K3 verification covers all 64 binary assignments and both target bits. Its
+edge-only predicate marks 24 assignments across four encoded colors; only six
+are supported valid-color solutions under the three-color preparation. Larger
+graphs use 256 seeded assignments for both target bits, which is sampling rather
+than a proof. Baseline phase semantics are not independently verified by this
+replay. Matching historical costs establishes reproducibility of the original
+methodology, including its preserved indexing and preparation choices.
+
+### Preserved earlier experiment
+
+[`maintained-status.json`](maintained-status.json) and
+[`maintained-comparison.csv`](maintained-comparison.csv) preserve the earlier
+methodology experiment with **34/135** matches. That run used complete predicates,
+Hadamard preparation, an outer compute–Z–uncompute wrapper, normalized baseline
+labels, and removed measurements. It is a separate experiment and has not been
+overwritten. The exact historical generator reports below are also unchanged.
 
 ## Historical reproduction
 

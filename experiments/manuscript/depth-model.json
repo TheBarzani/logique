@@ -1,0 +1,20 @@
+{
+  "id": "logique.mcx_tree_bound.v1",
+  "origin": "Reconstructed from the user-specified rule; not the recovered historical patch",
+  "citation": "https://doi.org/10.1103/PhysRevA.111.052611",
+  "accessible_source": "https://arxiv.org/html/2502.01433v2#S5",
+  "qiskit_version": "2.1.1",
+  "original_source_sha256": "c7737250ee5ade31ef4b264ec302c34831630a6082faf257a8913acf428ac3a0",
+  "patched_source_sha256": "d46522f0a1b4f2ef7c05f6dbef3d66c4e18864da841d67d6631564b030f54fa1",
+  "mcx_cost": "ceil(log2(n)) for n >= 2, where n is the number of controls",
+  "other_included_operation_cost": 1,
+  "default_enabled": false,
+  "metric": "Weighted critical-path estimate; not an explicitly decomposed circuit depth",
+  "assumptions": [
+    "MCX operations reserve their original operands for the entire assigned cost",
+    "Ideal binary-tree MCX cost; no ancilla-budget or connectivity constraint",
+    "No added cost for open-control X conjugations or workspace restoration",
+    "No explicit measurement, feed-forward, or Clifford+T decomposition",
+    "Original Qiskit filter and synchronization rules preserved"
+  ]
+}

@@ -1,0 +1,62 @@
+--- a/qiskit/circuit/quantumcircuit.py
++++ b/qiskit/circuit/quantumcircuit.py
+@@ -3849,8 +3849,20 @@
+         filter_function: Callable[[CircuitInstruction], bool] = lambda x: not getattr(
+             x.operation, "_directive", False
+         ),
++        *,
++        mcx_decomposition: bool = False,
+     ) -> int:
+         """Return circuit depth (i.e., length of critical path).
++
++        Opt-in analytical model: logique.mcx_tree_bound.v1.
++        See Phys. Rev. A 111, 052611 (2025), Section V. This weights
++        each n-controlled X by ceil(log2(n)) for n >= 2, and all
++        other included operations by one. It does not synthesize a
++        decomposition or account for ancilla allocation, restoration,
++        measurement/feed-forward, routing, or Clifford+T scheduling.
++        The mixed weighted depth is not the circuit's T-depth or
++        Toffoli-only depth, nor a proven global lower bound.
++
+ 
+         The depth of a quantum circuit is a measure of how many
+         "layers" of quantum gates, executed in parallel, it takes to
+@@ -3869,6 +3881,9 @@
+                 Instructions for which the function returns ``False`` are ignored in the
+                 computation of the circuit depth.  By default, filters out "directives", such as
+                 :class:`.Barrier`.
++
++            mcx_decomposition: Use the MCX tree-depth bound as an
++                operation cost. False preserves upstream behavior.
+ 
+         Returns:
+             int: Depth of circuit.
+@@ -3888,6 +3903,10 @@
+ 
+                 assert qc.depth(lambda instr: len(instr.qubits) > 1) == 1
+         """
++        if mcx_decomposition:
++            from .controlledgate import ControlledGate
++            from .library.standard_gates.x import XGate
++
+         obj_depths = {
+             obj: 0 for objects in (self.qubits, self.clbits, self.iter_vars()) for obj in objects
+         }
+@@ -3918,7 +3937,16 @@
+             # get updated to match the current max over the affected objects.
+             new_depth = max((obj_depths[obj] for obj in objects), default=0)
+             if filter_function(instruction):
+-                new_depth += 1
++                operation_depth = 1
++                if (
++                    mcx_decomposition
++                    and isinstance(instruction.operation, ControlledGate)
++                    and isinstance(instruction.operation.base_gate, XGate)
++                    and instruction.operation.num_ctrl_qubits >= 2
++                ):
++                    # Integer ceil(log2(n)); n counts controls, not wires.
++                    operation_depth = (instruction.operation.num_ctrl_qubits - 1).bit_length()
++                new_depth += operation_depth
+             for obj in objects:
+                 obj_depths[obj] = new_depth
+         return max(obj_depths.values(), default=0)

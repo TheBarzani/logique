@@ -1,7 +1,10 @@
 """Prevent false success when historical evaluations or image comparisons differ."""
 
 import importlib.util
+import csv
+import json
 from pathlib import Path
+import sys
 
 import pytest
 
@@ -56,3 +59,54 @@ def test_image_comparison_distinguishes_metadata_and_pixels(tmp_path):
     assert not reproduction.compare_image(reference, actual, preview)["pixels_equal"]
     Image.new("RGBA", (4, 3), "white").save(actual)
     assert not reproduction.compare_image(reference, actual, preview)["pixels_equal"]
+
+
+def test_validation_exports_each_metric_and_fresh_improvements(tmp_path, monkeypatch):
+    reference_directory = tmp_path / "legacy/data/output"
+    reference_directory.mkdir(parents=True)
+    actual_directory = tmp_path / "generated"
+    actual_directory.mkdir()
+    row = {"benchmark": "test"}
+    for metric in reproduction.METRICS:
+        row[f"vcgc_{metric}"] = 50
+        for method in reproduction.METHODS:
+            row[f"sb_{method}_{metric}"] = 100
+    for directory in (reference_directory, actual_directory):
+        with (directory / "benchmark_results.csv").open("w", newline="") as stream:
+            writer = csv.DictWriter(stream, fieldnames=list(row))
+            writer.writeheader()
+            writer.writerow(row)
+    monkeypatch.setattr(reproduction, "LEGACY", tmp_path / "legacy")
+    report = reproduction.validate_evaluation(actual_directory, tmp_path)
+    assert report["metric_values_compared"] == report["metric_values_matching"] == 15
+    assert report["exact"]
+    assert report["regenerated_improvements"]["overall_percent"] == {
+        metric: 50 for metric in reproduction.METRICS
+    }
+    comparison = reproduction.read_rows(tmp_path / "metric-comparison.csv")
+    assert len(comparison) == 15
+    assert all(float(row["delta"]) == 0 for row in comparison)
+
+
+def test_all_stage_plots_regenerated_csv(tmp_path, monkeypatch):
+    output = tmp_path / "run"
+    monkeypatch.setattr(
+        sys, "argv", ["reproduce_manuscript.py", "--output", str(output)]
+    )
+    monkeypatch.setattr(reproduction, "audit", lambda manuscript: {})
+
+    def evaluate(directory, environment):
+        generated = directory / "evaluation"
+        generated.mkdir()
+        (generated / "benchmark_results.csv").write_text("fresh evaluation")
+        return {"status": "exact"}
+
+    def plots(directory, *, figure_dpi, benchmark_csv):
+        assert benchmark_csv == directory / "evaluation/benchmark_results.csv"
+        assert benchmark_csv.read_text() == "fresh evaluation"
+        return {"images": {}}
+
+    monkeypatch.setattr(reproduction, "evaluate", evaluate)
+    monkeypatch.setattr(reproduction, "plots", plots)
+    assert reproduction.main() == 0
+    assert "plots" in json.loads((output / "report.json").read_text())

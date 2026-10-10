@@ -199,11 +199,16 @@ def audit(manuscript: Path | None) -> dict:
         from qiskit import QuantumCircuit
 
         source = Path(inspect.getfile(QuantumCircuit))
+        model = json.loads((STUDY / "depth-model.json").read_text())
         result["qiskit_depth"] = {
             "parameters": list(inspect.signature(QuantumCircuit.depth).parameters),
             "source_sha256": digest(source),
-            "historical_option_available": "mcx_decomposition"
+            "mcx_option_available": "mcx_decomposition"
             in inspect.signature(QuantumCircuit.depth).parameters,
+            "model": (
+                model if digest(source) == model["patched_source_sha256"] else None
+            ),
+            "historical_patch_recovered": False,
         }
     except ImportError as error:
         result["qiskit_depth"] = {"error": str(error)}
@@ -222,8 +227,8 @@ def audit(manuscript: Path | None) -> dict:
     return result
 
 
-def plots(output: Path, *, figure_dpi: float) -> dict:
-    """Regenerate paper plots from explicit archived CSVs using original functions."""
+def plots(output: Path, *, figure_dpi: float, benchmark_csv: Path) -> dict:
+    """Plot the supplied benchmark evaluation using the original drawing functions."""
     import matplotlib
 
     matplotlib.use("Agg")
@@ -236,8 +241,7 @@ def plots(output: Path, *, figure_dpi: float) -> dict:
     destination.mkdir()
     comparisons = output / "comparisons"
     comparisons.mkdir()
-    benchmark_csv = LEGACY / "data/output/benchmark_results.csv"
-    shutil.copyfile(benchmark_csv, destination / benchmark_csv.name)
+    shutil.copyfile(benchmark_csv, destination / "benchmark_results.csv")
     visualizer = load_script("visualize_benchmarks").BenchmarkVisualizer(destination)
     visualizer.load_csv_data()
     titles = (
@@ -271,6 +275,8 @@ def plots(output: Path, *, figure_dpi: float) -> dict:
     font = Path(font_manager.findfont("DejaVu Sans"))
     return {
         "images": result,
+        "benchmark_input": str(benchmark_csv),
+        "benchmark_input_sha256": digest(benchmark_csv),
         "hardware_input": HARDWARE_CSV,
         "hardware_input_sha256": digest(LEGACY / HARDWARE_CSV),
         "hardware_evidence": "Saved summary probabilities; no raw counts recovered",
@@ -284,8 +290,50 @@ def plots(output: Path, *, figure_dpi: float) -> dict:
     }
 
 
+def validate_evaluation(directory: Path, output: Path) -> dict:
+    """Compare every rebuilt metric with the reference and write an audit table."""
+    reference_path = LEGACY / "data/output/benchmark_results.csv"
+    actual_path = directory / "benchmark_results.csv"
+    reference, actual = read_rows(reference_path), read_rows(actual_path)
+    comparison = compare_metrics(reference, actual)
+    observed = {row["benchmark"]: row for row in actual}
+    rows = []
+    for reference_row in reference:
+        name = reference_row["benchmark"]
+        for method in ("vcgc", *(f"sb_{name}" for name in METHODS)):
+            for metric in METRICS:
+                key = f"{method}_{metric}"
+                expected = int(reference_row[key])
+                raw_value = observed.get(name, {}).get(key)
+                value = float(raw_value) if raw_value is not None else None
+                rows.append(
+                    {
+                        "benchmark": name,
+                        "method": method,
+                        "metric": metric,
+                        "reference": expected,
+                        "regenerated": value,
+                        "delta": value - expected if value is not None else None,
+                        "exact": value == expected and value > 0,
+                    }
+                )
+    with (output / "metric-comparison.csv").open("w", newline="") as stream:
+        writer = csv.DictWriter(stream, fieldnames=list(rows[0]))
+        writer.writeheader()
+        writer.writerows(rows)
+    return {
+        "status": "exact" if comparison["exact"] else "different",
+        **comparison,
+        "metric_values_compared": len(rows),
+        "metric_values_matching": sum(row["exact"] for row in rows),
+        "reference_csv_sha256": digest(reference_path),
+        "regenerated_csv_sha256": digest(actual_path),
+        "regenerated_improvements": improvement_table(actual),
+    }
+
+
 def evaluate(output: Path, environment: dict) -> dict:
-    """Run the original evaluation only when its historical depth API is available."""
+    """Run the original evaluation with an explicitly recorded depth model."""
     if any(
         not dependency.get("python_sources_match")
         for dependency in environment["dependencies"].values()
@@ -294,10 +342,15 @@ def evaluate(output: Path, environment: dict) -> dict:
             "status": "blocked",
             "reason": "Installed synthesis Python sources differ from historical pins",
         }
-    if not environment["qiskit_depth"].get("historical_option_available"):
+    if not environment["qiskit_depth"].get("mcx_option_available"):
         return {
             "status": "blocked",
-            "reason": "Recover the original Qiskit depth(mcx_decomposition=True) patch",
+            "reason": "Apply the recorded patch with tools/patch_qiskit_depth.py",
+        }
+    if environment["qiskit_depth"].get("model") is None:
+        return {
+            "status": "blocked",
+            "reason": "Unrecognized Qiskit depth implementation",
         }
     sys.path.insert(0, str(LEGACY))
     module = load_script("generate_benchmarks")
@@ -317,10 +370,11 @@ def evaluate(output: Path, environment: dict) -> dict:
         results.append(result)
         generator.save_results_csv(results)
         generator.save_results_json(results)
-    comparison = compare_metrics(
-        reference, read_rows(destination / "benchmark_results.csv")
-    )
-    return {"status": "exact" if comparison["exact"] else "different", **comparison}
+    return {
+        **validate_evaluation(destination, output),
+        "depth_model": environment["qiskit_depth"]["model"]["id"],
+        "historical_patch_recovered": False,
+    }
 
 
 def main() -> int:
@@ -336,16 +390,31 @@ def main() -> int:
         "manuscript-" + datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%S%fZ")
     )
     output.mkdir(parents=True, exist_ok=False)
-    report = {"stage": args.stage}
+    report = {
+        "stage": args.stage,
+        "runner_sha256": digest(Path(__file__)),
+        "command": sys.argv,
+        "created_utc": datetime.now(timezone.utc).isoformat(),
+    }
     try:
         report["environment"] = audit(args.manuscript)
-        report["improvements"] = improvement_table(
+        report["reference_improvements"] = improvement_table(
             read_rows(LEGACY / "data/output/benchmark_results.csv")
         )
-        if args.stage in ("plots", "all"):
-            report["plots"] = plots(output, figure_dpi=args.figure_dpi)
         if args.stage in ("evaluate", "all"):
             report["evaluation"] = evaluate(output, report["environment"])
+        if args.stage == "plots":
+            report["plots"] = plots(
+                output,
+                figure_dpi=args.figure_dpi,
+                benchmark_csv=LEGACY / "data/output/benchmark_results.csv",
+            )
+        elif args.stage == "all" and report["evaluation"]["status"] != "blocked":
+            report["plots"] = plots(
+                output,
+                figure_dpi=args.figure_dpi,
+                benchmark_csv=output / "evaluation/benchmark_results.csv",
+            )
     except Exception as error:
         report["error"] = f"{type(error).__name__}: {error}"
         raise

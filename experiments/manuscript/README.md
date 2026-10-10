@@ -10,17 +10,74 @@ in ignored `docs/manuscript/`.
 Use the existing Python 3.10 research environment without synchronizing it:
 
 ```bash
-.venv/bin/python tools/reproduce_manuscript.py --stage plots
+.venv/bin/python tools/patch_qiskit_depth.py
 .venv/bin/python tools/reproduce_manuscript.py --stage all --manuscript docs/manuscript
 ```
 
 Each invocation creates a fresh directory under `dump/manuscript-<timestamp>/`.
-It contains `report.json`, regenerated plots, and side-by-side and pixel-difference
-images. `--output PATH` accepts only a new directory. Exit status 2 means a
+The `all` stage regenerates circuits and metrics first, compares them against the
+archived CSV, and plots the **newly generated CSV**. The run contains:
+
+- `evaluation/benchmark_results.csv` and `.json`: new numerical results.
+- `evaluation/<graph>/`: freshly synthesized QASM circuits, Verilog, and DOT.
+- `metric-comparison.csv`: all 135 old/new metric pairs and their differences.
+- `report.json`: source and environment fingerprints, numerical checks, and figures.
+- `plots/` and `comparisons/`: regenerated plots and visual comparisons.
+
+`--output PATH` accepts only a new directory. Exit status 2 means a
 comparison differs or the full evaluation is blocked; inspect the report.
 `--stage audit` checks source hashes and dependencies without plotting or synthesis.
 `--stage evaluate` runs only the historical benchmark evaluation after the audit.
+`--stage plots` only replays archived data and is not a benchmark-regeneration run.
 The optional `--manuscript` check matches the active LaTeX figures to references.
+
+## Scripts and methodology to inspect
+
+The computation is in the unchanged
+[`legacy/scripts/generate_benchmarks.py`](legacy/scripts/generate_benchmarks.py):
+
+1. `process_benchmark` reads each DIMACS graph using the original `VCPNetwork`.
+2. `generate_vcgc_circuit` builds the original Boolean function and tweedledum XAG,
+   synthesizes the oracle, and combines the original uniform preparation and
+   diffusion circuits into a Grover circuit.
+3. `generate_saha_belletti_circuits` generates the original, minimal, simple, and
+   balanced baselines with one Grover iteration.
+4. Each method measures width as circuit qubits plus the original MCX ancilla
+   estimate; depth through `depth(mcx_decomposition=True)`; and gates as
+   `len(circuit)`. The ancilla helper sums `max(0, n-2)` for operations named `mcx`,
+   excluding the last MCX as assumed diffusion. The gate count remains the
+   original logical count; the depth weighting does not rewrite the circuit.
+
+[`tools/reproduce_manuscript.py`](../../tools/reproduce_manuscript.py) is the
+entry point; run its commands from the repository root.
+Its `evaluate` function invokes the original generator on each of the nine
+graphs, saves the results, and calls `validate_evaluation`. No archived metric
+value is substituted into a newly generated result. The archived CSV supplies
+the benchmark selection/order and expected values for validation.
+
+## Reconstructed depth method
+
+[`depth-model.json`](depth-model.json) specifies `logique.mcx_tree_bound.v1`.
+The installer overwrites `QuantumCircuit.depth` in the active Qiskit 2.1.1
+installation, preserves an original-source backup under `dump/`, and refuses an
+unrecognized source version. It is safe to rerun. Reapply it after reinstalling
+Qiskit, and restart any already-running notebook kernels.
+
+`depth(mcx_decomposition=True)` assigns an n-controlled X the cost
+`ceil(log2(n))` for n >= 2 and other counted instructions cost one. X and CX
+therefore retain cost one. The method propagates those costs along Qiskit's
+existing critical path; filters, barriers, and classical dependencies retain
+their original behavior. Plain `depth()` remains unchanged.
+
+The rule follows the MCX Toffoli-depth bound in
+[Dutta et al., Section V](https://arxiv.org/html/2502.01433v2#S5), published as
+[Phys. Rev. A 111, 052611](https://doi.org/10.1103/PhysRevA.111.052611).
+This is an analytical operation cost: it does not allocate ancillas, construct
+the decomposition, or schedule restoration, measurements, or hardware operations.
+The resulting mixed depth is not a measured physical depth or a pure T-depth.
+The implementation is a reconstruction authorized for this reproduction; the
+original edited Qiskit source has not been recovered. The source changes are
+recorded in [`qiskit-depth.patch`](qiskit-depth.patch).
 
 ## Recovered inputs
 
@@ -43,6 +100,12 @@ the experiments. The runner does not import or execute `generate_exec_comparison
 
 ## Validated reproduction
 
+Rebuilding the original circuits with the reconstructed depth method reproduces
+**all 135 benchmark metrics exactly**: nine graphs, five methods, and width,
+depth, and gate count. The graph metadata also matches. Installed tweedledum and
+Saha–Belletti Python sources match their historical pins.
+The regenerated benchmark CSV is byte-identical to the archived reference CSV.
+
 All four result plots reproduce the reference **RGBA pixels exactly** using the
 original plotting functions, Matplotlib 3.10.5, and `figure.dpi = 200`. The original
 functions export benchmark PNGs at 300 DPI and the hardware PNG at 500 DPI; the
@@ -53,8 +116,11 @@ Regenerated file hashes differ because PNG image-data compression differs. The
 PNG metadata and decompressed image-data bytes match. No resizing, cropping, or
 postprocessing is used to achieve the pixel matches.
 
-`reproduction-status.json` records the checked run, including package versions,
-font and native-binary hashes, input hashes, image comparisons, and blockers.
+`regeneration-status.json` records the full generation and comparison run, and
+`metric-comparison.csv` records all old/new pairs. The three benchmark plots use
+the regenerated results. Hardware plotting continues to use saved measurements.
+`reproduction-status.json` preserves the earlier archived-data-only run, including
+its then-missing depth-patch blocker; it has not been overwritten.
 `requirements-plotting.txt` pins the plotting environment that produced these
 matches. The repository's `uv.lock` supplies the maintained environment; the
 original unpinned requirements are retained as historical evidence, not presented
@@ -76,22 +142,14 @@ but its use in the original writing process has not been established.
 
 ## Remaining work
 
-1. Recover and preserve the original Qiskit `depth(mcx_decomposition=True)` patch.
-   The current `.venv` imports Qiskit 2.1.1 without that parameter. Historical
-   commit `6c068f74d03dffe6dc1d51a7994317c7e2f99a84` explicitly mentions an
-   installed-Qiskit modification but does not contain its implementation.
-   Installed tweedledum and Saha–Belletti Python sources match the legacy pins.
-2. Run `--stage evaluate` in the recovered environment and compare all 135
-   benchmark metrics: nine graphs, five original methods, and three metrics.
-   Until then, the plots are reproduced from saved data; the underlying circuit
-   evaluation is **not yet reproduced**.
-3. Recover raw hardware measurement records if available. The selected CSV
+1. Recover raw hardware measurement records if available. The selected CSV
    contains 30 summary rows, 10,000 shots per row, and job identifiers; reproducing
    its plot does not independently verify probabilities from raw counts.
-4. Recover the six illustrative figure exports and their exact source settings.
+2. Recover the six illustrative figure exports and their exact source settings.
    They have no byte-identical standalone file or embedded notebook PNG on the
    legacy branch. The two Draw.io sources are candidates, not verified exports.
-5. Resolve reproduction discrepancies before changing methodology or manuscript
-   claims. Preserve historical references and put each changed metric definition
-   in its own traceable commit. Additional synthesis workflows are outside this
-   reproduction milestone.
+3. Use the reproduced numerical baseline to revise methodology and manuscript
+   claims. Numerical agreement validates reproduction of the old evaluation;
+   it does not establish the scientific validity of each original metric choice.
+   Preserve historical references and put changed metric definitions in separate
+   commits. Additional synthesis workflows are outside this reproduction milestone.

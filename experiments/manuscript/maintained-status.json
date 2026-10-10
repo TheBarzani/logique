@@ -1,0 +1,247 @@
+{
+  "implementation": "src/logique",
+  "generator_sha256": "a5fcbe8bce4496529d2f30366af9f13b4ed35648d234462837a8409199d7c47e",
+  "versions": {
+    "python": "3.10.18",
+    "caterpillar": "4c6f766cd0ffc62d37ab45edfe80c9f1eae44764",
+    "bridge_fixes": "lhrs_uncompute_stack_pop, best_fit_cell_fanout",
+    "logique": "0.2.0",
+    "qiskit": "2.1.1",
+    "tweedledum": "1.1.1",
+    "numpy": "2.2.6",
+    "saha-belleti": "0.1.0",
+    "qiskit-ibm-runtime": "0.41.1"
+  },
+  "checkout": {
+    "revision": "7516eeebf55b4d6a59d81375cf830a80c87b47a6",
+    "dirty": false,
+    "submodules": [
+      "0238820d65b825dac8a41b7a8f79353c8275b8ef external/abc (heads/master)",
+      " 4c6f766cd0ffc62d37ab45edfe80c9f1eae44764 external/caterpillar (heads/master)",
+      " 0886ebfdd101ce1110daf3d60b96d72edd3143ea external/mockturtle (v0.3-108-g0886ebf)",
+      " 06c0b3d6a187aae97e0e9a6be7394bce1a368e55 external/saha-belletti (remotes/origin/HEAD)",
+      " a3cb238d132825b8e0367d5e96618c5753c1879a external/tweedledum (remotes/origin/HEAD)"
+    ]
+  },
+  "precolors": "removed for all five methods",
+  "preparation": "all bitstrings",
+  "iterations": 1,
+  "depth_model": "logique.mcx_tree_bound.v1",
+  "status": "complete",
+  "cases": [
+    {
+      "benchmark": "2-Insertions_3",
+      "removed_precolors": {
+        "1": 0
+      },
+      "status": "sampled",
+      "assignments": 256,
+      "marked_assignments": 0,
+      "seed": 7,
+      "reference": "coloring predicate",
+      "phase_exact": true,
+      "inputs_restored": true,
+      "workspace_restored": true
+    },
+    {
+      "benchmark": "zed-city_2019",
+      "removed_precolors": {
+        "8": 0,
+        "9": 1,
+        "10": 2,
+        "11": 3
+      },
+      "status": "sampled",
+      "assignments": 256,
+      "marked_assignments": 0,
+      "seed": 7,
+      "reference": "coloring predicate",
+      "phase_exact": true,
+      "inputs_restored": true,
+      "workspace_restored": true
+    },
+    {
+      "benchmark": "myciel5",
+      "removed_precolors": {
+        "1": 0
+      },
+      "status": "sampled",
+      "assignments": 256,
+      "marked_assignments": 0,
+      "seed": 7,
+      "reference": "coloring predicate",
+      "phase_exact": true,
+      "inputs_restored": true,
+      "workspace_restored": true
+    },
+    {
+      "benchmark": "myciel4",
+      "removed_precolors": {
+        "1": 0
+      },
+      "status": "sampled",
+      "assignments": 256,
+      "marked_assignments": 0,
+      "seed": 7,
+      "reference": "coloring predicate",
+      "phase_exact": true,
+      "inputs_restored": true,
+      "workspace_restored": true
+    },
+    {
+      "benchmark": "myciel3",
+      "removed_precolors": {
+        "1": 0
+      },
+      "status": "sampled",
+      "assignments": 256,
+      "marked_assignments": 0,
+      "seed": 7,
+      "reference": "coloring predicate",
+      "phase_exact": true,
+      "inputs_restored": true,
+      "workspace_restored": true
+    },
+    {
+      "benchmark": "K20",
+      "removed_precolors": {
+        "1": 0
+      },
+      "status": "sampled",
+      "assignments": 256,
+      "marked_assignments": 0,
+      "seed": 7,
+      "reference": "coloring predicate",
+      "phase_exact": true,
+      "inputs_restored": true,
+      "workspace_restored": true
+    },
+    {
+      "benchmark": "K10",
+      "removed_precolors": {
+        "1": 0
+      },
+      "status": "sampled",
+      "assignments": 256,
+      "marked_assignments": 0,
+      "seed": 7,
+      "reference": "coloring predicate",
+      "phase_exact": true,
+      "inputs_restored": true,
+      "workspace_restored": true
+    },
+    {
+      "benchmark": "K3",
+      "removed_precolors": {
+        "1": 0
+      },
+      "status": "exhaustive",
+      "assignments": 64,
+      "marked_assignments": 6,
+      "seed": null,
+      "reference": "coloring predicate",
+      "phase_exact": true,
+      "inputs_restored": true,
+      "workspace_restored": true
+    },
+    {
+      "benchmark": "K5",
+      "removed_precolors": {
+        "1": 0
+      },
+      "status": "sampled",
+      "assignments": 256,
+      "marked_assignments": 1,
+      "seed": 7,
+      "reference": "coloring predicate",
+      "phase_exact": true,
+      "inputs_restored": true,
+      "workspace_restored": true
+    }
+  ],
+  "recorded_utc": "2026-10-10T02:09:08.581686+00:00",
+  "command": ".venv/bin/python tools/generate_paper_benchmarks.py --output dump/paper-revision-7516eee",
+  "plot_command": "MPLBACKEND=Agg .venv/bin/python tools/plot_paper_benchmarks.py dump/paper-revision-7516eee",
+  "run_directory": "dump/paper-revision-7516eee",
+  "circuits_generated": 45,
+  "encodings_generated": 9,
+  "comparison": {
+    "exact": false,
+    "metric_values_compared": 135,
+    "metric_values_matching": 34,
+    "matching_by_method": {
+      "sb_balanced": 9,
+      "sb_minimal": 9,
+      "sb_original": 4,
+      "sb_simple": 9,
+      "vcgc": 3
+    },
+    "matching_by_cost": {
+      "depth": 0,
+      "gates": 0,
+      "width": 34
+    },
+    "repeat_run_csvs_byte_identical": true,
+    "repeat_run_directory": "dump/maintained-paper-results"
+  },
+  "source_sha256": {
+    "tools/generate_paper_benchmarks.py": "a5fcbe8bce4496529d2f30366af9f13b4ed35648d234462837a8409199d7c47e",
+    "tools/plot_paper_benchmarks.py": "0203f76c82b3aac62122df7b17b3070ff8b2179beff60caf2c30ed05bcbd10a6",
+    "native_executable": "91ec2c6d8da39e2b20725d0c38f6ed6c723e811819b88c09fdc0dacecc39c5cc",
+    "qiskit_quantumcircuit": "d46522f0a1b4f2ef7c05f6dbef3d66c4e18864da841d67d6631564b030f54fa1"
+  },
+  "input_sha256": {
+    "2-Insertions_3": "d2ac825410b45ee52fcf58dea994447b8220ca9e4639497bcae5c1cdd84391a0",
+    "zed-city_2019": "4730a0c8d9d213dd3511b33b03641166c6b6cd72db66500e2c87baac66d723a6",
+    "myciel5": "f24b252dc12f35d9b7496c634e00e129334015716025a69528923b483d62e959",
+    "myciel4": "05e1b6cd48f78c55d32385d811998cfb33887cd28be25c3f22d1480b957d95b3",
+    "myciel3": "defa2f8a7216b8c99971dfb5287a5125b8f885a6f8a6a4d6c934533fb26d07d4",
+    "K20": "d0d2b6ad438aff2e52c2be1f30528d83037ce0e38d230730348f823e5ff68366",
+    "K10": "6d31641c2ffe3df554468c0b6d625d3e8208cabeb751ede6f8bc1232abf2fd9f",
+    "K3": "ca290e8b863deafa6c59fe2797a304b9d5dcbde0eef8d9c453d903d3d282ed8b",
+    "K5": "4653b427fa59e689ba1ff548c9d5033158368e2c7c1544b8d8f227eb16bde587"
+  },
+  "reference_csv_sha256": "1957210d68d0e54d90c7bc7c1b8ca90d48eb5661e76769ca5e4540b65955c9d6",
+  "output_sha256": {
+    "benchmark_results.csv": "6fa25e30006b8b07e4dfca25fb7388d7fc5933272027f633093f96ff34529c7c",
+    "comparison.csv": "85f49469baddc549fc5f3c3839e3989d1cbacf814171ea9a1b3e4b9236c5e12b",
+    "depth_comparison_log.png": "2503d3a1bce14de090849f02b2b33cc8f7adc4b83283197b1b87ec8c5186c6c2",
+    "gates_comparison_log.png": "603ac2a000932315b61f6c1171fb1ec0d9145af34bc9c1b119ba7e158c2550a2",
+    "qubits_comparison_log.png": "e094a3ec56bc176ab26a94f0e096a6ba2330ce1530bd163874f87ad2591b090d"
+  },
+  "preservation": {
+    "historical_snapshot_files_verified": 38,
+    "maintained_inputs_matching_historical_hashes": 9
+  },
+  "methodology_changes": [
+    "Remove precolors for every method, leaving source datasets unchanged.",
+    "Use maintained specialized XAG synthesis and compute-Z-uncompute phase construction.",
+    "Use Hadamard preparation and its matched reflection for one Logique Grover iteration.",
+    "Use maintained baseline adapter: zero-based graph labels and no final measurements.",
+    "Retain original MCX width accounting, reconstructed tree-weighted depth, and logical operation count."
+  ],
+  "verification_limits": {
+    "scope": "Raw Logique synthesis and its phase oracle; baseline phase oracles and large full Grover circuits are not independently verified.",
+    "exhaustive_cases": [
+      "K3"
+    ],
+    "sampled_cases_without_marked_assignments": [
+      "2-Insertions_3",
+      "zed-city_2019",
+      "myciel5",
+      "myciel4",
+      "myciel3",
+      "K20",
+      "K10"
+    ],
+    "sampling": "256 random assignments, seed 7, for more than 12 inputs; sampled checks are not a proof.",
+    "metrics": "Analytical MCX depth and historical width allowance; no explicit decomposition or hardware resource claim."
+  },
+  "checks": {
+    "pytest_passed": 152,
+    "black": "passed",
+    "ruff": "passed",
+    "mypy": "passed",
+    "uv_build": "passed"
+  }
+}

@@ -18,7 +18,7 @@ def test_guarded_phase_notebook(tmp_path):
     from logique.benchmarks.notebooks import execute_notebook
 
     root = Path(__file__).resolve().parents[1]
-    source = root / "notebooks/studies/guarded_phase_oracle_two_ancillas.ipynb"
+    source = root / "experiments/studies/guarded_phase_oracle_two_ancillas.ipynb"
     original = source.read_bytes()
     for cell in json.loads(original)["cells"]:
         if cell["cell_type"] == "code":

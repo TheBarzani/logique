@@ -656,9 +656,9 @@ requires-dist = [
     { name = "qiskit", marker = "extra == 'synthesis'", specifier = "==2.1.1" },
     { name = "qiskit-aer", marker = "extra == 'simulation'", specifier = ">=0.17,<0.18" },
     { name = "qiskit-ibm-runtime", marker = "extra == 'ibm'", specifier = ">=0.40,<0.42" },
-    { name = "saha-belleti", marker = "extra == 'comparison'", directory = "saha-belletti" },
+    { name = "saha-belleti", marker = "extra == 'comparison'", directory = "external/saha-belletti" },
     { name = "schemdraw", marker = "extra == 'visualization'", specifier = "==0.23" },
-    { name = "tweedledum", marker = "extra == 'synthesis'", directory = "tweedledum" },
+    { name = "tweedledum", marker = "extra == 'synthesis'", directory = "external/tweedledum" },
 ]
 provides-extras = ["synthesis", "benchmarks", "comparison", "visualization", "notebooks", "simulation", "ibm"]
 
@@ -1346,7 +1346,7 @@ wheels = [
 [[package]]
 name = "saha-belleti"
 version = "0.1.0"
-source = { directory = "saha-belletti" }
+source = { directory = "external/saha-belletti" }
 dependencies = [
     { name = "alive-progress" },
     { name = "matplotlib" },
@@ -1488,7 +1488,7 @@ wheels = [
 [[package]]
 name = "tweedledum"
 version = "1.1.1"
-source = { directory = "tweedledum" }
+source = { directory = "external/tweedledum" }
 
 [[package]]
 name = "typing-extensions"

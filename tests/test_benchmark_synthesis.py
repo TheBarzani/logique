@@ -25,7 +25,7 @@ def native():
     try:
         native_executable()
     except FileNotFoundError:
-        pytest.skip("Build native/boolean_synthesis before integration tests")
+        pytest.skip("Build external/native/boolean_synthesis before integration tests")
 
 
 @pytest.mark.parametrize("method", METHODS)

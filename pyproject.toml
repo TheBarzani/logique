@@ -27,8 +27,8 @@ dev = ["pytest>=8,<9", "pytest-cov>=6,<7", "black>=25,<26", "ruff>=0.12,<0.13", 
 logique = "logique.cli.main:main"
 
 [tool.uv.sources]
-tweedledum = {path = "tweedledum", editable = false}
-saha-belleti = {path = "saha-belletti", editable = false}
+tweedledum = {path = "external/tweedledum", editable = false}
+saha-belleti = {path = "external/saha-belletti", editable = false}
 
 [tool.setuptools.packages.find]
 where = ["src"]

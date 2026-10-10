@@ -8,7 +8,7 @@ import pytest
 
 def test_maintained_sources_are_unexecuted_and_parse():
     root = Path(__file__).resolve().parents[1]
-    notebooks = list((root / "notebooks").rglob("*.ipynb"))
+    notebooks = list((root / "experiments").rglob("*.ipynb"))
     required = {
         "tutorials/graph_coloring.ipynb",
         "tutorials/boolean_workspace.ipynb",
@@ -18,7 +18,7 @@ def test_maintained_sources_are_unexecuted_and_parse():
         "studies/int2float_conditional_workspace.ipynb",
     }
     assert required <= {
-        path.relative_to(root / "notebooks").as_posix() for path in notebooks
+        path.relative_to(root / "experiments").as_posix() for path in notebooks
     }
     for path in notebooks:
         for cell in json.loads(path.read_text())["cells"]:

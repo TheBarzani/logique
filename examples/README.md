@@ -6,4 +6,4 @@
 uv run --no-sync python examples/coloring.py datasets/graphs/teaching/edge.col
 ```
 
-For diagrams and longer explanations, use the [maintained notebooks](../notebooks/README.md).
+For diagrams and longer explanations, use the [maintained notebooks](../experiments/README.md).

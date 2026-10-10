@@ -15,7 +15,7 @@ def new_run_directory(output: str | Path | None = None) -> Path:
     path = (
         Path(output)
         if output
-        else Path("results")
+        else Path("dump")
         / (
             datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%SZ")
             + "-"

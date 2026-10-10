@@ -8,4 +8,4 @@
 
 The EPFL manifest is packaged as `logique.benchmarks/epfl.json`; downloaded AIGER, Verilog, and license files belong in the configured cache. Acquisition verifies pinned SHA-256 hashes even when using an existing cache.
 
-Historical input provenance and original locations remain available through the [archive index](../archive/index.json). Generated circuits, tables, and plots are outputs and belong under `results/`.
+Historical inputs and their original locations remain available on [`legacy/vcgc`](https://github.com/TheBarzani/logique/tree/legacy/vcgc). Generated circuits, tables, and plots that are not final belong under ignored `dump/`.

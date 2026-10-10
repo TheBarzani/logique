@@ -179,8 +179,7 @@ manuscript/
 # DRAWIO stuff
 *.bkp
 *.dtmp
-# Toolkit runs and preserved local generated artifacts
-results/
-archive/local/
+# Non-final runs and preserved local generated artifacts
+/dump/
 src/logique/_version.py
 docs/researchu

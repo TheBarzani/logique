@@ -17,7 +17,6 @@ jobs:
       - run: uv run --no-sync black --check src tests tools examples
       - run: uv run --no-sync ruff check src tests tools examples
       - run: uv run --no-sync mypy
-      - run: python3 tools/check_archive.py
       - run: uv build --no-sources
       - name: Check installed wheel outside the checkout
         run: |
@@ -31,7 +30,7 @@ jobs:
     env:
       CMAKE_BUILD_PARALLEL_LEVEL: '2'
       MPLBACKEND: Agg
-      LOGIQUE_NATIVE_EXECUTABLE: ${{ github.workspace }}/native/boolean_synthesis/build/boolean_synthesis
+      LOGIQUE_NATIVE_EXECUTABLE: ${{ github.workspace }}/external/native/boolean_synthesis/build/boolean_synthesis
       LOGIQUE_CACHE: ${{ github.workspace }}/.cache/epfl
     steps:
       - uses: actions/checkout@v4
@@ -42,13 +41,13 @@ jobs:
           version: '0.8.4'
       - run: sudo apt-get update && sudo apt-get install -y graphviz cmake ninja-build pkg-config
       - run: python3 tools/sync.py --all-extras
-      - run: uv run --no-sync logique native build --source native/boolean_synthesis
+      - run: uv run --no-sync logique native build --source external/native/boolean_synthesis
       - run: uv run --no-sync logique datasets fetch ctrl int2float cavlc router --cache .cache/epfl
       - run: uv run --no-sync pytest
       - run: uv run --no-sync logique benchmark run --config configs/boolean_teaching.json
       - name: Execute maintained notebooks offline
         run: |
-          uv run --no-sync logique notebook run notebooks/tutorials/graph_coloring.ipynb --offline
-          uv run --no-sync logique notebook run notebooks/tutorials/boolean_workspace.ipynb --offline
-          uv run --no-sync logique notebook run notebooks/studies/coloring_comparison.ipynb --offline
-          uv run --no-sync logique notebook run notebooks/studies/boolean_visual_study.ipynb --offline
+          uv run --no-sync logique notebook run experiments/tutorials/graph_coloring.ipynb --offline
+          uv run --no-sync logique notebook run experiments/tutorials/boolean_workspace.ipynb --offline
+          uv run --no-sync logique notebook run experiments/studies/coloring_comparison.ipynb --offline
+          uv run --no-sync logique notebook run experiments/studies/boolean_visual_study.ipynb --offline

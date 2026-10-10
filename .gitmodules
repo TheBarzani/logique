@@ -1,6 +1,15 @@
 [submodule "tweedledum"]
-	path = tweedledum
+	path = external/tweedledum
 	url = https://github.com/TheBarzani/tweedledum.git
 [submodule "saha-belletti"]
-	path = saha-belletti
+	path = external/saha-belletti
 	url = https://github.com/TheBarzani/saha-belletti.git
+[submodule "caterpillar"]
+	path = external/caterpillar
+	url = https://github.com/gmeuli/caterpillar.git
+[submodule "mockturtle"]
+	path = external/mockturtle
+	url = https://github.com/lsils/mockturtle.git
+[submodule "abc"]
+	path = external/abc
+	url = https://github.com/berkeley-abc/abc.git

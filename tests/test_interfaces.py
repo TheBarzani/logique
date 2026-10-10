@@ -52,6 +52,24 @@ def test_run_directory_never_overwrites(tmp_path):
     assert (output / "important.txt").read_text() == "preserve"
 
 
+def test_default_runs_use_unique_dump_directories(tmp_path, monkeypatch):
+    monkeypatch.chdir(tmp_path)
+    first = new_run_directory()
+    (first / "important.txt").write_text("preserve")
+    second = new_run_directory()
+    assert first.parent == second.parent == tmp_path / "dump"
+    assert first != second
+    assert (first / "important.txt").read_text() == "preserve"
+    assert not (tmp_path / "results").exists()
+
+
+def test_missing_native_helper_points_to_relocated_source(monkeypatch):
+    monkeypatch.delenv("LOGIQUE_NATIVE_EXECUTABLE", raising=False)
+    monkeypatch.setattr("logique.paths.shutil.which", lambda name: None)
+    with pytest.raises(FileNotFoundError, match="external/native/boolean_synthesis"):
+        native_executable()
+
+
 def test_cli_offline_failure_is_actionable(tmp_path, capsys):
     assert (
         main(["datasets", "fetch", "ctrl", "--offline", "--cache", str(tmp_path)]) == 1

@@ -22,7 +22,7 @@ def test_int2float_conditional_workspace(tmp_path):
     from logique.benchmarks.notebooks import execute_notebook
 
     root = Path(__file__).resolve().parents[1]
-    source = root / "notebooks/studies/int2float_conditional_workspace.ipynb"
+    source = root / "experiments/studies/int2float_conditional_workspace.ipynb"
     original = source.read_bytes()
     for cell in json.loads(original)["cells"]:
         if cell["cell_type"] == "code":

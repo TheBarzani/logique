@@ -24,6 +24,6 @@ def native_executable(executable: str | Path | None = None) -> Path:
     )
     if value is None or not Path(value).expanduser().is_file():
         raise FileNotFoundError(
-            "Native helper missing. Run logique native build --source native/boolean_synthesis; set LOGIQUE_NATIVE_EXECUTABLE to the resulting executable."
+            "Native helper missing. Run logique native build --source external/native/boolean_synthesis; set LOGIQUE_NATIVE_EXECUTABLE to the resulting executable."
         )
     return Path(value).expanduser().resolve()

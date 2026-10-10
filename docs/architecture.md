@@ -30,4 +30,4 @@ The native protocol remains JSON over stdin/stdout with diagnostics on stderr. C
 
 The core import needs no quantum or plotting stack. Library packages never import scripts or notebooks. Plotting and hardware imports stay inside their optional features. Installed manifests use package resources; native executables and caches use explicit paths rather than positions relative to `__file__`.
 
-The archive is not an importable compatibility layer. There are no old API aliases: use the migration guide when updating external code.
+Dependency checkouts and the C++ bridge live under `external/`; maintained notebooks live under `experiments/`. Non-final generated artifacts go under ignored `dump/`. Historical VCGC code and results live on the `legacy/vcgc` branch. There are no old API aliases: use the migration guide when updating external code.

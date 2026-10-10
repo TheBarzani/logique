@@ -1,6 +1,6 @@
 # Migration from VCGC to Logique
 
-The project, Python package, and CLI are now named `logique`. Imports, environment variables, and commands have changed. Historical modules and script entry points are archived, without compatibility aliases.
+The project, Python package, and CLI are now named `logique`. Imports, environment variables, and commands have changed. Historical modules and script entry points are preserved on `legacy/vcgc`, without compatibility aliases.
 
 | Previous entry | Maintained replacement |
 | --- | --- |
@@ -15,11 +15,15 @@ The project, Python package, and CLI are now named `logique`. Imports, environme
 | Notebook runner script | `logique notebook run NOTEBOOK` |
 | `data/benchmarks/` | `datasets/graphs/benchmarks/` |
 | `data/execution/*.col` | `datasets/graphs/execution/` |
-| Original `examples/` and `experiments/` | `archive/research/`; four curated notebooks in `notebooks/` |
-| `data/output/` and historical result directories | `archive/research/data/` |
-| New generated results | `results/` |
+| Original VCGC `examples/` and `experiments/` | `legacy/vcgc` branch; maintained notebooks in `experiments/` |
+| `data/output/` and historical result directories | `legacy/vcgc` branch |
+| Dependency submodules at the root | `external/abc/`, `external/caterpillar/`, `external/mockturtle/`, `external/saha-belletti/`, `external/tweedledum/` |
+| `native/boolean_synthesis/` | `external/native/boolean_synthesis/` |
+| `notebooks/` | `experiments/` |
+| `results/` | `dump/` (ignored non-final results) |
+| New generated results | `dump/` |
 
-The original `main` branch is preserved as [`legacy/vcgc`](https://github.com/TheBarzani/logique/tree/legacy/vcgc). The complete [path and hash inventory](../archive/index.json) covers historical artifacts. Submodule paths remain unchanged; the Saha-Belletti revision advances only to ignore macOS metadata files. Manuscript files remain local and ignored.
+The original `main` branch is preserved as [`legacy/vcgc`](https://github.com/TheBarzani/logique/tree/legacy/vcgc). The duplicate `archive/` directory and its integrity checker have been removed from this branch. Moving the submodules into `external/` preserves their URLs and checked-out revisions. Run `git submodule sync --recursive` and `git submodule update --init --recursive` after updating an existing checkout. Manuscript files remain local and ignored.
 
 ## Scientific behavior changes
 

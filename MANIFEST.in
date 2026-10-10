@@ -1,19 +1,11 @@
 include README.md pyproject.toml
 recursive-include src/logique *.py *.json
-prune archive
 prune datasets
 prune docs
 prune examples
 prune experiments
-prune native
-prune notebooks
-prune results
-prune scripts
+prune external
+prune dump
 prune tests
 prune tools
-prune tweedledum
-prune saha-belletti
-prune logique
-prune data
-prune images
 global-exclude *.pyc *.so

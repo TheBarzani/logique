@@ -12,7 +12,7 @@ METHODS = ("xag", "aig_bennett", "xag_bennett", "klut_bennett", "best_fit")
 def build_native(
     source: str | Path, *, build: str | Path | None = None, jobs: int = 2
 ) -> Path:
-    """Build explicitly; the first configuration downloads pinned C++ sources."""
+    """Build explicitly using local C++ sources or the pinned download fallback."""
     source = Path(source).resolve()
     build = Path(build).resolve() if build else source / "build"
     if jobs < 1:

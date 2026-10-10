@@ -1,7 +1,7 @@
 {
   "description": "Exact saved input for the int2float output-3 conditional-workspace notebook; original rotations retained.",
   "provenance": {
-    "svg": "results/20260915T005414Z-91b33972/int2float_xag_circuit.svg",
+    "svg": "dump/20260915T005414Z-91b33972/int2float_xag_circuit.svg",
     "svg_sha256": "a6caddbeca2216f39e027eadece101174e10565b5a50b74f9ffe0c7b78ca38bd",
     "qpy_sha256": "9e103bd13fbe804eb7ab998839567510f93d682cb6e4fcb8eb47c21fbb9a870c",
     "source_sha256": "ad280bdb8331591998b8184ff70ad00d31184649c245796965fc6777e3016bab",

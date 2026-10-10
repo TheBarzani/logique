@@ -17,3 +17,6 @@ Set `LOGIQUE_PHASE_STUDY_SMOKE=1` for the K3-only execution check. Source notebo
 outputs stay empty; the runner saves the executed notebook and figures under
 `dump/`. The notebook setup documents an explicit build using the local pinned
 Caterpillar submodule. Existing environment settings take priority.
+
+The [manuscript reproduction study](manuscript/README.md) preserves the original
+VCGC scripts and reference data and validates regenerated figures and metrics.

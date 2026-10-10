@@ -1,0 +1,299 @@
+{
+  "stage": "all",
+  "environment": {
+    "source_commit": "86e302586d9a60178d1ee65246b8624fc5c0f015",
+    "snapshot_files_verified": 38,
+    "python": "3.10.18",
+    "platform": "macOS-26.6.2-arm64-arm-64bit",
+    "packages": {
+      "PyJWT": "2.13.0",
+      "Pygments": "2.21.0",
+      "about-time": "4.2.1",
+      "alive-progress": "3.3.0",
+      "annotated-types": "0.8.0",
+      "appnope": "1.0.0",
+      "asttokens": "3.0.2",
+      "attrs": "26.1.0",
+      "black": "25.12.0",
+      "certifi": "2026.7.22",
+      "cffi": "2.1.1",
+      "charset-normalizer": "3.5.1",
+      "click": "8.5.0",
+      "comm": "0.2.3",
+      "contourpy": "1.3.2",
+      "coverage": "7.16.0",
+      "cryptography": "50.0.1",
+      "cycler": "0.12.1",
+      "debugpy": "1.8.21",
+      "decorator": "5.3.1",
+      "dill": "0.4.1",
+      "exceptiongroup": "1.3.1",
+      "executing": "2.2.1",
+      "fastjsonschema": "2.22.2",
+      "fonttools": "4.64.0",
+      "graphemeu": "0.7.2",
+      "graphviz": "0.21",
+      "ibm-cloud-sdk-core": "3.26.1",
+      "ibm-platform-services": "0.77.1",
+      "idna": "3.19",
+      "iniconfig": "2.3.0",
+      "ipykernel": "6.30.0",
+      "ipython": "8.39.0",
+      "jedi": "0.20.0",
+      "jsonschema": "4.26.0",
+      "jsonschema-specifications": "2025.9.1",
+      "jupyter_client": "8.10.0",
+      "jupyter_core": "5.9.1",
+      "kiwisolver": "1.5.1",
+      "logique": "0.2.0",
+      "matplotlib": "3.10.5",
+      "matplotlib-inline": "0.2.2",
+      "mypy": "1.17.1",
+      "mypy_extensions": "1.1.0",
+      "nbclient": "0.10.2",
+      "nbformat": "5.10.4",
+      "nest-asyncio": "1.6.0",
+      "networkx": "3.4.2",
+      "numpy": "2.2.6",
+      "packaging": "26.3",
+      "pandas": "2.3.1",
+      "parso": "0.8.7",
+      "pathspec": "1.1.1",
+      "pexpect": "4.9.0",
+      "pillow": "12.3.0",
+      "platformdirs": "4.11.8",
+      "pluggy": "1.6.0",
+      "prompt_toolkit": "3.0.53",
+      "psutil": "7.2.2",
+      "ptyprocess": "0.7.0",
+      "pure_eval": "0.2.3",
+      "pycparser": "3.0",
+      "pydantic": "2.13.5",
+      "pydantic_core": "2.46.5",
+      "pylatexenc": "2.10",
+      "pyparsing": "3.3.2",
+      "pyspnego": "0.12.2",
+      "pytest": "8.4.2",
+      "pytest-cov": "6.3.0",
+      "python-dateutil": "2.9.0.post0",
+      "python-dotenv": "1.2.3",
+      "pytokens": "0.4.1",
+      "pytz": "2026.3.post1",
+      "pyzmq": "27.2.0",
+      "qiskit": "2.1.1",
+      "qiskit-aer": "0.17.2",
+      "qiskit-ibm-runtime": "0.41.1",
+      "referencing": "0.37.0",
+      "requests": "2.34.2",
+      "requests_ntlm": "1.3.0",
+      "rpds-py": "0.30.0",
+      "ruff": "0.12.12",
+      "rustworkx": "0.18.1",
+      "saha-belleti": "0.1.0",
+      "schemdraw": "0.23",
+      "scipy": "1.15.3",
+      "six": "1.17.0",
+      "stack-data": "0.6.3",
+      "stevedore": "5.8.0",
+      "tomli": "2.4.1",
+      "tornado": "6.5.8",
+      "traitlets": "5.16.1",
+      "tweedledum": "1.1.1",
+      "typing-inspection": "0.4.4",
+      "typing_extensions": "4.16.0",
+      "tzdata": "2026.3",
+      "urllib3": "2.7.0",
+      "vcgc": "0.2.0",
+      "wcwidth": "0.8.3"
+    },
+    "historical_submodules": [
+      "160000 commit 676f0e3f5f659a46c6f972fba22a7258bf4c665a\tsaha-belletti",
+      "160000 commit a3cb238d132825b8e0367d5e96618c5753c1879a\ttweedledum"
+    ],
+    "dependencies": {
+      "tweedledum": {
+        "reference_revision": "a3cb238d132825b8e0367d5e96618c5753c1879a",
+        "python_sources_match": true,
+        "mismatches": [],
+        "native_binary_hashes": {
+          "_tweedledum.cpython-310-darwin.so": "ae050cc64e6ebce580cee6c07b99b71c1da668f1c102e0dc27a2941b422860d0"
+        }
+      },
+      "saha_belletti": {
+        "reference_revision": "676f0e3f5f659a46c6f972fba22a7258bf4c665a",
+        "python_sources_match": true,
+        "mismatches": [],
+        "native_binary_hashes": {}
+      }
+    },
+    "qiskit_depth": {
+      "parameters": [
+        "self",
+        "filter_function"
+      ],
+      "source_sha256": "c7737250ee5ade31ef4b264ec302c34831630a6082faf257a8913acf428ac3a0",
+      "historical_option_available": false
+    },
+    "manuscript_figures": [
+      {
+        "figure": "figures/grover_circuit_v2.png",
+        "reference": null
+      },
+      {
+        "figure": "figures/vcgc_workflow_dac.png",
+        "reference": null
+      },
+      {
+        "figure": "figures/K3_graph.png",
+        "reference": null
+      },
+      {
+        "figure": "figures/usp_latex.png",
+        "reference": null
+      },
+      {
+        "figure": "figures/K3_example_xag_drawio.png",
+        "reference": null
+      },
+      {
+        "figure": "figures/K3_circuit_latex.png",
+        "reference": null
+      },
+      {
+        "figure": "figures/ieee_success_probability.png",
+        "reference": "data/execution/ieee_success_probability.png"
+      },
+      {
+        "figure": "figures/width_comparison_log.png",
+        "reference": "data/output/width_comparison_log.png"
+      },
+      {
+        "figure": "figures/depth_comparison_log.png",
+        "reference": "data/output/depth_comparison_log.png"
+      },
+      {
+        "figure": "figures/gates_comparison_log.png",
+        "reference": "data/output/gates_comparison_log.png"
+      }
+    ]
+  },
+  "improvements": {
+    "per_baseline_percent": {
+      "original": {
+        "width": 35.508675410970085,
+        "depth": 71.92929746491816,
+        "gates": 52.15420516354423
+      },
+      "minimal": {
+        "width": 56.13629549717855,
+        "depth": 90.51784345623746,
+        "gates": 89.57863794094533
+      },
+      "simple": {
+        "width": 36.832627125983095,
+        "depth": -9.534219394360758,
+        "gates": 36.6656401925806
+      },
+      "balanced": {
+        "width": 38.66840109459952,
+        "depth": 44.931609805166325,
+        "gates": 62.241411681144655
+      }
+    },
+    "overall_percent": {
+      "width": 41.786499782182815,
+      "depth": 49.461132832990295,
+      "gates": 60.1599737445537
+    }
+  },
+  "plots": {
+    "images": {
+      "width_comparison_log.png": {
+        "reference_sha256": "ac2cd18e989fcdf52ee5c756cbd851ac2f76cbfccb912a96c793862e62f04ccb",
+        "actual_sha256": "c3fa0722ab546d75b4e269f2a754db935e784f340980c51ee0d7b36b1e092e47",
+        "bytes_equal": false,
+        "pixels_equal": true,
+        "reference_size": [
+          4171,
+          2069
+        ],
+        "actual_size": [
+          4171,
+          2069
+        ],
+        "differing_png_chunks": [
+          "IDAT"
+        ],
+        "decompressed_image_data_equal": true
+      },
+      "depth_comparison_log.png": {
+        "reference_sha256": "472caac399dec0bf883801d4216ae2e8472c0317e78670b8d42bad02b8908ab0",
+        "actual_sha256": "8ccb3a6f493c82f41ca5f3748fd7e4e2ba4b145a8947aeade6ef6e3bfdf25cc6",
+        "bytes_equal": false,
+        "pixels_equal": true,
+        "reference_size": [
+          4171,
+          2069
+        ],
+        "actual_size": [
+          4171,
+          2069
+        ],
+        "differing_png_chunks": [
+          "IDAT"
+        ],
+        "decompressed_image_data_equal": true
+      },
+      "gates_comparison_log.png": {
+        "reference_sha256": "b20a46acce1bdec1f99c1bcba4c4a465637469fa8b98ba7980979d48a3239ecb",
+        "actual_sha256": "31813265352cb9a630ec3fb747b3a1c9ea07c6e0f1099c2709b6fe4bb2285c8f",
+        "bytes_equal": false,
+        "pixels_equal": true,
+        "reference_size": [
+          4171,
+          2069
+        ],
+        "actual_size": [
+          4171,
+          2069
+        ],
+        "differing_png_chunks": [
+          "IDAT"
+        ],
+        "decompressed_image_data_equal": true
+      },
+      "ieee_success_probability.png": {
+        "reference_sha256": "ce15ec07617f62acab4aeba78232b269a4f8efcd3063ed0705cba8e4fa26207d",
+        "actual_sha256": "e7f5772c92bb8d47c42daa666c84bb1aced4dc2f3e81c0370a1eed3e9943c680",
+        "bytes_equal": false,
+        "pixels_equal": true,
+        "reference_size": [
+          3447,
+          2445
+        ],
+        "actual_size": [
+          3447,
+          2445
+        ],
+        "differing_png_chunks": [
+          "IDAT"
+        ],
+        "decompressed_image_data_equal": true
+      }
+    },
+    "hardware_input": "data/execution/20250829_161926/execution_comparison.csv",
+    "hardware_input_sha256": "3485f5da041529aae3247de0ce81ef4d6d1d051686b70fe1287e6c3020a5a110",
+    "hardware_evidence": "Saved summary probabilities; no raw counts recovered",
+    "rendering": {
+      "matplotlib": "3.10.5",
+      "freetype": "2.6.1",
+      "backend": "Agg",
+      "figure_dpi": 200,
+      "font_sha256": "3fdf69cabf06049ea70a00b5919340e2ce1e6d02b0cc3c4b44fb6801bd1e0d22"
+    }
+  },
+  "evaluation": {
+    "status": "blocked",
+    "reason": "Recover the original Qiskit depth(mcx_decomposition=True) patch"
+  }
+}

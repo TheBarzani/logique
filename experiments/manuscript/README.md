@@ -110,7 +110,8 @@ Use the existing Python 3.10 research environment without synchronizing it:
 .venv/bin/python tools/reproduce_manuscript.py --stage all --manuscript docs/manuscript
 ```
 
-Each invocation creates a fresh directory under `dump/manuscript-<timestamp>/`.
+Each invocation creates a fresh directory under
+`dump/MMDDHHMMSS-manuscript-<stage>/`, using local time.
 The `all` stage regenerates circuits and metrics first, compares them against the
 archived CSV, and plots the **newly generated CSV**. The run contains:
 

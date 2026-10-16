@@ -1,7 +1,6 @@
 """Install the manuscript's opt-in MCX tree-depth estimate in Qiskit 2.1.1."""
 
 import ast
-from datetime import datetime, timezone
 import difflib
 import hashlib
 import inspect
@@ -91,6 +90,7 @@ def patched_source(source: str) -> str:
 def main() -> None:
     import qiskit
     from qiskit import QuantumCircuit
+    from logique.paths import new_dump_directory
 
     target = Path(inspect.getfile(QuantumCircuit)).resolve()
     source = target.read_text()
@@ -103,15 +103,7 @@ def main() -> None:
     replacement = patched_source(source)
     if sha256(replacement) != model["patched_source_sha256"]:
         raise ValueError("Patch and recorded model hash disagree")
-    backup = (
-        ROOT
-        / "dump"
-        / (
-            "qiskit-depth-backup-"
-            + datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%S%fZ")
-        )
-    )
-    backup.mkdir(parents=True)
+    backup = new_dump_directory("qiskit-depth-backup", root=ROOT / "dump")
     (backup / "quantumcircuit.py").write_text(source)
     (backup / "applied.patch").write_text(
         "".join(

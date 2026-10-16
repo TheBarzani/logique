@@ -1,11 +1,12 @@
 """Minimal imports, explicit paths, and CLI failure contracts."""
 
 import json
+from datetime import datetime
 import subprocess
 import sys
 import pytest
 from logique.cli.main import main
-from logique.paths import native_executable
+from logique.paths import native_executable, dump_directory_name, new_dump_directory
 from logique.benchmarks.runner import load_config, new_run_directory
 
 
@@ -61,6 +62,35 @@ def test_default_runs_use_unique_dump_directories(tmp_path, monkeypatch):
     assert first != second
     assert (first / "important.txt").read_text() == "preserve"
     assert not (tmp_path / "results").exists()
+
+
+def test_dump_names_use_local_time_and_descriptive_slugs():
+    when = datetime(2026, 10, 10, 13, 4, 5)
+    assert dump_directory_name("Coloring Phase_Oracle", when=when) == (
+        "1010130405-coloring-phase-oracle"
+    )
+    with pytest.raises(ValueError, match="descriptive"):
+        dump_directory_name("---", when=when)
+
+
+def test_same_second_dumps_preserve_existing_files_and_runs(tmp_path):
+    when = datetime(2026, 1, 2, 3, 4, 5)
+    existing = tmp_path / "0102030405-study"
+    existing.write_text("preserve file")
+    first = new_dump_directory("study", root=tmp_path, when=when)
+    (first / "important.txt").write_text("preserve run")
+    second = new_dump_directory("study", root=tmp_path, when=when)
+    assert first.name == "0102030405-study-2"
+    assert second.name == "0102030405-study-3"
+    assert existing.read_text() == "preserve file"
+    assert (first / "important.txt").read_text() == "preserve run"
+
+
+def test_run_description_and_dump_root(tmp_path):
+    output = new_run_directory(description="Boolean Workspace", root=tmp_path)
+    assert output.parent == tmp_path
+    assert output.name[:10].isdigit()
+    assert output.name[10:] == "-boolean-workspace"
 
 
 def test_missing_native_helper_points_to_relocated_source(monkeypatch):

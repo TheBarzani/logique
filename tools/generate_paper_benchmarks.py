@@ -1,4 +1,8 @@
-"""Replay the original paper methodology through src/logique and compare costs."""
+"""Regenerate paper circuits through src/logique and compare historical costs.
+
+Run all nine graphs, or use ``--graphs K3`` for a small example. Each run saves
+circuits, verification details, historical metrics, and an all-measured comparison.
+"""
 
 # ruff: noqa: E402
 
@@ -35,20 +39,30 @@ VARIANTS = ("original", "minimal", "simple", "balanced")
 def paper_metrics(circuit: QuantumCircuit) -> dict[str, int]:
     """Keep the original MCX width allowance, tree-weighted depth, and gate count."""
     mcx = [gate.operation for gate in circuit.data if gate.operation.name == "mcx"]
+
+    # Historical width sums the n-2 ancillas for each MCX, excluding the last
+    # MCX (assumed to belong to diffusion). This is an allowance, not allocated wires.
+    extra_ancillas = sum(max(0, gate.num_ctrl_qubits - 2) for gate in mcx[:-1])
     return {
-        "width": circuit.num_qubits
-        + sum(max(0, g.num_ctrl_qubits - 2) for g in mcx[:-1]),
+        "width": circuit.num_qubits + extra_ancillas,
+        # The local Qiskit patch weights MCX by ceil(log2(n)) for n controls.
         "depth": circuit.depth(mcx_decomposition=True),
+        # Match the original instruction count, including barriers and measurements.
         "gates": len(circuit),
     }
 
 
 def generate(output: Path | None = None, graphs: list[str] | None = None) -> Path:
     """Synthesize and verify each graph, save circuits, and compare all old/new costs."""
+
+    # Archived numbers supply graph names and comparison targets only. All new
+    # metrics below come from freshly synthesized circuits.
     reference = pd.read_csv(REFERENCE).set_index("benchmark")
     names = list(reference.index) if graphs is None else graphs
     reference = reference.loc[names]
-    output = new_run_directory(output)
+    output = new_run_directory(
+        output, description="paper-benchmarks", root=ROOT / "dump"
+    )
     executable = os.environ.get(
         "LOGIQUE_NATIVE_EXECUTABLE",
         str(ROOT / "external/native/boolean_synthesis/build/boolean_synthesis"),
@@ -72,69 +86,100 @@ def generate(output: Path | None = None, graphs: list[str] | None = None) -> Pat
         "status": "running",
         "cases": [],
     }
-    rows, measured_rows = [], []
+    historical_rows, measured_rows = [], []
     for name in names:
         print(name, flush=True)
         original = read_dimacs(ROOT / "datasets/graphs/benchmarks" / f"{name}.col")
+
+        # Replay the original predicate: edge inequalities, without precolors or
+        # constraints excluding unused binary color codes.
         problem = replace(original, precolored={})
         expression, variables = edge_coloring_expression(problem)
-        result = synthesize_expression(expression, variables, executable=executable)
-        (output / f"{name}.v").write_text(result.metadata["source_verilog"])
-        bits = (problem.colors - 1).bit_length()
-        # The edge-only oracle accepts all binary colors, including unused codes.
-        encoding = encode_coloring(replace(problem, colors=1 << bits))
-        sampled = encoding.input_count > 12
-        phase = verify_kickback_oracle(
-            result, encoding=encoding, sampled=sampled, seed=7
+        synthesis = synthesize_expression(expression, variables, executable=executable)
+        (output / f"{name}.v").write_text(synthesis.metadata["source_verilog"])
+
+        # Verification must accept the same unused codes as the edge-only oracle.
+        bits_per_color = (problem.colors - 1).bit_length()
+        reference_encoding = encode_coloring(
+            replace(problem, colors=1 << bits_per_color)
+        )
+        input_count = reference_encoding.input_count
+
+        # Exhaustively check small inputs; use a fixed sample for larger graphs.
+        # Both output-target initializations are checked for clean XOR action.
+        verification = verify_kickback_oracle(
+            synthesis, encoding=reference_encoding, sampled=input_count > 12, seed=7
         )
         manifest["cases"].append(
-            {"benchmark": name, "removed_precolors": dict(original.precolored), **phase}
+            {
+                "benchmark": name,
+                "removed_precolors": dict(original.precolored),
+                **verification,
+            }
         )
-        preparation = QuantumCircuit(encoding.input_count)
-        uniform = QuantumCircuit(bits)
-        uniform.append(UniformSuperpositionGate(problem.colors), range(bits))
-        uniform = uniform.decompose()
-        for start in range(0, encoding.input_count, bits):
-            preparation.compose(uniform, range(start, start + bits), inplace=True)
-        reflection = QuantumCircuit(encoding.input_count)
-        reflection.h(range(encoding.input_count))
-        row = {
+
+        # Initially, VCGC gives each vertex a uniform superposition of valid colors.
+        preparation = QuantumCircuit(input_count)
+        vertex_preparation = QuantumCircuit(bits_per_color)
+        vertex_preparation.append(
+            UniformSuperpositionGate(problem.colors), range(bits_per_color)
+        )
+        vertex_preparation = vertex_preparation.decompose()
+        for start in range(0, input_count, bits_per_color):
+            preparation.compose(
+                vertex_preparation, range(start, start + bits_per_color), inplace=True
+            )
+
+        # Historical diffusion instead reflects about the full binary superposition,
+        # including unused codes. Preserve this distinction from initial preparation.
+        reflection_preparation = QuantumCircuit(input_count)
+        reflection_preparation.h(range(input_count))
+
+        historical_row = {
             "benchmark": name,
             "nodes": len(problem.vertices),
             "edges": len(problem.edges),
             "colors": problem.colors,
         }
-        measured_row = dict(row)
+        measured_row = dict(historical_row)
         for method in ("vcgc", *(f"sb_{variant}" for variant in VARIANTS)):
-            circuit = (
-                kickback_grover_circuit(
-                    result,
+            if method == "vcgc":
+
+                # One oracle application with its output in |minus> supplies phase
+                # kickback. The XAG cleans its workspace internally; no outer inverse.
+                circuit = kickback_grover_circuit(
+                    synthesis,
                     preparation=preparation,
-                    reflection_preparation=reflection,
+                    reflection_preparation=reflection_preparation,
                 )
-                if method == "vcgc"
-                else comparison_circuit(
+            else:
+
+                # Keep the original one-based labels, including their mismatch with
+                # the baseline's indexing. Its Hadamard preparation is unchanged.
+                circuit = comparison_circuit(
                     problem,
                     method[3:],
                     iterations=1,
                     preserve_labels=True,
                     measure=True,
                 )
-            )
+
+            # The original table measured baselines but left VCGC unmeasured.
             with (output / f"{name}_{method}.qasm").open("w") as stream:
                 dump(circuit, stream)
-            row.update(
+            historical_row.update(
                 {
                     f"{method}_{key}": value
                     for key, value in paper_metrics(circuit).items()
                 }
             )
             if method == "vcgc":
-                circuit.add_register(ClassicalRegister(encoding.input_count, "creg"))
+
+                # Add the same final barrier and input measurements as the baselines
+                # for the separate, measurement-consistent comparison.
+                circuit.add_register(ClassicalRegister(input_count, "creg"))
                 circuit.barrier()
-                circuit.measure(
-                    range(encoding.input_count), range(encoding.input_count)
-                )
+                circuit.measure(range(input_count), range(input_count))
                 with (output / f"{name}_vcgc_measured.qasm").open("w") as stream:
                     dump(circuit, stream)
             measured_row.update(
@@ -143,13 +188,17 @@ def generate(output: Path | None = None, graphs: list[str] | None = None) -> Pat
                     for key, value in paper_metrics(circuit).items()
                 }
             )
-        rows.append(row)
+        historical_rows.append(historical_row)
         measured_rows.append(measured_row)
-        pd.DataFrame(rows).to_csv(
+
+        # Save completed graphs as we go; CRLF matches the historical CSV format.
+        pd.DataFrame(historical_rows).to_csv(
             output / "benchmark_results.csv", index=False, lineterminator="\r\n"
         )
         (output / "run.json").write_text(json.dumps(manifest, indent=2) + "\n")
-    current = pd.DataFrame(rows).set_index("benchmark")
+
+    # Compare each freshly computed metric with the corresponding archived value.
+    current = pd.DataFrame(historical_rows).set_index("benchmark")
     current = current[
         [
             column

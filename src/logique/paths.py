@@ -1,8 +1,37 @@
-"""Explicit, working-directory-independent paths for native tools and caches."""
+"""Paths for timestamped dumps, native tools, and caches."""
 
+from datetime import datetime
 import os
-import shutil
 from pathlib import Path
+import re
+import shutil
+
+
+def dump_directory_name(description: str, *, when: datetime | None = None) -> str:
+    """Name a dump using local MMDDHHMMSS time and a descriptive slug."""
+    slug = re.sub(r"[^a-z0-9]+", "-", description.lower()).strip("-")
+    if not slug:
+        raise ValueError("A dump requires a descriptive name")
+    timestamp = (when or datetime.now()).astimezone()
+    return f"{timestamp:%m%d%H%M%S}-{slug}"
+
+
+def new_dump_directory(
+    description: str, *, root: str | Path = "dump", when: datetime | None = None
+) -> Path:
+    """Create a timestamped dump, adding a numeric suffix for name collisions."""
+    name = dump_directory_name(description, when=when)
+    root = Path(root)
+    root.mkdir(parents=True, exist_ok=True)
+    index = 1
+    while True:
+        path = root / (name if index == 1 else f"{name}-{index}")
+        try:
+            path.mkdir()
+        except FileExistsError:
+            index += 1
+        else:
+            return path.resolve()
 
 
 def cache_directory(cache: str | Path | None = None) -> Path:

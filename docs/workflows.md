@@ -2,6 +2,12 @@
 
 Run commands from the checkout after [setup](setup.md), or invoke installed `logique` from another directory with explicit input paths. New experiment output directories must not already exist.
 
+Default runs use `dump/MMDDHHMMSS-descriptive-name/` in local time. Sort names
+descending for newest-first browsing within a year. Use
+`new_run_directory(description="my-study")` from Python; related figures and data
+belong inside that directory. Explicit output paths are used as supplied and
+should follow the same convention.
+
 ## Synthesize and verify
 
 ```bash
@@ -20,7 +26,7 @@ A synthesis export contains JSON metadata and QPY with the raw computation follo
 ## Inspect results
 
 ```bash
-uv run --no-sync logique plot dump/YOUR_RUN/summary.csv --metric depth --output dump/depth.png
+uv run --no-sync logique plot dump/YOUR_RUN/summary.csv --metric depth --output dump/YOUR_RUN/depth.png
 ```
 
 The same reader handles historical wide CSV and nested JSON comparison formats, available on `legacy/vcgc`. Export a historical table into `dump/` to inspect it in this checkout. `--normalize` uses an XAG/Logique baseline; `--log` changes the vertical scale. Timings are individual wall-clock measurements, not statistical speedup claims. Optional `decomposed_metrics()` requires an explicit target basis and reports its counts separately.
@@ -54,8 +60,8 @@ Copy `.env.example` to `.env` and configure your own account, or use an account 
 
 ```bash
 uv run --no-sync logique hardware submit dump/YOUR_RUN/circuit.qpy --input-qubits 0 1 2 3 --backend YOUR_BACKEND --shots 1024
-uv run --no-sync logique hardware retrieve YOUR_JOB_ID --output dump/counts.json
-uv run --no-sync logique hardware analyze dump/counts.json --graph datasets/graphs/teaching/edge.col
+uv run --no-sync logique hardware retrieve YOUR_JOB_ID --output dump/YOUR_RUN/counts.json
+uv run --no-sync logique hardware analyze dump/YOUR_RUN/counts.json --graph datasets/graphs/teaching/edge.col
 ```
 
 Submission requires a QPY containing one unmeasured circuit. Input-qubit order must match the encoding; only those wires are measured. The CLI returns and saves the job identifier immediately. Retrieval and analysis do not submit new jobs. The adapter uses IBM's [SamplerV2 interface](https://quantum.cloud.ibm.com/docs/en/api/qiskit-ibm-runtime/sampler-v2). Routine tests mock submission; no hardware experiment is part of the refactor validation.

@@ -8,6 +8,13 @@ Logique compiles graph-coloring predicates and general Boolean functions into qu
 - `experiments/tutorials/` and `experiments/studies/`: maintained notebooks; source outputs stay empty.
 - `configs/`: JSON experiment configurations; paths resolve relative to the config.
 - `datasets/`: source inputs. New generated outputs belong in ignored `dump/`.
+- Name every new top-level dump file or run folder `MMDDHHMMSS-descriptive-name`
+  using local time (two digits each for month, day, 24-hour hour, minute, and
+  second), for example `1010130405-coloring-phase-oracle`. Keep related artifacts
+  inside that run folder with stable filenames. Use
+  `logique.benchmarks.runner.new_run_directory(description="...")` or
+  `logique.paths.new_dump_directory("...")`; same-second collisions receive a
+  numeric suffix. Explicit output paths must follow this convention too.
 - `legacy/vcgc` branch: historical research, tooling, and paper results.
 - `external/native/boolean_synthesis/`: C++17 bridge with pinned Caterpillar dependencies.
 - `external/`: ABC, Caterpillar, Mockturtle, Saha-Belletti, and tweedledum submodules plus the native bridge. Preserve dependency revisions and keep their changes separate.

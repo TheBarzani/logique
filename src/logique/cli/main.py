@@ -154,7 +154,9 @@ def dispatch(args) -> None:
                 ),
                 iterations=args.iterations,
             )
-        output = new_run_directory(args.output)
+        output = new_run_directory(
+            args.output, description=f"{args.input.stem}-{args.method}-{args.view}"
+        )
         result.metadata["run"] = {
             "id": output.name,
             "view": args.view,
@@ -211,7 +213,9 @@ def dispatch(args) -> None:
                 circuits = qpy.load(stream)
             if len(circuits) != 1:
                 raise ValueError("Submit a QPY containing exactly one selected circuit")
-            output = new_run_directory(args.output)
+            output = new_run_directory(
+                args.output, description=f"{args.backend}-hardware-submission"
+            )
             record = submit(
                 circuits[0],
                 args.input_qubits,

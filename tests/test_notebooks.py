@@ -32,7 +32,10 @@ def test_maintained_sources_are_unexecuted_and_parse():
                 assert "build_native(" not in source
 
 
-def test_notebook_runner_keeps_source_and_records_failure(tmp_path):
+@pytest.mark.parametrize("explicit_output", [False, True])
+def test_notebook_runner_keeps_source_and_records_failure(
+    tmp_path, monkeypatch, explicit_output
+):
     nbformat = pytest.importorskip("nbformat")
     pytest.importorskip("nbclient")
     from nbclient.exceptions import CellExecutionError
@@ -46,9 +49,18 @@ def test_notebook_runner_keeps_source_and_records_failure(tmp_path):
         source,
     )
     original = source.read_bytes()
-    output = tmp_path / "run"
+    monkeypatch.chdir(tmp_path)
+    output = tmp_path / "run" if explicit_output else None
     with pytest.raises(CellExecutionError):
         execute_notebook(source, output=output, offline=True, workspace=tmp_path)
+    if output is None:
+        runs = list((tmp_path / "dump").iterdir())
+        assert len(runs) == 1
+        output = runs[0]
+        assert output.name[:10].isdigit()
+        assert output.name[10:] == "-example-notebook"
     assert source.read_bytes() == original
-    assert json.loads((output / "run.json").read_text())["status"] == "failed"
+    manifest = json.loads((output / "run.json").read_text())
+    assert manifest["status"] == "failed"
+    assert manifest["run_id"] == output.name
     assert (output / "example_executed.ipynb").is_file()

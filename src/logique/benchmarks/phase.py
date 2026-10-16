@@ -41,7 +41,9 @@ def run_phase_benchmarks(config: dict, *, executable=None) -> Path:
         "sha256": hashlib.sha256(tool.read_bytes()).hexdigest(),
         "build": json.loads(build_info.read_text()) if build_info.exists() else None,
     }
-    output = new_run_directory(config.get("output"))
+    output = new_run_directory(
+        config.get("output"), description="coloring-phase-oracle-benchmark"
+    )
     manifest = {
         "schema_version": 1,
         "run_id": output.name,

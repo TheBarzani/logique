@@ -29,7 +29,7 @@ def execute_notebook(
     root = Path(workspace).resolve() if workspace else Path.cwd().resolve()
     notebook = nbformat.read(source, as_version=4)
     nbformat.validate(notebook)
-    directory = new_run_directory(output)
+    directory = new_run_directory(output, description=f"{source.stem}-notebook")
     manifest = {
         "run_id": directory.name,
         "source": str(source),

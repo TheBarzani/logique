@@ -3,9 +3,9 @@
 import os
 from pathlib import Path
 import shlex
+import runpy
 import subprocess
 import sys
-from uuid import uuid4
 
 
 def preserve_relocated_build(root: Path) -> None:
@@ -22,9 +22,14 @@ def preserve_relocated_build(root: Path) -> None:
             None,
         )
         if home and Path(home).resolve() != source.resolve():
-            destination = root / "dump/relocation" / f"tweedledum-build-{uuid4().hex}"
-            destination.parent.mkdir(parents=True, exist_ok=True)
-            build.rename(destination)
+            # Setup may run before Logique or its core dependencies are installed.
+            paths = runpy.run_path(
+                str(Path(__file__).resolve().parents[1] / "src/logique/paths.py")
+            )
+            destination = paths["new_dump_directory"](
+                "tweedledum-build-relocation", root=root / "dump"
+            )
+            build.rename(destination / "_skbuild")
             print(f"Preserved relocated tweedledum build at {destination}", flush=True)
             return
 

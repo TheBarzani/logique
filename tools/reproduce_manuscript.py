@@ -386,10 +386,11 @@ def main() -> int:
     parser.add_argument("--manuscript", type=Path)
     parser.add_argument("--figure-dpi", type=float, default=200)
     args = parser.parse_args()
-    output = args.output or ROOT / "dump" / (
-        "manuscript-" + datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%S%fZ")
+    from logique.benchmarks.runner import new_run_directory
+
+    output = new_run_directory(
+        args.output, description=f"manuscript-{args.stage}", root=ROOT / "dump"
     )
-    output.mkdir(parents=True, exist_ok=False)
     report = {
         "stage": args.stage,
         "runner_sha256": digest(Path(__file__)),

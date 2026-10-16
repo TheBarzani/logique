@@ -56,7 +56,12 @@ uv run --no-sync logique datasets fetch --cache .cache/epfl
 uv run --no-sync logique notebook run experiments/tutorials/boolean_workspace.ipynb --offline
 ```
 
-Non-final outputs go to unique directories under ignored `dump/`. Source notebooks remain unexecuted in Git. Historical VCGC results remain on `legacy/vcgc`.
+Non-final outputs go to unique directories under ignored `dump/`, named
+`MMDDHHMMSS-descriptive-name` in local time (for example,
+`1010130405-coloring-phase-oracle`). Sort names descending to browse the newest
+runs first within the year. Related artifacts keep stable filenames inside each
+run. Source notebooks remain unexecuted in Git. Historical VCGC results remain
+on `legacy/vcgc`.
 
 | Folder | Contents |
 | --- | --- |

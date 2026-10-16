@@ -1,27 +1,24 @@
 """Configuration-driven runs shared by the CLI and research notebooks."""
 
-from datetime import datetime, timezone
 import hashlib
 import json
 from pathlib import Path
 import time
-from uuid import uuid4
 from logique.coloring import read_dimacs, encode_coloring
+from logique.paths import new_dump_directory
 from .provenance import environment, checkout_revision
 
 
-def new_run_directory(output: str | Path | None = None) -> Path:
-    """Allocate a new run directory without overwriting an existing experiment."""
-    path = (
-        Path(output)
-        if output
-        else Path("dump")
-        / (
-            datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%SZ")
-            + "-"
-            + uuid4().hex[:8]
-        )
-    )
+def new_run_directory(
+    output: str | Path | None = None,
+    *,
+    description: str = "benchmark",
+    root: str | Path = "dump",
+) -> Path:
+    """Allocate a timestamped run, or use an explicit path without overwriting."""
+    if output is None:
+        return new_dump_directory(description, root=root)
+    path = Path(output)
     path.mkdir(parents=True, exist_ok=False)
     return path.resolve()
 
@@ -89,7 +86,9 @@ def run_benchmarks(config: dict, *, executable=None) -> Path:
         from .phase import run_phase_benchmarks
 
         return run_phase_benchmarks(config, executable=executable)
-    output = new_run_directory(config.get("output"))
+    kind = config.get("kind", "synthesis").replace("_", "-")
+    subject = inputs[0].stem if len(inputs) == 1 else "benchmark"
+    output = new_run_directory(config.get("output"), description=f"{subject}-{kind}")
     manifest = {
         "schema_version": 1,
         "run_id": output.name,

@@ -30,6 +30,7 @@ The same reader handles historical wide CSV and nested JSON comparison formats, 
 ```bash
 uv run --no-sync logique notebook run experiments/tutorials/graph_coloring.ipynb --offline
 uv run --no-sync logique notebook run experiments/tutorials/boolean_workspace.ipynb --offline
+uv run --no-sync logique notebook run experiments/tutorials/paper_benchmark_walkthrough.ipynb --offline
 uv run --no-sync logique notebook run experiments/studies/coloring_comparison.ipynb --offline
 uv run --no-sync logique notebook run experiments/studies/boolean_visual_study.ipynb --offline
 ```
@@ -37,6 +38,15 @@ uv run --no-sync logique notebook run experiments/studies/boolean_visual_study.i
 The runner uses the invoking interpreter, a temporary kernel specification, and a fresh results directory. Use `--workspace /path/to/checkout` when launching elsewhere. The notebook source is never overwritten, including on execution failure. Offline execution blocks Python socket connections in the notebook kernel; this is a reproducibility check, not an operating-system network sandbox.
 
 For interactive use, select the research environment's kernel and launch from the repository root. Source cells call shared library functions; executed notebooks and figures belong in `dump/`.
+
+The [paper benchmark walkthrough](../experiments/tutorials/paper_benchmark_walkthrough.ipynb)
+builds K3 step by step, visualizes its graph, Boolean logic, quantum circuits,
+and probabilities, then reconciles all five methods with the paper generator.
+It requires the comparison and notebook extras, the native bridge, system
+Graphviz, and the manuscript MCX-depth patch (`tools/patch_qiskit_depth.py`).
+It preserves the historical edge-only predicate, preparation/reflection choices,
+and measurement accounting. Generator artifacts and provenance are saved in a
+`paper-replay/` subfolder of the notebook run.
 
 ## IBM execution
 

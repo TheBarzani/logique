@@ -12,6 +12,7 @@ def test_maintained_sources_are_unexecuted_and_parse():
     required = {
         "tutorials/graph_coloring.ipynb",
         "tutorials/boolean_workspace.ipynb",
+        "tutorials/paper_benchmark_walkthrough.ipynb",
         "studies/boolean_visual_study.ipynb",
         "studies/coloring_comparison.ipynb",
         "studies/guarded_phase_oracle_two_ancillas.ipynb",

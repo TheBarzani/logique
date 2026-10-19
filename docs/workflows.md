@@ -45,14 +45,16 @@ The runner uses the invoking interpreter, a temporary kernel specification, and 
 
 For interactive use, select the research environment's kernel and launch from the repository root. Source cells call shared library functions; executed notebooks and figures belong in `dump/`.
 
-The [paper benchmark walkthrough](../experiments/tutorials/paper_benchmark_walkthrough.ipynb)
+The [illustrative_example_v2](../experiments/tutorials/illustrative_example_v2.ipynb)
 builds K3 step by step, visualizes its graph, Boolean logic, quantum circuits,
-and probabilities, then reconciles all five methods with the paper generator.
+and probabilities, then compares all five methods with the archived paper row.
+It defines the variants and historical metrics in the notebook and exports the
+circuits it builds, without importing or running the paper generator.
 It requires the comparison and notebook extras, the native bridge, system
 Graphviz, and the manuscript MCX-depth patch (`tools/patch_qiskit_depth.py`).
 It preserves the historical edge-only predicate, preparation/reflection choices,
-and measurement accounting. Generator artifacts and provenance are saved in a
-`paper-replay/` subfolder of the notebook run.
+and measurement accounting. Circuits, cost tables, figures, and
+`benchmark_manifest.json` are saved directly in the notebook run folder.
 
 ## IBM execution
 

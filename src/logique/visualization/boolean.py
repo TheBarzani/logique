@@ -1,24 +1,48 @@
 """Readable equations, connected Schemdraw circuits, and Boolean DAGs."""
 
 from collections import Counter
+from collections.abc import Sequence
 import json
+from typing import TYPE_CHECKING
 
 import numpy as np
 
+if TYPE_CHECKING:
+    from graphviz import Digraph
+    from matplotlib.figure import Figure
 
-def signal_names(graph):
+
+def signal_names(graph: dict, *, input_labels: Sequence[str] | None = None) -> dict:
+    """Name signals, optionally labeling inputs in ``graph["inputs"]`` order.
+
+    Labels must be nonempty, unique, and distinct from internal/output names.
+    Omit them to retain the generic ``x_0``, ``x_1``, ... input names.
+    """
     names = {n: f"x_{i}" for i, n in enumerate(graph["inputs"])}
     for node in graph["nodes"]:
         if node["kind"] == "constant":
             names[node["id"]] = str(int(node["value"]))
         elif node["kind"] != "input":
             names[node["id"]] = f"t_{node['id']}"
+    if input_labels is not None:
+        if len(input_labels) != len(graph["inputs"]):
+            raise ValueError("Provide exactly one label per graph input")
+        if any(not isinstance(label, str) or not label for label in input_labels):
+            raise ValueError("Input labels must be nonempty strings")
+        reserved = {name for node, name in names.items() if node not in graph["inputs"]}
+        reserved.update(f"y_{i}" for i in range(len(graph["outputs"])))
+        reserved.update(("0", "1"))
+        if len(set(input_labels)) != len(input_labels) or reserved & set(input_labels):
+            raise ValueError(
+                "Input labels must be unique and distinct from other signals"
+            )
+        names.update(zip(graph["inputs"], input_labels))
     return names
 
 
-def gate_rows(graph):
+def gate_rows(graph: dict, *, input_labels: Sequence[str] | None = None) -> list[dict]:
     """Factored equations; De Morgan changes notation, not the network function."""
-    names = signal_names(graph)
+    names = signal_names(graph, input_labels=input_labels)
     rows = []
     for node in graph["nodes"]:
         if node["kind"] in ("input", "constant"):
@@ -65,8 +89,11 @@ def equation_latex(row):
     return latex_name(row["output"]) + " &= " + expression
 
 
-def latex_blocks(graph, rows_per_block=8):
-    rows = gate_rows(graph)
+def latex_blocks(
+    graph: dict, rows_per_block: int = 8, *, input_labels: Sequence[str] | None = None
+) -> list[str]:
+    """Format factored equations with optional input labels in graph input order."""
+    rows = gate_rows(graph, input_labels=input_labels)
     return [
         r"\begin{aligned}"
         + " \\\\ ".join(equation_latex(r) for r in rows[i : i + rows_per_block])
@@ -75,16 +102,19 @@ def latex_blocks(graph, rows_per_block=8):
     ]
 
 
-def evaluate_gate_rows(graph, assignments):
+def evaluate_gate_rows(
+    graph: dict, assignments: np.ndarray, *, input_labels: Sequence[str] | None = None
+) -> np.ndarray:
     """Independent check of the displayed factored equations and gate sheet."""
-    values = {f"x_{i}": assignments[i] for i in range(len(graph["inputs"]))}
+    names = signal_names(graph, input_labels=input_labels)
+    values = {names[node]: assignments[i] for i, node in enumerate(graph["inputs"])}
     values.update(
         {
             "0": np.zeros(assignments.shape[1], bool),
             "1": np.ones(assignments.shape[1], bool),
         }
     )
-    for row in gate_rows(graph):
+    for row in gate_rows(graph, input_labels=input_labels):
         args = [values[name] ^ inv for name, inv in row["args"]]
         if row["op"] == "AND":
             value = np.logical_and.reduce(args)
@@ -117,7 +147,7 @@ def _schematic_gate(row):
     return classes[row["op"]](**options).right()
 
 
-def schematic_layout(graph: dict) -> dict:
+def schematic_layout(graph: dict, *, input_labels: Sequence[str] | None = None) -> dict:
     """Route each factored-netlist fanin to a measured Schemdraw gate pin.
 
     Graphviz supplies obstacle-aware cubic splines, not the visible symbols.
@@ -127,7 +157,7 @@ def schematic_layout(graph: dict) -> dict:
     import schemdraw
     from graphviz import Digraph
 
-    rows = gate_rows(graph)
+    rows = gate_rows(graph, input_labels=input_labels)
     by_name = {row["output"]: row for row in rows}
     sources = sorted({name for row in rows for name, _ in row["args"]} - by_name.keys())
     dot = Digraph(
@@ -208,14 +238,16 @@ def schematic_layout(graph: dict) -> dict:
     }
 
 
-def schematic_figure(graph: dict):
+def schematic_figure(
+    graph: dict, *, input_labels: Sequence[str] | None = None
+) -> "Figure":
     """Draw a single fully connected circuit, retaining shared gates and nets."""
     import matplotlib.pyplot as plt
     import schemdraw
     import schemdraw.elements as elm
     from schemdraw.segments import SegmentBezier
 
-    layout = schematic_layout(graph)
+    layout = schematic_layout(graph, input_labels=input_labels)
     coordinates = np.vstack(list(layout["outputs"].values()))
     span = np.ptp(coordinates, axis=0)
     fig, ax = plt.subplots(
@@ -289,7 +321,9 @@ def graph_stats(graph):
     }
 
 
-def graphviz_graph(graph, title):
+def graphviz_graph(
+    graph: dict, title: str, *, input_labels: Sequence[str] | None = None
+) -> "Digraph":
     """Layered vector DAG with explicit fanin ports and inversion markers."""
     from graphviz import Digraph
 
@@ -308,7 +342,7 @@ def graphviz_graph(graph, title):
         node_attr={"fontname": "Helvetica", "fontsize": "10", "style": "filled"},
         edge_attr={"arrowsize": ".6", "color": "#69737d"},
     )
-    names = signal_names(graph)
+    names = signal_names(graph, input_labels=input_labels)
     used = {f["node"] for n in graph["nodes"] for f in n["fanins"]} | {
         o["node"] for o in graph["outputs"]
     }
@@ -353,9 +387,9 @@ def graphviz_graph(graph, title):
     return dot
 
 
-def lut_table(graph):
+def lut_table(graph: dict, *, input_labels: Sequence[str] | None = None) -> list[dict]:
     """Exact LUT definitions, with port 0 the least significant assignment bit."""
-    names = signal_names(graph)
+    names = signal_names(graph, input_labels=input_labels)
     return [
         {
             "node": names[n["id"]],

@@ -52,7 +52,7 @@ class ColoringProblem:
         """Return a fresh graph with integer precolor attributes."""
         import networkx as nx
 
-        graph = nx.Graph()
+        graph : nx.Graph = nx.Graph()
         graph.add_nodes_from(self.vertices)
         graph.add_edges_from(self.edges)
         nx.set_node_attributes(graph, dict(self.precolored), "color")

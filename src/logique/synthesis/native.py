@@ -43,4 +43,16 @@ def run_native(path: str | Path, method: str, *, executable=None, **parameters) 
         raise RuntimeError("Native synthesis returned invalid JSON") from error
     if not isinstance(response, dict) or "network" not in response:
         raise RuntimeError("Native synthesis returned an invalid response")
+    if "preprocessing" in parameters:
+        evidence = response.get("preprocessing")
+        if (
+            not isinstance(evidence, dict)
+            or evidence.get("common") is not True
+            or evidence.get("policy") != parameters["preprocessing"]
+            or not isinstance(evidence.get("before_network"), dict)
+            or not isinstance(evidence.get("after_network"), dict)
+        ):
+            raise RuntimeError(
+                "Native bridge did not confirm the requested common preprocessing"
+            )
     return response

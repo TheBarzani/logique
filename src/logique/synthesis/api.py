@@ -20,11 +20,19 @@ def synthesize(
     outputs=None,
     outer_cut: int = 16,
     inner_cut: int = 4,
+    preprocessing: str | None = None,
     executable=None,
 ) -> SynthesisResult:
-    """Synthesize a raw computation; oracle wrappers explicitly restore workspace."""
+    """Synthesize a raw computation; oracle wrappers explicitly restore workspace.
+
+    Explicit ``preprocessing='none'`` or ``'refactoring'`` selects a common XAG
+    before conversion to each representation. Omission preserves legacy defaults
+    (unrefactored AIG Bennett, refactored XAG for the other methods).
+    """
     if method not in METHODS:
         raise ValueError(f"method must be one of {METHODS}")
+    if preprocessing is not None and preprocessing not in ("none", "refactoring"):
+        raise ValueError("preprocessing must be none or refactoring")
     if isinstance(source, ColoringEncoding):
         with tempfile.TemporaryDirectory(prefix="logique-coloring-") as directory:
             path = source.write_verilog(Path(directory) / "coloring.v")
@@ -35,6 +43,7 @@ def synthesize(
                 outputs=outputs,
                 outer_cut=outer_cut,
                 inner_cut=inner_cut,
+                preprocessing=preprocessing,
                 executable=executable,
             )
         result.metadata.update(
@@ -57,6 +66,8 @@ def synthesize(
         params.update(outer_cut=outer_cut, inner_cut=inner_cut)
     if outputs is not None:
         params["outputs"] = list(outputs)
+    if preprocessing is not None:
+        params["preprocessing"] = preprocessing
     start = time.perf_counter()
     md = run_native(source, method, executable=executable, **params)
     if method == "xag":

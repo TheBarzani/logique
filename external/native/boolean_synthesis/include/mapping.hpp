@@ -16,15 +16,29 @@ template<class Ntk, class Strategy> json compile(Ntk const& ntk, Strategy& strat
 
 
 inline json map_network(mt::xag_network const& selected, json const& request) {
-        auto xag = mt::cleanup_dangling(selected);
-        mt::bidecomposition_resynthesis<mt::xag_network> resyn;
-        mt::refactoring(xag, resyn);
-        xag = mt::cleanup_dangling(xag);
         const auto method = request.value("method", std::string("xag"));
+        const bool common = request.find("preprocessing") != request.end();
+        const auto policy = common ? request.at("preprocessing").get<std::string>()
+                                   : (method == "aig_bennett" ? "none" : "refactoring");
+        if (policy != "none" && policy != "refactoring")
+            throw std::runtime_error("preprocessing must be none or refactoring");
+        for (auto it = request.begin(); it != request.end(); ++it) {
+            const auto& key = it.key();
+            if (key == "path" || key == "method" || key == "outputs" || key == "preprocessing") continue;
+            if (key == "k" && method == "klut_bennett") continue;
+            if ((key == "inner_cut" || key == "outer_cut") && method == "best_fit") continue;
+            throw std::runtime_error("Unsupported synthesis control: " + key);
+        }
+        auto xag = mt::cleanup_dangling(selected);
+        if (policy == "refactoring") {
+            mt::bidecomposition_resynthesis<mt::xag_network> resyn;
+            mt::refactoring(xag, resyn);
+            xag = mt::cleanup_dangling(xag);
+        }
         json result;
         if (method == "xag") result = {{"network", graph_json(xag)}};
         else if (method == "aig_bennett") {
-            Network<mt::aig_network> ntk(mt::cleanup_dangling<mt::xag_network, mt::aig_network>(selected));
+            Network<mt::aig_network> ntk(mt::cleanup_dangling<mt::xag_network, mt::aig_network>(xag));
             cp::bennett_mapping_strategy<decltype(ntk)> strategy;
             result = compile(ntk, strategy);
         } else if (method == "xag_bennett") {
@@ -52,5 +66,8 @@ inline json map_network(mt::xag_network const& selected, json const& request) {
             cp::best_fit_mapping_strategy<decltype(ntk)> strategy(ps);
             result = compile(ntk, strategy);
         } else throw std::runtime_error("Unknown synthesis method");
+        result["preprocessing"] = {{"policy", policy}, {"common", common},
+                                   {"before_network", graph_json(selected)},
+                                   {"after_network", graph_json(xag)}};
         return result;
 }

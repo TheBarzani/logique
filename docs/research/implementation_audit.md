@@ -14,7 +14,7 @@ Audited on 25 October 2026 from transferred HEAD `3ec511d` on
 | 3 | `costs.py` (`2ed650b`, `2848f21`), `routing.py` (`059e865`), `mcx_decompositions.ipynb` (`3ec511d`) | Explicit restoring and throwaway constructions, exact gadgets, dependency-graph T-depth, Dutta analytical reference, leading-order rotation estimate, success/iteration helpers, five-seed routing, and isolated 3–20-control study exist. Quantum smoke tests passed. Paired monomial compute-Z-uncompute lowering now holds scratch and uses the actual expanded inverse (`8f3a08d`). Whole-algorithm emitted rotation synthesis is under implementation/review. Gray-code rows above ten controls still need bounded execution or explicit infeasibility records; the existing notebook caps them at ten. |
 | 4 | Existing all-bitstrings comparison and phase-oracle runner | The K3/K5/myciel3 logical pilot completed 144 validated cases with 18 explicit original-baseline exclusions and no failures. Every completed case exercised a marked input. All 720 metric rows were reproduced from saved QPY; per-instance strongest-baseline summaries are saved separately (`ba6b5b8`). Full nine-graph/multilevel evaluation, complete workspace classification and protocol freeze remain open; these pilot results are not headline evidence. |
 | 5 | Five maintained synthesis methods, native bridge and standalone balancing tool | Balanced AND/OR encoder association is opt-in and validated against independent predicates (`e6f3b45`). The standalone tool supports XAG, algebraic and ESOP passes with per-pass and serialization equivalence checks (`90df410`). Exhaustive pinned-action serialization and opt-in shared native preprocessing are integrated (`fcc52d4`, `7aeacb6`); omitted controls preserve legacy defaults. Additional mappings, MC reduction/profile integration, SAT pebbling and structure-aware scheduled oracles remain open. Dependency pins remain fixed. |
-| 6 | Per-circuit Clifford+T gadgets; unintegrated static rotation prototype; independent derivation/RUS review | The independent reviews establish the unitary composition and separate RUS derivation, with explicit limitations. Rotation repair is not approved: the latest reviewed bytes admit a near-unitary numeric matrix that violates the requested whole-search error budget. FT comparisons remain blocked. Correct matrix admission/accounting and obtain a fresh hash-bound review before integration; complete-search experiments and preparation break-even results remain open. |
+| 6 | Per-circuit Clifford+T gadgets; unintegrated static rotation prototype; independent derivation/RUS review | The independent reviews establish the unitary composition and separate RUS derivation, with explicit limitations. The previously reviewed repair admits a near-unitary matrix that violates its requested search budget. A new matrix-admission/norm correction completed its bounded implementation and coordinator regression checks; exact-byte independent scientific review is queued. Neither correction nor root prototype is admitted. FT comparisons, complete-search experiments and preparation break-even results remain open. |
 | 7 | Correct matching-reflection Grover wrapper and small independent amplification regression | Complete ideal/noisy iteration sweeps, leakage, confidence intervals and random-sampling/cost-per-success study remain open. |
 | 8 | General benchmark runner and fixed 180-second native timeout | The three requested legacy inputs were restored byte-for-byte from `95f6167`, with hashes (`040d420`). Remaining source inputs, controlled families, five repetitions, stage memory/timeouts and larger-instance witnesses remain open. The restored color parameters are historical inputs, not verified chromatic-number claims. |
 
@@ -159,3 +159,56 @@ scaling families and selected DIMACS with five repeats, time/memory and positive
 witnesses; full nine-graph/multilevel strongest-baseline comparisons; manuscript
 evidence gate and independent final reviews. The bounded integration is complete;
 the full paper remains unfinished.
+
+## Rotation norm correction triage: 25 October bounded batch
+
+Task `rotation-norm-1025024643` completed its assigned implementation. Its
+checkpoint and actual candidate bytes agree:
+`rotations.py` = `5e8d08c69305100bd892c25deb748415cd7de1f530b4654da4cdb801dea4e595`,
+`test_rotations.py` = `88412c34913b160d1ebc857e833646bd5e7a7e527b654f7cb43bf439b776db77`.
+No rotation source was integrated or staged. Scientific admission remains
+pending in already queued `rotation-norm-review-1025024643`.
+
+The candidate narrows one-qubit numeric matrix admission to measured spectral
+unitarity defect at most `64*float64_eps` (`1.4210854715202004e-14`). Original
+numeric targets are retained; component and repeated-search norm products scale
+the error accounting and reduce the budget before residual-rotation allocation.
+These remain floating-point engineering bounds, not interval certificates.
+The review must admit this declared restriction and derivation explicitly.
+
+Coordinator reruns passed **255 tests, 2 deliberately deselected**, comprising
+187 candidate regressions and 68 adapted review/norm probes. The deselections
+are the old acceptance-of-bad-matrix and old-manuscript blocker-confirming
+assertions; positive rejection and direct original-target probes cover the
+corrected behavior. These adapted tests originate with the implementation
+handoff and do not replace independent scientific review. Import resolution was
+verified against the candidate worktree. The current integration and candidate
+manuscript bytes also match, including `eef059d` corrections. Independent
+unblocked balancing, dispatcher and coloring regressions passed **100 tests**,
+without skips. Sequential numerical processes used the existing research
+environment and explicit native/cache paths, with maximum child RSS
+**199,442,432 bytes**. Commands, logs and preservation identities are in
+`dump/1025033231-rotation-norm-triage/`.
+
+The existing reviewer prompt reads the actual corrected files and checkpoint,
+requires before/after hashes and explicit scientific admission, and can triage a
+blocked predecessor through `dependency_policy="finished"`. The already queued
+`coordinate-rotation-review-1025024643` must retain the gate if review blocks
+and append a bounded isolated correction/re-review with coordinator follow-ups
+when justified. Neither queue header nor any job definition was changed; no
+duplicate jobs were appended. Native in-place/eager mapping and its coordinator
+remain queued independently. README edits, root prototypes, archived manuscript
+files, preserved nested histories and dependency pins remain unchanged.
+
+This assigned triage and handoff are complete. Do not repeatedly dispatch this
+finished batch. Full scope remains: all additional native mappings and their
+emitted-circuit validation; MC reduction/balancing profiles; SAT pebbling;
+structure-aware sequential/parallel oracles; decomposition, workspace, routing,
+precision and stage-statistics controls; post-pilot protocol freeze; full
+nine-graph/multilevel strongest-baseline comparisons; complete-search static FT
+after scientific admission, separate RUS accounting and preparation break-even;
+ideal/noisy iteration, leakage, confidence intervals and random-sampling costs;
+controlled scaling and selected DIMACS with five repeats, time/memory/timeout
+records and positive witnesses; all acceptance checks, offline notebooks,
+historical replay and evidence-gated manuscript/final independent reviews.
+The full paper remains unfinished.

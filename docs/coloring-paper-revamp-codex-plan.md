@@ -625,3 +625,14 @@ preparation for k = 3, and the code locations.
 Started 2026-10-24T23:58:24.867768-04:00. Checkpoint: `dump/1024235721-coloring-paper-server-checkpoint/manifest.json`.
 Model dispatch paused: live five-hour allowance exhausted; credit continuation and automatic-purchase settings unresolved.
 Numerical setup status is recorded in `setup-state.json` and `setup.log` beside the manifest.
+
+## Automatic dispatch enabled by user request
+
+On 25 October the user requested implementation and activation of an automatic
+dispatcher and attributed observed credit decreases to another session. The
+confirmed disabled credit-continuation/automatic-purchase settings remain in
+force. The bounded queue is `dump/1025021922-coloring-auto-dispatch/queue.json`.
+See [dispatcher operations](coloring-dispatcher.md). The process checks live
+included usage, uses the model table above at Standard speed, resumes recorded
+sessions, and redeems free resets only after weekly exhaustion. Queue/task
+completion is never evidence-gate or manuscript approval.

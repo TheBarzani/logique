@@ -13,7 +13,7 @@ Audited on 25 October 2026 from transferred HEAD `3ec511d` on
 | 2 | Config loader, synthesis/comparison/phase runners; normalized historical baseline adapter; coherent monomial verification | Controlled R1–R3 assembly, per-input witnesses, iterations/seeds, explicit precolor removal, QPY export and validated baseline components are implemented (`94665c0`, `4fa714c`, `8058826`). Unsupported precision/routing/profile/limit controls are rejected, not silently ignored. Stage timing and qubit-role classification still need extension. |
 | 3 | `costs.py` (`2ed650b`, `2848f21`), `routing.py` (`059e865`), `mcx_decompositions.ipynb` (`3ec511d`) | Explicit restoring and throwaway constructions, exact gadgets, dependency-graph T-depth, Dutta analytical reference, leading-order rotation estimate, success/iteration helpers, five-seed routing, and isolated 3–20-control study exist. Quantum smoke tests passed. Paired monomial compute-Z-uncompute lowering now holds scratch and uses the actual expanded inverse (`8f3a08d`). Whole-algorithm emitted rotation synthesis is under implementation/review. Gray-code rows above ten controls still need bounded execution or explicit infeasibility records; the existing notebook caps them at ten. |
 | 4 | Existing all-bitstrings comparison and phase-oracle runner | The K3/K5/myciel3 logical pilot completed 144 validated cases with 18 explicit original-baseline exclusions and no failures. Every completed case exercised a marked input. All 720 metric rows were reproduced from saved QPY; per-instance strongest-baseline summaries are saved separately (`ba6b5b8`). Full nine-graph/multilevel evaluation, complete workspace classification and protocol freeze remain open; these pilot results are not headline evidence. |
-| 5 | Five maintained synthesis methods, native bridge and standalone balancing tool | Balanced AND/OR encoder association is opt-in and validated against independent predicates (`e6f3b45`). The standalone tool supports XAG, algebraic and ESOP passes with per-pass and serialization equivalence checks (`90df410`). Native strategy/action serialization integration, common preprocessing, MC reduction, SAT pebbling and structure-aware scheduled oracles remain open. Dependency pins remain fixed. |
+| 5 | Five maintained synthesis methods, native bridge and standalone balancing tool | Balanced AND/OR encoder association is opt-in and validated against independent predicates (`e6f3b45`). The standalone tool supports XAG, algebraic and ESOP passes with per-pass and serialization equivalence checks (`90df410`). Exhaustive pinned-action serialization and opt-in shared native preprocessing are integrated (`fcc52d4`, `7aeacb6`); omitted controls preserve legacy defaults. Additional mappings, MC reduction/profile integration, SAT pebbling and structure-aware scheduled oracles remain open. Dependency pins remain fixed. |
 | 6 | Per-circuit Clifford+T gadgets; unintegrated static rotation prototype; independent derivation/RUS review | The independent reviews establish the unitary composition and separate RUS derivation, with explicit limitations. Rotation repair is not approved: the latest reviewed bytes admit a near-unitary numeric matrix that violates the requested whole-search error budget. FT comparisons remain blocked. Correct matrix admission/accounting and obtain a fresh hash-bound review before integration; complete-search experiments and preparation break-even results remain open. |
 | 7 | Correct matching-reflection Grover wrapper and small independent amplification regression | Complete ideal/noisy iteration sweeps, leakage, confidence intervals and random-sampling/cost-per-success study remain open. |
 | 8 | General benchmark runner and fixed 180-second native timeout | The three requested legacy inputs were restored byte-for-byte from `95f6167`, with hashes (`040d420`). Remaining source inputs, controlled families, five repetitions, stage memory/timeouts and larger-instance witnesses remain open. The restored color parameters are historical inputs, not verified chromatic-number claims. |
@@ -109,3 +109,53 @@ MC reduction/balancing integration, SAT/structure scheduling, decomposition,
 workspace/routing/precision controls, post-pilot protocol freeze, complete-search
 FT and separate RUS accounting, iteration/noise and scaling studies, full
 comparisons and evidence-gated manuscript/final reviews all remain in scope.
+
+## Native foundation admission: 25 October bounded batch
+
+Dispatcher task `native-contract-1025024643` finished **complete**, not blocked;
+its checkpoint also reports bounded completion. This coordinator inspected the
+two owned implementation commits and admitted them as `fcc52d4` (action payload
+correctness) and `7aeacb6` (shared preprocessing bridge/API and optional probe
+build support). No research metrics or scientific superiority claims changed.
+The original [foundation checkpoint](native_contract_foundation.md) records the
+private builds, exact contract, test exclusions and outstanding mapping limits.
+
+The independent rerun checked source, executable and pinned-header SHA-256
+identities, all **13 exact rows across seven action variants**, **132 Python
+tests** (27 deliberately deselected, no skips), and **45/45 intake/new legacy
+comparisons**. Integrated-tree regressions then passed **188 tests**, including
+native contracts, coloring, balancing and dispatcher behavior, with no skips.
+Black, Ruff, configured mypy and diff checks passed. Tests ran sequentially in
+the existing research environment; the largest recorded child RSS was below
+0.3 GiB. A Darwin address-space-limit attempt failed before execution; bounded
+fixtures and measured RSS, rather than that unavailable limit, support the
+memory evidence. Logs and command records are in
+`dump/1025030802-native-integration/`.
+
+Common preprocessing selects the shared XAG after output projection and before
+representation conversion, with explicit ordered before/after evidence. An
+explicit request requires native confirmation. Omission keeps the unrefactored
+AIG Bennett and refactored other methods; historical expression synthesis stays
+on its original construction. The complete action visitor retains optional
+leaves, cell truth tables, in-place targets, buffers and ordered level/cone
+payloads. This admits serialization and the two preprocessing policies only;
+it does not certify additional strategies' emitted circuits. The legacy
+`is_nary_xor` shim remains a separate level-mapping concern.
+
+The next bounded dispatcher handoff is in-place Bennett/eager mapping in an
+isolated worktree, followed by coordinator triage including blocked status.
+Existing rotation correction/review jobs are retained without duplicates;
+root prototype files and README stay byte-identical. Static FT remains blocked
+until exact reviewed hashes **and explicit scientific admission** match the
+declared contract. Native foundation admission does not change that gate.
+
+Remaining full scope: low-T/low-depth and other mappings; MC reduction and
+balancing profile integration; SAT pebbling; structure-aware sequential and
+parallel schedules; decomposition/workspace/routing/precision controls and
+post-pilot protocol freeze; complete-search static FT after review, separate
+dynamic/RUS accounting and preparation break-even; ideal/noisy iteration,
+leakage, confidence intervals and random-sampling/cost-per-success studies;
+scaling families and selected DIMACS with five repeats, time/memory and positive
+witnesses; full nine-graph/multilevel strongest-baseline comparisons; manuscript
+evidence gate and independent final reviews. The bounded integration is complete;
+the full paper remains unfinished.

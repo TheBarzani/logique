@@ -95,6 +95,7 @@ def run_phase_benchmarks(config: dict, *, executable=None) -> Path:
                         "sampled": sampled,
                         "samples": config.get("samples", 256),
                         "seed": seed,
+                        "assignments": config.get("verification_assignments"),
                     }
                     validate(result, **options)
                     verify_phase_oracle(

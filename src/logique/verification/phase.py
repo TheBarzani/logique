@@ -2,7 +2,7 @@
 
 import numpy as np
 from logique.circuits.records import _qiskit_records
-from .classical import _apply_record, input_assignments, truth_outputs
+from .classical import _apply_record, verification_assignments, truth_outputs
 
 
 def verify_phase_oracle(
@@ -13,6 +13,7 @@ def verify_phase_oracle(
     sampled: bool = False,
     samples: int = 256,
     seed: int = 7,
+    assignments=None,
 ) -> dict:
     """Check actual circuit phases and restoration on initially clean workspace.
 
@@ -28,10 +29,8 @@ def verify_phase_oracle(
     n = len(inputs)
     if encoding is not None and encoding.input_count != n:
         raise ValueError("Coloring encoding does not match the input register")
-    assignments = (
-        np.random.default_rng(seed).integers(0, 2, (n, samples)).astype(bool)
-        if sampled
-        else input_assignments(n)
+    assignments, coverage = verification_assignments(
+        n, sampled=sampled, samples=samples, seed=seed, assignments=assignments
     )
     if encoding is None:
         expected = truth_outputs(md["source_network"], assignments)[0]
@@ -60,6 +59,7 @@ def verify_phase_oracle(
     if not np.allclose(phases, expected_phases, atol=1e-9, rtol=0):
         raise AssertionError("Phase oracle has incorrect phase marking")
     report = {
+        **coverage,
         "status": "sampled" if sampled else "exhaustive",
         "assignments": assignments.shape[1],
         "marked_assignments": int(expected.sum()),
@@ -80,6 +80,7 @@ def verify_kickback_oracle(
     sampled: bool = False,
     samples: int = 256,
     seed: int = 7,
+    assignments=None,
 ) -> dict:
     """Check raw XOR action, clean workspace, and exact phase for both target bits.
 
@@ -91,10 +92,12 @@ def verify_kickback_oracle(
     inputs, outputs = md["input_qubits"], md["output_qubits"]
     if len(outputs) != 1 or encoding.input_count != len(inputs) or samples < 1:
         raise ValueError("Kickback validation requires one output and matching inputs")
-    assignments = (
-        np.random.default_rng(seed).integers(0, 2, (len(inputs), samples)).astype(bool)
-        if sampled
-        else input_assignments(len(inputs))
+    assignments, coverage = verification_assignments(
+        len(inputs),
+        sampled=sampled,
+        samples=samples,
+        seed=seed,
+        assignments=assignments,
     )
     expected = np.array(
         [
@@ -121,6 +124,7 @@ def verify_kickback_oracle(
                 f"Raw oracle fails clean XOR action for target={int(target)}"
             )
     report = {
+        **coverage,
         "status": "sampled" if sampled else "exhaustive",
         "assignments": assignments.shape[1],
         "target_initializations": [0, 1],

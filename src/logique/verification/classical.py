@@ -1,5 +1,8 @@
 """Independent truth evaluation and coherent monomial verification."""
 
+from collections.abc import Iterable
+import operator
+
 import numpy as np
 from logique.circuits.records import _qiskit_records
 
@@ -26,6 +29,53 @@ def input_assignments(n):
             "Exhaustive analysis is limited to 12 inputs; use output cones or sampled validation"
         )
     return ((np.arange(1 << n)[None, :] >> np.arange(n)[:, None]) & 1).astype(bool)
+
+
+def verification_assignments(
+    n: int,
+    *,
+    sampled: bool = False,
+    samples: int = 256,
+    seed: int = 7,
+    assignments: Iterable[int] | None = None,
+) -> tuple[np.ndarray, dict]:
+    """Augment deterministic coverage with explicit input-register integers.
+
+    Bit i of each integer is input i, independent of the physical wire layout.
+    Explicit inputs supplement sampling; they never turn sampled coverage into
+    an exhaustive proof. Duplicate witnesses are checked once and recorded once.
+    """
+    if type(samples) is not int or samples < 1:
+        raise ValueError("samples must be a positive integer")
+    explicit = []
+    for value in () if assignments is None else assignments:
+        try:
+            basis = operator.index(value)
+        except TypeError as error:
+            raise ValueError("verification assignments must be integers") from error
+        if isinstance(value, (bool, np.bool_)) or not 0 <= basis < 1 << n:
+            raise ValueError("verification assignment is outside the input register")
+        if basis not in explicit:
+            explicit.append(basis)
+    selected = (
+        np.random.default_rng(seed).integers(0, 2, (n, samples)).astype(bool)
+        if sampled
+        else input_assignments(n)
+    )
+    columns = {
+        sum(int(bit) << i for i, bit in enumerate(bits)): j
+        for j, bits in enumerate(selected.T)
+    }
+    added = [value for value in explicit if value not in columns]
+    if added:
+        extra = np.array(
+            [[(value >> i) & 1 for value in added] for i in range(n)], dtype=bool
+        ).reshape(n, len(added))
+        selected = np.concatenate((selected, extra), axis=1)
+    return selected, {
+        "explicit_assignments": explicit,
+        "explicit_assignments_added": len(added),
+    }
 
 
 def _apply_record(bits, phases, rec, *, inverse=False):
@@ -56,19 +106,18 @@ def _apply_record(bits, phases, rec, *, inverse=False):
     bits[rec["target"]] ^= mask
 
 
-def validate(result, *, sampled=False, samples=256, seed=7):
+def validate(result, *, sampled=False, samples=256, seed=7, assignments=None):
     """Check function values and the wrapped oracle, including coherent phases.
 
     Exact X/MCX/LUT/Rx(+/-pi) records are monomial: tracking their permutation
     and phase on every input also proves the action on input superpositions.
     Larger examples may explicitly request seeded sampling, which is not proof.
+    Integer assignments supplement that coverage with known witnesses.
     """
     md = result.metadata
     n = len(md["input_qubits"])
-    assignments = (
-        np.random.default_rng(seed).integers(0, 2, (n, samples)).astype(bool)
-        if sampled
-        else input_assignments(n)
+    assignments, coverage = verification_assignments(
+        n, sampled=sampled, samples=samples, seed=seed, assignments=assignments
     )
     expected = truth_outputs(md["source_network"], assignments)
     if not np.array_equal(expected, truth_outputs(md["network"], assignments)):
@@ -102,6 +151,7 @@ def validate(result, *, sampled=False, samples=256, seed=7):
     if not np.array_equal(bits, initial) or not np.allclose(phases, 1):
         raise AssertionError("Wrapped oracle does not restore workspace and phase")
     report = {
+        **coverage,
         "status": "sampled" if sampled else "exhaustive",
         "assignments": assignments.shape[1],
         "seed": seed if sampled else None,

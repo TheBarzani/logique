@@ -40,6 +40,7 @@ def load_config(path: str | Path, **overrides) -> dict:
         "kind",
         "basis_gates",
         "optimization_level",
+        "verification_assignments",
     }
     unknown = set(config) - allowed
     if unknown:
@@ -141,6 +142,7 @@ def run_benchmarks(config: dict, *, executable=None) -> Path:
                             ),
                             samples=config.get("samples", 256),
                             seed=config.get("seed", 7),
+                            assignments=config.get("verification_assignments"),
                         )
                     export_result(result, output, name)
                     circuit = result.circuit

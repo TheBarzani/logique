@@ -232,6 +232,54 @@ def decompose_mcx(
     return result, info
 
 
+def decompose_phase_oracle(
+    compute: QuantumCircuit, output: int, method: str = "throwaway_tree"
+) -> tuple[QuantumCircuit, dict]:
+    """Lower a monomial compute-Z-uncompute oracle with held scratch wires.
+
+    The compute circuit must consist of X, controlled-X, Z, or controlled
+    Rx(+/-pi) operations. Such a circuit permutes basis states with phases.
+    Extra garbage from a throwaway tree therefore does not alter the computed
+    output bit. Marking that bit with Z and applying the inverse of the actual
+    expanded block restores both garbage and phases, also on superpositions.
+
+    This restriction matters: a throwaway expansion before a Hadamard need not
+    preserve interference. This helper is not a generic unitary decomposition,
+    a direct-kickback lowering, or a restoring diffusion-gate construction.
+    """
+    from logique.circuits.records import _qiskit_records
+
+    if (
+        compute.num_clbits
+        or type(output) is not int
+        or not 0 <= output < compute.num_qubits
+    ):
+        raise ValueError("Require a quantum compute block and an in-range output")
+    records = _qiskit_records(compute)
+    if any(
+        rec["kind"] == "rx"
+        and not math.isclose(abs(rec["angle"]), math.pi, abs_tol=1e-12, rel_tol=0)
+        for rec in records
+    ):
+        raise ValueError("Compute block must be monomial: Rx angles must be +/-pi")
+    forward, info = decompose_mcx(compute, method)
+    oracle = forward.copy()
+    oracle.z(output)
+    oracle.compose(forward.inverse(), inplace=True)
+    return oracle, {
+        **info,
+        "construction": "expanded_monomial_compute_Z_actual_expanded_inverse",
+        "phase_output": output,
+        "compute_mcx_gates": info["mcx_gates"],
+        "oracle_mcx_gates_lowered": 2 * info["mcx_gates"],
+        "peak_mcx_ancillas": info["appended_ancillas"],
+        "held_throwaway_ancillas": info["garbage_ancillas"],
+        "garbage_ancillas_at_end": 0,
+        "scratch_initial_state": "zero",
+        "coverage": "monomial compute and exact expanded inverse by construction",
+    }
+
+
 def relative_phase_toffolis(block: QuantumCircuit) -> QuantumCircuit:
     """Replace exact Toffoli gates by relative-phase Toffoli gates.
 

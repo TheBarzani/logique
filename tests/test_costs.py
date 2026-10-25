@@ -136,6 +136,41 @@ def test_throwaway_tree_needs_its_mirror():
         costs.decompose_mcx(block, "throwaway_tree", clean_wires=[5])
 
 
+@pytest.mark.parametrize("method", ["throwaway_tree", "clean_tree", "1_dirty_kg24"])
+def test_paired_phase_lowering_restores_held_garbage_and_relative_phases(method):
+    compute = QuantumCircuit(6)
+    compute.mcx([0, 1, 2, 3], 4, ctrl_state=13)
+    compute.mcx([1, 3, 4], 5)
+    compute.append(RXGate(-math.pi).control(2), [0, 5, 2])
+    # The Rx changes a previous control, so recreating/replaying the original
+    # forward tree at the mirror would not restore the held garbage correctly.
+    actual, info = costs.decompose_phase_oracle(compute, 5, method)
+    reference = compute.copy()
+    reference.z(5)
+    reference.compose(compute.inverse(), inplace=True)
+    assert_equal_on_clean_ancillas(actual, reference, 6)
+    assert info["garbage_ancillas_at_end"] == 0
+    assert info["oracle_mcx_gates_lowered"] == 4
+    if method == "throwaway_tree":
+        assert info["peak_mcx_ancillas"] == 3
+        assert info["held_throwaway_ancillas"] == 3
+        assert actual.num_qubits == 9
+
+
+def test_paired_phase_lowering_rejects_nonmonomial_interference():
+    compute = QuantumCircuit(5)
+    compute.mcx([0, 1, 2], 3)
+    compute.h(0)
+    with pytest.raises(ValueError, match="Cannot track"):
+        costs.decompose_phase_oracle(compute, 3)
+    compute.data.pop()
+    compute.rx(0.2, 0)
+    with pytest.raises(ValueError, match="monomial"):
+        costs.decompose_phase_oracle(compute, 3)
+    with pytest.raises(ValueError, match="output"):
+        costs.decompose_phase_oracle(QuantumCircuit(1), 1)
+
+
 @pytest.mark.parametrize(
     "method,controls,count,depth",
     [

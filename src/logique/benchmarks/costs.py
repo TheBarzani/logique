@@ -257,8 +257,7 @@ def decompose_phase_oracle(
         raise ValueError("Require a quantum compute block and an in-range output")
     records = _qiskit_records(compute)
     if any(
-        rec["kind"] == "rx"
-        and not math.isclose(abs(rec["angle"]), math.pi, abs_tol=1e-12, rel_tol=0)
+        rec["kind"] == "rx" and rec["angle"] not in (-math.pi, math.pi)
         for rec in records
     ):
         raise ValueError("Compute block must be monomial: Rx angles must be +/-pi")
@@ -385,7 +384,7 @@ def _gadget_name(operation) -> str | None:
         return "ch"
     if base == "rx" and controls == 2:
         angle = float(operation.base_gate.params[0])
-        if math.isclose(abs(angle), math.pi, abs_tol=1e-12):
+        if angle in (-math.pi, math.pi):
             return "ccrx+" if angle > 0 else "ccrx-"
     return None
 
@@ -402,6 +401,15 @@ def _snap_rotations(circuit: QuantumCircuit, tolerance: float) -> QuantumCircuit
             continue
         angle = float(operation.params[0])
         steps = angle / (math.pi / 4)
+        # Floating argument reduction is not an exactness test for large
+        # angles. Leave those rotations explicit even if their quotient rounds
+        # to an integer (for example, an input angle of 1e16).
+        if abs(angle) > 2 * math.pi:
+            result.append(operation, inst.qubits, inst.clbits, copy=False)
+            continue
+        if tolerance == 0 and angle != round(steps) * (math.pi / 4):
+            result.append(operation, inst.qubits, inst.clbits, copy=False)
+            continue
         if abs(steps - round(steps)) > tolerance:
             result.append(operation, inst.qubits, inst.clbits, copy=False)
             continue
@@ -412,13 +420,16 @@ def _snap_rotations(circuit: QuantumCircuit, tolerance: float) -> QuantumCircuit
     return result
 
 
-def clifford_t(circuit: QuantumCircuit, *, tolerance: float = 1e-9) -> QuantumCircuit:
+def clifford_t(circuit: QuantumCircuit, *, tolerance: float = 0.0) -> QuantumCircuit:
     """Lower to Clifford+T, leaving only arbitrary-angle rotations as rz gates.
 
     Toffoli, relative-phase Toffoli, controlled-Rx(±pi) and controlled-Hadamard
     gates use fixed exact gadgets (7, 4, 4 and 2 T gates). Multi-controlled X
     gates must first be expanded with decompose_mcx(); other gates are
-    translated by Qiskit, and rotations by multiples of pi/4 become T, S and Z.
+    translated by Qiskit, and canonical rotations by multiples of pi/4 become
+    T, S and Z. A positive tolerance explicitly permits approximate snapping;
+    it is unsuitable for a whole-algorithm error claim without extra accounting.
+    Generic Qiskit translation is numerical, not an exactness certificate.
     """
     staged = circuit.copy_empty_like()
     for inst in circuit.data:

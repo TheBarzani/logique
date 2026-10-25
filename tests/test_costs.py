@@ -169,6 +169,20 @@ def test_paired_phase_lowering_rejects_nonmonomial_interference():
         costs.decompose_phase_oracle(compute, 3)
     with pytest.raises(ValueError, match="output"):
         costs.decompose_phase_oracle(QuantumCircuit(1), 1)
+    almost = QuantumCircuit(4)
+    almost.mcx([0, 1, 2], 3)
+    almost.rx(math.pi + 5e-13, 0)
+    with pytest.raises(ValueError, match="monomial"):
+        costs.decompose_phase_oracle(almost, 0)
+
+
+def test_strict_lowering_does_not_classify_near_or_large_angles_as_exact_gadgets():
+    near = RXGate(math.pi + 1e-9).control(2)
+    assert costs._gadget_name(near) is None
+    for angle in (math.pi / 4 + 1e-12, 1e6 * 2 * math.pi, 1e16):
+        circuit = QuantumCircuit(1)
+        circuit.rz(angle, 0)
+        assert costs._snap_rotations(circuit, 0).count_ops() == {"rz": 1}
 
 
 @pytest.mark.parametrize(

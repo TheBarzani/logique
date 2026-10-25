@@ -439,3 +439,54 @@ full research/static/build/provenance checks, offline notebooks and isolated
 135-metric replay; evidence-gated manuscript, traced numbers, reviewer responses
 and independent final correctness/claim/reproducibility reviews. Rotation
 admission is unchanged; no interval/ideal-amplitude/RUS/paper approval is added.
+
+## Static FT pilot: bounded coordinator integration
+
+`static-ft-pilot-1025034429` completed; its coordinator had no prior completed
+batch/handoff. Only owned source/tests from `daf4b21` were integrated as
+`28413d8`, separately from this evidence record. The exact bytes, caller
+semantics, failure/status contract and limitations are in
+[static_ft_pilot_admission.md](static_ft_pilot_admission.md).
+
+Independent candidate replay passed **211 tests** without skips/deselections;
+integrated replay passed all **24 harness tests**. Relevant Black/Ruff and
+focused one-file mypy pass. Separately written coordinator readback in both
+checkouts verified **61 QPY artifacts / seven rows**, **28 original phase
+columns**, ten asymmetric contract fixtures, signed S0, actual emitted inverse,
+full assembly, raw T-count/dependency T-depth and direct event probabilities.
+Largest assembly error: **1.4763228132311763e-14**. All seven original-target
+errors satisfy declared bounds without added tolerance in independent readback.
+
+The edge graph explicitly fails at 13 native wires before dense construction.
+All rows use one isolated vertex k=3: **NO GRAPH COMPARISON**. This is numerical
+assembly evidence only; no ideal-amplitude certificate, interval theorem,
+preparation break-even, protocol freeze, RUS or paper admission. Source QPY
+expansion is local to this harness; the separately blocked main-runner QPY
+candidate remains held. `bounded_complete` describes finishing the schedule,
+not successful rows; consumers must inspect each persisted outcome.
+
+Evidence and exact hashes are in `dump/1025083656-static-ft-pilot-triage/`.
+Sequential research-interpreter commands used explicit src/native/cache paths,
+180-second supervisors and single BLAS/OpenMP threads. Dense operators <=4,
+statevectors <=5; maximum recorded child RSS **222,330,880 bytes**. No rebuild,
+sync/install or broader numerical experiment ran. `ps` was sandbox-denied;
+scoped Git escalation succeeded after index/ref-write denials.
+
+The whole 24-job queue was reviewed. Next is one separate analytical RUS ledger
+slice, with isolated critical review and coordinator triage, including blocked
+status. It must distinguish arbitrary-input instruments, inverse semantics,
+expected costs and capped failures; no dynamic execution or static substitution.
+Existing native, QPY-controls and parallel-structure jobs retain ownership.
+Queue header and prior definitions remain immutable. This batch/handoff is
+complete and must not be repeated on resumption; dispatcher alone launches work.
+
+Remaining: meaningful static FT graph-domain admission/comparisons; all full
+controls and post-pilot freeze; full nine-graph R1/R2/R3 multilevel comparisons
+with five routed seeds, strongest-baseline aggregation and ablations; remaining
+native mappings, MC reduction/balancing profiles and SAT; parallel structure;
+separate RUS and preparation break-even; iteration/noise/leakage/confidence and
+random-sampling/cost-per-success; scaling/DIMACS with five repeats and explicit
+positive/negative witnesses; full research/static/build/provenance checks,
+offline notebooks and isolated historical replay; traced manuscript numbers,
+reviewer responses, evidence gate and independent final reviews. Full paper
+remains unfinished; rotation admission and its exact hashes are unchanged.

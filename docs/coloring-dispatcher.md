@@ -4,7 +4,10 @@
 included usage and serializes bounded `codex exec`/resume jobs. It runs inside
 the existing `coloring-paper` tmux session, under `caffeinate`. The dispatcher,
 rather than tmux itself, starts future model batches. Waiting consumes no model
-calls. It does not push, publish, submit hardware or alter dependency pins.
+calls. Following the user's 25 October authorization, validated task changes are
+committed and integrated on `coloring-paper-revamp-codex`, then pushed to
+`origin/coloring-paper-revamp-codex`. It does not submit hardware or alter
+dependency pins.
 
 The initial queue is
 `dump/1025021922-coloring-auto-dispatch/queue.json`. It resumes rotation repair,
@@ -113,3 +116,24 @@ when restarting. The saved `start-dispatcher.py` beside the queue provides that
 environment and is the command used in the tmux window. No launchd service, automatic purchase or extra credit provisioning is installed.
 Polling is ordinary metadata I/O, with no model calls.
 Tests use fake CLI processes/metadata and do not spend inference calls.
+
+## Commits and remote synchronization
+
+The user-authorized `publication.json` beside the queue enables publication
+without changing immutable existing task definitions. It specifies `enabled`,
+`branch` (`coloring-paper-revamp-codex`), `remote` (`origin`), and the expected
+`remote_url`. Removing this file disables publication. Workers receive the latest
+authorization on every new or resumed batch, overriding historical no-push text.
+They commit validated task-owned files explicitly; the coordinator integrates
+reviewed changes and commits on the integration branch. Existing user README
+edits are excluded. The dispatcher never stages files automatically.
+
+The dispatcher pushes committed integration HEAD using an explicit branch
+refspec, independently of model quota. Worker branches are never pushed.
+Successful pushes are checkpointed under `state.json` → `publication`; unchanged
+HEADs do not cause repeated network calls. A changed remote URL, wrong branch,
+authentication failure, timeout or rejected push pauses further dispatch and
+retries on the ordinary polling interval. There is no force push, automatic
+pull/merge/reset, or automatic inclusion of uncommitted work. Git rejects remote
+divergence. An operator pause also pauses publication. Already committed history
+is synchronized when publication is first enabled.

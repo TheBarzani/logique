@@ -512,6 +512,61 @@ class Dispatcher:
             self.client = None
             raise
 
+    def publication_policy(self) -> dict | None:
+        """Read explicit user authorization separately from immutable task inputs."""
+        path = self.directory / "publication.json"
+        if not path.exists():
+            return None
+        policy = json.loads(path.read_text())
+        if (
+            policy.get("enabled") is not True
+            or policy.get("branch") != "coloring-paper-revamp-codex"
+            or policy.get("remote") != "origin"
+            or not isinstance(policy.get("remote_url"), str)
+            or not policy["remote_url"]
+        ):
+            raise ValueError("Invalid publication authorization")
+        return policy
+
+    def publish(self, config: dict) -> None:
+        """Push committed integration work only; never stage files or force push."""
+        policy = self.publication_policy()
+        if policy is None:
+            return
+        root = Path(config["repository"]).resolve()
+        check_worktree(root, {"worktree": str(root), "branch": policy["branch"]})
+
+        def git(*args):
+            return subprocess.check_output(
+                ["git", "-C", str(root), *args],
+                text=True,
+                stderr=subprocess.PIPE,
+                timeout=60,
+                env={**os.environ, "GIT_TERMINAL_PROMPT": "0"},
+            ).strip()
+
+        urls = git("remote", "get-url", "--push", "--all", "origin").splitlines()
+        if urls != [policy["remote_url"]]:
+            raise ValueError("Publication remote changed")
+        head = git("rev-parse", "HEAD")
+        publication = self.state.get("publication", {})
+        identity = hashlib.sha256(
+            json.dumps(policy, sort_keys=True).encode()
+        ).hexdigest()
+        if publication.get("commit") == head and publication.get("policy") == identity:
+            return
+        # An explicit refspec avoids upstream/push.default surprises. Git rejects
+        # divergence; no pull, merge, reset, force flag, or worker branch push.
+        git("push", "origin", f"{head}:refs/heads/{policy['branch']}")
+        self.state["publication"] = {
+            "commit": head,
+            "branch": policy["branch"],
+            "remote": "origin",
+            "policy": identity,
+            "pushed_at": time.time(),
+        }
+        self.save("published")
+
     def maybe_reset(self, config: dict, snapshot: dict) -> bool:
         """Redeem a free reset only at weekly exhaustion, using a durable key."""
         weekly = snapshot.get("secondary") or {}
@@ -646,10 +701,25 @@ class Dispatcher:
             LOGIQUE_DISPATCH_JOB=job["id"],
             LOGIQUE_DISPATCH_STATE=str(self.directory / "state.json"),
         )
+        publication = self.publication_policy()
+        publication_rules = (
+            "Latest user authorization supersedes older no-push instructions: "
+            "commit validated task-owned changes using explicit file paths; never "
+            "stage unrelated user edits, including existing README.md changes. "
+            "Keep correctness and research-metric changes in separate commits. "
+            "Workers commit on their assigned worktree branches. The coordinator "
+            "integrates reviewed commits on coloring-paper-revamp-codex and commits "
+            "its validated integration changes before returning. The dispatcher "
+            "pushes committed integration HEAD to origin/coloring-paper-revamp-codex; "
+            "do not push worker branches or run git push yourself. "
+            if publication
+            else "No pushes or publishing. "
+        )
         prompt = Path(job["prompt_file"]).read_text() + (
             "\n\nDispatcher rules: do not launch Codex/model subprocesses or subagents. "
-            "No API/credits, hardware, pushes or publishing. Preserve checkpoints. "
-            "This is one bounded batch; return the required result JSON. "
+            "No API/credits or hardware. Preserve checkpoints. "
+            + publication_rules
+            + "This is one bounded batch; return the required result JSON. "
             "If scope remains, outcome=continue and leave a concrete checkpoint."
         )
         started = time.monotonic()
@@ -778,6 +848,18 @@ class Dispatcher:
                     if prior_header != header_hash:
                         self.save("blocked_configuration_changed")
                         return
+                    if not (self.directory / "PAUSE").exists():
+                        try:
+                            self.publish(config)
+                        except (OSError, ValueError, subprocess.SubprocessError):
+                            self.save(
+                                "waiting",
+                                reason="publication_failed; inspect remote/auth/divergence",
+                            )
+                            if once:
+                                return
+                            self.stop.wait(config["poll_seconds"])
+                            continue
                     if (
                         time.time()
                         >= datetime.fromisoformat(config["deadline"]).timestamp()

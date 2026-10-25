@@ -636,3 +636,11 @@ See [dispatcher operations](coloring-dispatcher.md). The process checks live
 included usage, uses the model table above at Standard speed, resumes recorded
 sessions, and redeems free resets only after weekly exhaustion. Queue/task
 completion is never evidence-gate or manuscript approval.
+
+On 25 October the user additionally authorized automatic commits and pushes.
+This supersedes earlier no-push instructions for this workflow: workers commit
+validated task-owned changes, the coordinator integrates on
+`coloring-paper-revamp-codex`, and the dispatcher pushes only that branch to
+`origin`. Preserve unrelated user edits, dependency pins and historical results;
+never force push or publish worker branches. See dispatcher operations for the
+explicit publication policy and failure checkpoints.

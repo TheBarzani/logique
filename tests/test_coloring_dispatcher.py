@@ -462,3 +462,140 @@ def test_unknown_quota_interrupts_only_owned_worker_and_keeps_session(
     assert record["interruption"] == "quota_unknown"
     assert record["status"] == "pending"
     assert record["session_id"] == "fake-session"
+
+
+def authorize_publication(queue, remote):
+    config = dispatch.load_queue(queue)
+    subprocess.run(
+        ["git", "-C", config["repository"], "remote", "add", "origin", str(remote)],
+        check=True,
+    )
+    dispatch.atomic_json(
+        queue.parent / "publication.json",
+        {
+            "enabled": True,
+            "branch": "coloring-paper-revamp-codex",
+            "remote": "origin",
+            "remote_url": str(remote),
+        },
+    )
+    return config
+
+
+def test_publication_pushes_only_committed_integration_head(queue, tmp_path):
+    remote = tmp_path / "remote.git"
+    subprocess.run(["git", "init", "--bare", "-q", str(remote)], check=True)
+    config = authorize_publication(queue, remote)
+    root = Path(config["repository"])
+    (root / "README.md").write_text("Preserve user changes")
+    dispatcher = dispatch.Dispatcher(queue, "unused")
+    dispatcher.publish(config)
+    head = subprocess.check_output(["git", "-C", str(root), "rev-parse", "HEAD"])
+    pushed = subprocess.check_output(
+        [
+            "git",
+            "--git-dir",
+            str(remote),
+            "rev-parse",
+            "refs/heads/coloring-paper-revamp-codex",
+        ]
+    )
+    assert head == pushed
+    assert (root / "README.md").read_text() == "Preserve user changes"
+    assert (
+        subprocess.check_output(
+            [
+                "git",
+                "-C",
+                str(root),
+                "diff",
+                "--cached",
+                "--name-only",
+            ]
+        )
+        == b""
+    )
+    first = dict(dispatcher.state["publication"])
+    dispatcher.publish(config)
+    assert dispatcher.state["publication"] == first
+
+
+def test_publication_rejects_changed_remote_and_wrong_branch(queue, tmp_path):
+    config = authorize_publication(queue, tmp_path / "remote.git")
+    dispatcher = dispatch.Dispatcher(queue, "unused")
+    root = config["repository"]
+    subprocess.run(
+        ["git", "-C", root, "remote", "set-url", "origin", "/wrong"], check=True
+    )
+    with pytest.raises(ValueError, match="remote changed"):
+        dispatcher.publish(config)
+    subprocess.run(["git", "-C", root, "switch", "-q", "-c", "wrong"], check=True)
+    with pytest.raises(ValueError, match="branch changed"):
+        dispatcher.publish(config)
+
+
+def test_publication_preserves_divergent_remote(queue, tmp_path):
+    remote = tmp_path / "remote.git"
+    subprocess.run(["git", "init", "--bare", "-q", str(remote)], check=True)
+    config = authorize_publication(queue, remote)
+    dispatcher = dispatch.Dispatcher(queue, "unused")
+    dispatcher.publish(config)
+    root = config["repository"]
+    original = dispatcher.state["publication"]["commit"]
+    env = dict(
+        os.environ,
+        GIT_AUTHOR_NAME="Test",
+        GIT_AUTHOR_EMAIL="test@example.invalid",
+        GIT_COMMITTER_NAME="Test",
+        GIT_COMMITTER_EMAIL="test@example.invalid",
+    )
+    tree = subprocess.check_output(
+        ["git", "-C", root, "rev-parse", "HEAD^{tree}"], text=True
+    ).strip()
+    foreign = subprocess.check_output(
+        [
+            "git",
+            "-C",
+            root,
+            "commit-tree",
+            tree,
+            "-p",
+            original,
+            "-m",
+            "remote change",
+        ],
+        env=env,
+        text=True,
+    ).strip()
+    subprocess.run(
+        [
+            "git",
+            "-C",
+            root,
+            "push",
+            "origin",
+            f"{foreign}:refs/heads/coloring-paper-revamp-codex",
+        ],
+        check=True,
+    )
+    subprocess.run(
+        ["git", "-C", root, "commit", "--allow-empty", "-q", "-m", "local change"],
+        env=env,
+        check=True,
+    )
+    with pytest.raises(subprocess.CalledProcessError):
+        dispatcher.publish(config)
+    assert dispatcher.state["publication"]["commit"] == original
+    assert (
+        subprocess.check_output(
+            [
+                "git",
+                "--git-dir",
+                str(remote),
+                "rev-parse",
+                "refs/heads/coloring-paper-revamp-codex",
+            ],
+            text=True,
+        ).strip()
+        == foreign
+    )

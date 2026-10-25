@@ -132,8 +132,8 @@ The dispatcher pushes committed integration HEAD using an explicit branch
 refspec, independently of model quota. Worker branches are never pushed.
 Successful pushes are checkpointed under `state.json` → `publication`; unchanged
 HEADs do not cause repeated network calls. A changed remote URL, wrong branch,
-authentication failure, timeout or rejected push pauses further dispatch and
-retries on the ordinary polling interval. There is no force push, automatic
+authentication failure, timeout or rejected push records `publication_error`
+and retries on the ordinary polling interval; local research continues. There is no force push, automatic
 pull/merge/reset, or automatic inclusion of uncommitted work. Git rejects remote
 divergence. An operator pause also pauses publication. Already committed history
 is synchronized when publication is first enabled.

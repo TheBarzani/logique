@@ -599,3 +599,17 @@ def test_publication_preserves_divergent_remote(queue, tmp_path):
         ).strip()
         == foreign
     )
+
+
+def test_publication_failure_does_not_stop_local_research(queue, monkeypatch):
+    d = runner(queue)
+    launched = []
+
+    def fail_publication(config):
+        raise subprocess.CalledProcessError(128, ["git", "push"])
+
+    monkeypatch.setattr(d, "publish", fail_publication)
+    monkeypatch.setattr(d, "launch", lambda *args: launched.append(args))
+    d.run(once=True)
+    assert len(launched) == 1
+    assert "publication_failed" in d.state["publication_error"]["reason"]

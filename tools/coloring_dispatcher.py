@@ -565,6 +565,7 @@ class Dispatcher:
             "policy": identity,
             "pushed_at": time.time(),
         }
+        self.state.pop("publication_error", None)
         self.save("published")
 
     def maybe_reset(self, config: dict, snapshot: dict) -> bool:
@@ -852,14 +853,12 @@ class Dispatcher:
                         try:
                             self.publish(config)
                         except (OSError, ValueError, subprocess.SubprocessError):
-                            self.save(
-                                "waiting",
-                                reason="publication_failed; inspect remote/auth/divergence",
-                            )
-                            if once:
-                                return
-                            self.stop.wait(config["poll_seconds"])
-                            continue
+                            # Publication is retried on the next ordinary loop;
+                            # missing Git credentials must not halt local research.
+                            self.state["publication_error"] = {
+                                "reason": "publication_failed; inspect remote/auth/divergence",
+                                "checked_at": time.time(),
+                            }
                     if (
                         time.time()
                         >= datetime.fromisoformat(config["deadline"]).timestamp()

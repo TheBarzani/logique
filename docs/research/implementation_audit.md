@@ -14,7 +14,7 @@ Audited on 25 October 2026 from transferred HEAD `3ec511d` on
 | 3 | `costs.py` (`2ed650b`, `2848f21`), `routing.py` (`059e865`), `mcx_decompositions.ipynb` (`3ec511d`) | Explicit restoring and throwaway constructions, exact gadgets, dependency-graph T-depth, Dutta analytical reference, leading-order rotation estimate, success/iteration helpers, five-seed routing, and isolated 3–20-control study exist. Quantum smoke tests passed. Paired monomial compute-Z-uncompute lowering now holds scratch and uses the actual expanded inverse (`8f3a08d`). Whole-algorithm emitted rotation synthesis is under implementation/review. Gray-code rows above ten controls still need bounded execution or explicit infeasibility records; the existing notebook caps them at ten. |
 | 4 | Existing all-bitstrings comparison and phase-oracle runner | The K3/K5/myciel3 logical pilot completed 144 validated cases with 18 explicit original-baseline exclusions and no failures. Every completed case exercised a marked input. All 720 metric rows were reproduced from saved QPY; per-instance strongest-baseline summaries are saved separately (`ba6b5b8`). Full nine-graph/multilevel evaluation, complete workspace classification and protocol freeze remain open; these pilot results are not headline evidence. |
 | 5 | Five maintained synthesis methods, native bridge and standalone balancing tool | Balanced AND/OR encoder association is opt-in and validated against independent predicates (`e6f3b45`). The standalone tool supports XAG, algebraic and ESOP passes with per-pass and serialization equivalence checks (`90df410`). Exhaustive pinned-action serialization and opt-in shared native preprocessing are integrated (`fcc52d4`, `7aeacb6`); omitted controls preserve legacy defaults. Additional mappings, MC reduction/profile integration, SAT pebbling and structure-aware scheduled oracles remain open. Dependency pins remain fixed. |
-| 6 | Per-circuit Clifford+T gadgets; unintegrated static rotation prototype; independent derivation/RUS review | The independent reviews establish the unitary composition and separate RUS derivation, with explicit limitations. The previously reviewed repair admits a near-unitary matrix that violates its requested search budget. A new matrix-admission/norm correction completed its bounded implementation and coordinator regression checks; exact-byte independent scientific review is queued. Neither correction nor root prototype is admitted. FT comparisons, complete-search experiments and preparation break-even results remain open. |
+| 6 | Per-circuit Clifford+T gadgets; hash-bound admitted static rotation compiler (`54c58c3`); independent derivation/RUS review | The independent reviews establish the unitary composition and separate RUS derivation, with explicit limitations. The previously reviewed repair admits a near-unitary matrix that violates its requested search budget. The corrected matrix-admission/norm implementation is now admitted and integrated for the restricted numerical contract in [the independent admission](rotation_norm_admission.md). The root prototype was preserved before replacement. This is not ideal-amplitude certification or RUS admission. FT comparisons, complete-search experiments and preparation break-even results remain open. |
 | 7 | Correct matching-reflection Grover wrapper and small independent amplification regression | Complete ideal/noisy iteration sweeps, leakage, confidence intervals and random-sampling/cost-per-success study remain open. |
 | 8 | General benchmark runner and fixed 180-second native timeout | The three requested legacy inputs were restored byte-for-byte from `95f6167`, with hashes (`040d420`). Remaining source inputs, controlled families, five repetitions, stage memory/timeouts and larger-instance witnesses remain open. The restored color parameters are historical inputs, not verified chromatic-number claims. |
 
@@ -212,3 +212,56 @@ controlled scaling and selected DIMACS with five repeats, time/memory/timeout
 records and positive witnesses; all acceptance checks, offline notebooks,
 historical replay and evidence-gated manuscript/final independent reviews.
 The full paper remains unfinished.
+
+## Rotation norm scientific admission: bounded review integration
+
+Task `rotation-norm-review-1025024643` is complete and explicitly **ADMITTED for
+static FT comparison experiments under its declared numerical contract**. Actual
+source and integrated bytes match both reviewed identities:
+`rotations.py` = `5e8d08c69305100bd892c25deb748415cd7de1f530b4654da4cdb801dea4e595`,
+`test_rotations.py` = `88412c34913b160d1ebc857e833646bd5e7a7e527b654f7cb43bf439b776db77`.
+Only those two files entered correctness commit `54c58c3`; no build or metric
+change is mixed in. The [full independent decision](rotation_norm_admission.md)
+is preserved byte-for-byte, including executable probes and caller obligations.
+
+Coordinator replay passed 187 candidate regressions and all 37 previous plus
+79 additional independent cases. Integrated regressions passed **425 tests**,
+without skips; Black, Ruff, configured mypy and diff checks passed. Sequential
+research-interpreter jobs used explicit native/cache paths and at most
+253,444,096 bytes recorded child RSS, below 8 GiB. Exact commands and logs are in
+`dump/1025034429-rotation-admission/validation.json`. The 37-case replay retains
+explicit replacements of obsolete blocker assertions, as recorded by the review.
+
+This closes the old matrix blocker only for one-qubit matrices whose measured
+unitarity defect is at most 64*float64_eps, original numeric targets, norm-aware
+whole-search budgeting, numerical (not interval-certified) bounds, bounded SK,
+precision floor 1e-12 and the reviewed recursive/angle limits. The caller must
+prove clean phase-oracle semantics, data mapping, signed zero reflection and
+workspace restoration; lower MCX explicitly, preserve scalar phases and use the
+actual emitted inverse. Failed precision must remain an explicit failure.
+Composite preparation targets are recursive definitions, not certified ideal
+amplitude vectors. Static FT admission is separate from RUS/dynamic accounting
+and paper acceptance. Broader targets or changed compiler bytes need re-review.
+
+Before replacement both unapproved root prototype files were copied byte-for-byte
+to this run's `prototype/` directory and hash-verified. README edits, archived
+results, nested histories and dependency pins remain unchanged. The existing
+native in-place/eager and coordinator jobs retain their scopes. New isolated
+bounded controls/stage-provenance, structure-oracle and static-FT-pilot jobs each
+have a coordinator follow-up; queue header and all prior entries stay immutable.
+The run checkpoint and server manifest record exact handoff identities.
+
+This assigned integration batch is complete once the recorded handoff is appended.
+Do not repeat it on resumption. Full remaining scope: additional native mappings
+and emitted-circuit validation; MC reduction/balancing profiles and SAT pebbling;
+structure-aware sequential/parallel schedules and workspace trade-offs; full
+decomposition/workspace/routing/precision/limits controls and stage statistics;
+post-pilot protocol freeze; nine-graph R1/R2/R3 multilevel strongest-baseline
+comparisons with saved circuits and five routing seeds; complete-search static
+FT comparisons under the admitted contract, separate RUS and preparation
+break-even; ideal/noisy iteration through first maximum plus one, leakage,
+confidence intervals, random-sampling costs; controlled scaling and selected
+DIMACS with five repetitions, time/memory/timeouts and larger positive witnesses;
+full research checks, offline notebooks, isolated 135-metric historical replay,
+claim-evidence gate, reviewer responses and independent final correctness/claim
+reviews. The full paper remains unfinished.

@@ -378,7 +378,7 @@ For a uniform search domain of size $N$ containing $M$ marked assignments, Grove
 \begin{equation}
 P_j=\sin^2((2j+1)\theta).
 \end{equation}
-For $0<p<1$, the integer choices nearest $\pi/(4\theta)-1/2$ determine the first maximum; they are evaluated explicitly. If $p=0$ there is no marked solution, and if $p=1$ no amplification is needed. Unknown $M$ does not justify assuming one solution; iteration costs must remain parametric or use a documented estimate.
+For $0<p<1$, evaluate the nonnegative floor and ceiling candidates around $\pi/(4\theta)-1/2$ and choose the larger success probability, breaking ties toward fewer iterations. This identifies the first ideal peak, rather than optimizing over later oscillations or cost per success. If $p=0$ the preparation has no marked amplitude (which implies no solution only when it has full support on the intended domain); if $p=1$ no amplification is needed. Unknown $M$ does not justify assuming one solution; iteration costs must remain parametric or use a documented estimate.
 
 As illustrated in Figure \ref{fig:grover_circuit}, the algorithm proceeds as follows:
 \begin{enumerate}
@@ -509,7 +509,7 @@ This is achieved with a gate depth and complexity of only $\mathcal{O}(\log_2 k)
 
 The flow combines the synthesized components into a complete Grover circuit. This involves preparing the diffusion operator and composing the full circuit.
 
-\textbf{Diffusion Operator Preparation:} The diffusion operator is constructed as $D = U_{\Psi} \cdot (2|0^n\rangle\langle 0^n| - I) \cdot U_{\Psi}^{\dagger}$, where $U_{\Psi}$ is the circuit that prepares the UQS state $|\Psi\rangle$. Its standard implementation requires applying, in sequence, its adjoint operator $U_{\Psi}^{\dagger}$, a multi-controlled Z gate, and $U_{\Psi}$ to perform the inversion-about-the-average operation.
+\textbf{Diffusion Operator Preparation:} The diffusion operator is constructed as $D = U_{\Psi} \cdot (2|0^n\rangle\langle 0^n| - I) \cdot U_{\Psi}^{\dagger}$, where $U_{\Psi}$ is the circuit that prepares the UQS state $|\Psi\rangle$. Here $U_{\Psi}=A$ denotes the full data preparation, the tensor product of the vertex preparations. In time order, apply $A^\dagger$, $S_0=2|0^n\rangle\langle0^n|-I=-X^{\otimes n}\,\mathrm{MCZ}\,X^{\otimes n}$, then $A$. The X conjugation marks zero rather than all ones; the scalar minus sign fixes the stated reflection convention. Every workspace wire in the MCZ construction is restored.
 
 \textbf{Circuit Composition:} The complete Grover's circuit is assembled in sequence:
 \begin{enumerate}
@@ -517,7 +517,7 @@ The flow combines the synthesized components into a complete Grover circuit. Thi
     \item \textbf{Oracle Application:} The synthesized oracle circuit $U_f$ is applied to mark proper colorings via a phase-flip.
     \item \textbf{Diffusion Amplification:} The diffusion operator $D$ is applied to amplify the probability amplitudes of the valid states through the inversion-about-the-average operation.
 \end{enumerate}
-This sequence is repeated $j$ times, selected from the marked fraction as above. Valid color encodings exclude unused binary codes; proper colorings additionally satisfy every edge constraint. Preparing valid codes does not by itself prepare proper colorings. On the supported valid-code subspace, removing unused-code checks preserves the oracle predicate. The three evaluation regimes distinguish the effect of this removal from the effect of preparation.
+Apply initialization $A$ once, then repeat only the oracle and diffusion steps $j$ times, selected from the marked fraction as above; at $j=0$ the circuit consists only of $A$. Valid color encodings exclude unused binary codes; proper colorings additionally satisfy every edge constraint. Preparing valid codes does not by itself prepare proper colorings. On the supported valid-code subspace, removing unused-code checks preserves the oracle predicate. The three evaluation regimes distinguish the effect of this removal from the effect of preparation.
 
 For a static unitary Clifford+$T$ implementation, let $T_A$, $T_O$ and $T_{S_0}$ be the costs of preparation, the clean phase oracle and the zero-state reflection. The complete search has
 \begin{equation}

@@ -112,7 +112,8 @@ def _construction(method: str, controls: int) -> QuantumCircuit:
     return MCX_DECOMPOSITIONS[method].build(controls)
 
 
-def _is_mcx(operation, min_controls: int) -> bool:
+def is_mcx(operation, min_controls: int) -> bool:
+    """Whether an operation is an X gate with at least ``min_controls`` controls."""
     return (
         isinstance(operation, ControlledGate)
         and operation.base_gate.name == "x"
@@ -141,7 +142,7 @@ def decompose_mcx(
     gates = [
         (inst, inst.operation.num_ctrl_qubits)
         for inst in circuit.data
-        if _is_mcx(inst.operation, min_controls)
+        if is_mcx(inst.operation, min_controls)
     ]
     needs = [
         _construction(method, controls).num_qubits - controls - 1
@@ -176,7 +177,7 @@ def decompose_mcx(
     borrowed = 0
     for inst in circuit.data:
         operation = inst.operation
-        if not _is_mcx(operation, min_controls):
+        if not is_mcx(operation, min_controls):
             result.append(operation, inst.qubits, inst.clbits, copy=False)
             continue
         controls = operation.num_ctrl_qubits
@@ -337,7 +338,7 @@ def clifford_t(circuit: QuantumCircuit, *, tolerance: float = 1e-9) -> QuantumCi
     staged = circuit.copy_empty_like()
     for inst in circuit.data:
         operation = inst.operation
-        if _is_mcx(operation, 3):
+        if is_mcx(operation, 3):
             raise ValueError("Expand multi-controlled X gates with decompose_mcx()")
         name = _gadget_name(operation)
         if name is None:

@@ -1,5 +1,6 @@
 #pragma once
 #include "serialization.hpp"
+#include "actions.hpp"
 template<class Ntk, class Strategy> json compile(Ntk const& ntk, Strategy& strategy) {
     RecordingCircuit circ;
     cp::logic_network_synthesis_stats stats;
@@ -7,17 +8,7 @@ template<class Ntk, class Strategy> json compile(Ntk const& ntk, Strategy& strat
         throw std::runtime_error("Mapping strategy failed");
     json steps = json::array();
     strategy.foreach_step([&](auto n, auto const& a) {
-        std::string action = std::holds_alternative<cp::compute_action>(a) ? "compute" : "uncompute";
-        json row = {{"node", ntk.node_to_index(n)}, {"action", action}};
-        auto add_cell = [&](auto const& step) {
-            if (step.cell_override) {
-                row["lut_inputs"] = step.cell_override->second.size();
-                row["leaves"] = step.cell_override->second;
-            }
-        };
-        if (auto step = std::get_if<cp::compute_action>(&a)) add_cell(*step);
-        if (auto step = std::get_if<cp::uncompute_action>(&a)) add_cell(*step);
-        steps.push_back(row);
+        steps.push_back(action_json(ntk.node_to_index(n), a));
     });
     return {{"num_qubits", circ.width}, {"gates", circ.gates}, {"input_qubits", stats.i_indexes},
             {"output_qubits", stats.o_indexes}, {"steps", steps}, {"network", graph_json(ntk)}};

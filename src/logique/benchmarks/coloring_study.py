@@ -7,6 +7,7 @@ monomial records, never statevectors. Sampled coverage is evidence, not proof.
 from __future__ import annotations
 
 from dataclasses import dataclass
+from collections import Counter
 import hashlib
 import json
 import math
@@ -41,6 +42,130 @@ CONFIG_FIELDS = {
     "optimization_level",
     "output",
 }
+
+
+def _stage_timings(timings: dict, backend: dict) -> dict:
+    """Describe overlapping measurements without inventing native stage splits."""
+    stages = {
+        name.removesuffix("_seconds"): {
+            "status": "measured",
+            "seconds": seconds,
+            "clock": "time.perf_counter",
+            "source": "coloring_study",
+        }
+        for name, seconds in timings.items()
+    }
+    scopes = {
+        "encoding": "original coloring encoding; excludes input parsing",
+        "effective_encoding": "regime-specific effective problem and encoding",
+        "synthesis": "whole Python synthesis/baseline adapter call, including native invocation when used",
+        "oracle_wrapper": "initial phase wrapper; selected kickback wrapper may be built during validation",
+        "validation": "predicate/phase/restoration checks and selection/construction of final oracle wrapper",
+        "preparation_diffusion_search": "combined preparation, diffusion and search assembly; no split measurements",
+    }
+    for name, stage in stages.items():
+        stage["scope"] = scopes[name]
+        stage["included_in"] = "case_total"
+    for name in ("optimization", "mapping"):
+        stages[name] = {
+            "status": "unavailable",
+            "seconds": None,
+            "reason": "Backend does not expose a separate stage duration",
+        }
+    native = backend.get("native_seconds")
+    stages["native_combined"] = {
+        "status": "backend_reported" if native is not None else "unavailable",
+        "seconds": native,
+        "clock": "std::chrono::steady_clock" if native is not None else None,
+        "source": "backend_metadata.native_seconds",
+        "scope": "read/select/preprocess/map/serialize network; excludes Python XAG synthesis and JSON output",
+        "included_in": "synthesis",
+    }
+    for name in ("routing", "fault_tolerant_synthesis"):
+        stages[name] = {"status": "not_enabled", "seconds": None}
+    return stages
+
+
+def _network_statistics(graph: dict | None, source: str) -> dict:
+    """Count serialized node kinds; multiplicative depth is XAG/AIG-only."""
+    if graph is None:
+        return {"status": "unavailable", "source": source}
+    counts = Counter(node["kind"] for node in graph["nodes"])
+    depth: dict[int, int] = {}
+    and_depth: dict[int, int] = {}
+    supported = set(counts) <= {"constant", "input", "and", "xor"}
+    for node in graph["nodes"]:
+        fanins = [f["node"] for f in node["fanins"]]
+        depth[node["id"]] = (
+            1 + max((depth[q] for q in fanins), default=0) if fanins else 0
+        )
+        if supported:
+            and_depth[node["id"]] = max(
+                (and_depth[q] for q in fanins), default=0
+            ) + int(node["kind"] == "and")
+    return {
+        "status": "derived",
+        "source": source,
+        "scope": "all serialized nodes, including any dangling nodes",
+        "node_counts": dict(counts),
+        "AND": counts["and"],
+        "XOR": counts["xor"],
+        "LUT": counts["lut"],
+        "inputs": len(graph["inputs"]),
+        "outputs": len(graph["outputs"]),
+        "logic_depth": max(depth.values(), default=0),
+        "multiplicative_depth": (
+            max(and_depth.values(), default=0) if supported else None
+        ),
+        "multiplicative_depth_status": (
+            "derived_AND_weighted_depth"
+            if supported
+            else "unavailable_for_LUT_or_unknown_nodes"
+        ),
+    }
+
+
+def _workspace_provenance(
+    width: int,
+    data: list[int],
+    outputs: list[int],
+    constraints: list[int],
+    *,
+    kickback: bool,
+    source: str,
+) -> dict:
+    """Partition reserved wires; allocation is not a measured live-scratch peak."""
+    roles = {
+        "data": list(data),
+        "output": [] if kickback else list(outputs),
+        "kickback": list(outputs) if kickback else [],
+        "constraint": list(constraints),
+        "mcx_ancilla": [],
+    }
+    assigned = [q for wires in roles.values() for q in wires]
+    if len(set(assigned)) != len(assigned) or not set(assigned) <= set(range(width)):
+        raise AssertionError("Workspace roles overlap or lie outside the register")
+    roles["unknown"] = sorted(set(range(width)) - set(assigned))
+    return {
+        "roles": roles,
+        "role_counts": {role: len(wires) for role, wires in roles.items()},
+        "source": source,
+        "role_sources": {
+            "data": "ordered data-only register or backend input_qubits",
+            "output": "backend output_qubits in raw/compute-Z-inverse-compute blocks",
+            "kickback": "backend output_qubits with selected verified XOR kickback wrapper",
+            "constraint": "backend constraint_qubits; absent native classification gives no inferred constraints",
+            "mcx_ancilla": "no explicit added wires; lowering must preserve register width",
+            "unknown": "complement of classified wires within allocated register",
+        },
+        "unknown_reason": "Residual workspace has no proven per-wire function; not classified as AND-only",
+        "mcx_scope": "No explicit added MCX ancillas at this metric level; logical MCX may remain",
+        "policy": "persistent_allocated_register; no cross-role borrowing or per-gate summation",
+        "peak_reserved_qubits": width,
+        "peak_reserved_nondata_qubits": width - len(data),
+        "peak_live_workspace_qubits": None,
+        "peak_live_status": "unavailable; no liveness/scheduling analysis",
+    }
 
 
 class ExcludedCase(ValueError):
@@ -225,7 +350,9 @@ def assemble_case(
     problem, transformations = _problem_without_precolors(problem, remove_precolors)
     if not problem.vertices or problem.colors < 2:
         raise ValueError("Study cases require vertices and at least two colors")
+    start = time.perf_counter()
     encoding = encode_coloring(problem)
+    timings = {"encoding_seconds": time.perf_counter() - start}
     if validation == "exhaustive" and encoding.input_count > 12:
         raise ValueError("Exhaustive validation is limited to 12 data bits")
     if verification_assignments is not None and (
@@ -245,7 +372,6 @@ def assemble_case(
         verify_kickback_oracle,
     )
 
-    timings = {}
     start = time.perf_counter()
     effective = ColoringProblem(
         problem.vertices,
@@ -356,7 +482,23 @@ def assemble_case(
     mapping = {
         v: [data[q] for q in wires] for v, wires in encoding.input_mapping.items()
     }
+    component_workspace = {}
+    for component in ("raw", "preparation", "oracle", "diffusion", "search"):
+        data_only = component in ("preparation", "diffusion")
+        component_workspace[component] = _workspace_provenance(
+            len(data) if data_only else oracle.num_qubits,
+            list(range(len(data))) if data_only else data,
+            [] if data_only else result.metadata["output_qubits"],
+            [] if data_only else result.metadata.get("constraint_qubits", []),
+            kickback=component != "raw" and "kickback" in construction,
+            source=(
+                "ordered preparation data register"
+                if data_only
+                else "backend input/output/constraint indices and selected oracle construction"
+            ),
+        )
     metadata = {
+        "metadata_version": 2,
         "method": method,
         "regime": regime,
         "iteration": iterations,
@@ -393,6 +535,16 @@ def assemble_case(
             "search": "composition of validated oracle action and matching reflection; no large search statevector simulation",
         },
         "timings": timings,
+        "stage_timings": _stage_timings(timings, result.metadata),
+        "timing_policy": "Overlapping scopes; do not sum native_combined with synthesis or case total",
+        "structural_statistics": {
+            key: _network_statistics(
+                result.metadata.get(key), f"backend_metadata.{key}"
+            )
+            for key in ("source_network", "network")
+        },
+        "peak_memory": {"status": "unavailable", "bytes": None},
+        "component_workspace": component_workspace,
         "backend_metadata": result.metadata,
         "component_registers": {
             name: "ordered_data" if name in ("preparation", "diffusion") else "physical"
@@ -444,6 +596,8 @@ def run_coloring_study(config: dict, *, executable=None) -> Path:
     output = new_run_directory(config.get("output"), description="coloring-study")
     manifest = {
         "schema_version": 1,
+        "metadata_version": 2,
+        "metadata_contract": "Additive v2 fields; legacy timings, roles and CSV columns retained",
         "config": config,
         "status": "running",
         "cases": [],
@@ -515,6 +669,7 @@ def run_coloring_study(config: dict, *, executable=None) -> Path:
                                 )
                                 case.update(assembled.metadata)
                                 artifacts = {}
+                                case["artifact_statistics"] = {}
                                 for component, circuit in assembled.circuits.items():
                                     for level in ["logical"] + (
                                         ["common_basis"]
@@ -541,9 +696,62 @@ def run_coloring_study(config: dict, *, executable=None) -> Path:
                                                 "Common basis contains non U/CX gates"
                                             )
                                         elapsed = time.perf_counter() - lower_start
+                                        if measured.num_qubits != circuit.num_qubits:
+                                            raise AssertionError(
+                                                "Lowering changed the workspace register"
+                                            )
                                         artifact = f"{name}_{component}_{level}.qpy"
+                                        artifact_start = time.perf_counter()
                                         with (output / artifact).open("wb") as stream:
                                             qpy.dump(measured, stream)
+                                        with (output / artifact).open("rb") as stream:
+                                            saved_circuit = qpy.load(stream)[0]
+                                        artifact_seconds = (
+                                            time.perf_counter() - artifact_start
+                                        )
+                                        metric_start = time.perf_counter()
+                                        metrics = circuit_metrics(saved_circuit)
+                                        metric_seconds = (
+                                            time.perf_counter() - metric_start
+                                        )
+                                        workspace = assembled.metadata[
+                                            "component_workspace"
+                                        ][component]
+                                        case["artifact_statistics"][artifact] = {
+                                            "metric_level": level,
+                                            "metrics": {
+                                                **metrics,
+                                                "metric_level": level,
+                                            },
+                                            "sha256": hashlib.sha256(
+                                                (output / artifact).read_bytes()
+                                            ).hexdigest(),
+                                            "workspace": workspace,
+                                            "stage_timings": {
+                                                "lowering": {
+                                                    "status": (
+                                                        "measured"
+                                                        if level == "common_basis"
+                                                        else "not_requested"
+                                                    ),
+                                                    "seconds": (
+                                                        elapsed
+                                                        if level == "common_basis"
+                                                        else None
+                                                    ),
+                                                },
+                                                "qpy_write_read": {
+                                                    "status": "measured",
+                                                    "seconds": artifact_seconds,
+                                                },
+                                                "metrics_from_saved_qpy": {
+                                                    "status": "measured",
+                                                    "seconds": metric_seconds,
+                                                },
+                                            },
+                                            "clock": "time.perf_counter",
+                                            "included_in": "case.total_seconds",
+                                        }
                                         artifacts[f"{component}_{level}"] = artifact
                                         case_rows.append(
                                             {
@@ -553,7 +761,7 @@ def run_coloring_study(config: dict, *, executable=None) -> Path:
                                                 "method": method,
                                                 "iteration": iteration,
                                                 "seed": seed,
-                                                **circuit_metrics(measured),
+                                                **metrics,
                                                 "metric_level": level,
                                                 "artifact": artifact,
                                                 "input_sha256": digest,
@@ -568,6 +776,14 @@ def run_coloring_study(config: dict, *, executable=None) -> Path:
                                                         "role_counts"
                                                     ]
                                                 ),
+                                                "workspace_role_counts": workspace[
+                                                    "role_counts"
+                                                ],
+                                                "workspace_policy": workspace["policy"],
+                                                "peak_reserved_nondata_qubits": workspace[
+                                                    "peak_reserved_nondata_qubits"
+                                                ],
+                                                "peak_live_workspace_qubits": None,
                                                 "lowering_seconds": (
                                                     elapsed
                                                     if level == "common_basis"
@@ -591,6 +807,12 @@ def run_coloring_study(config: dict, *, executable=None) -> Path:
                                 )
                             finally:
                                 case["total_seconds"] = time.perf_counter() - started
+                                case.setdefault("stage_timings", {})["case_total"] = {
+                                    "status": "measured",
+                                    "seconds": case["total_seconds"],
+                                    "clock": "time.perf_counter",
+                                    "scope": "assembly/validation/artifacts/metrics; excludes final case/manifest save",
+                                }
                                 (output / f"{name}.json").write_text(
                                     json.dumps(case, indent=2) + "\n"
                                 )

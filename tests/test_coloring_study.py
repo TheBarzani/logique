@@ -166,6 +166,10 @@ def test_precolors_require_explicit_removal():
         {"parameters": {"k": 5}},
         {"optimization_profile": "balanced"},
         {"workspace_policy": "dirty"},
+        {"routing": True},
+        {"timeout": 180},
+        {"decomposition_policy": "clean"},
+        {"ft_synthesis": True},
         {"output": "dump/incorrect"},
         {"verification_assignments": [0]},
     ],
@@ -358,3 +362,198 @@ def test_baseline_validation_rejects_wrong_target_phase(monkeypatch):
     monkeypatch.setattr(synthesis, "baseline_components", corrupt)
     with pytest.raises(AssertionError, match="clean XOR"):
         study.assemble_case(ColoringProblem((1, 2), ((1, 2),), 2), "sb_balanced", "R1")
+
+
+def test_stage_timing_contract_keeps_native_combined_and_unknown_splits():
+    stages = study._stage_timings({"synthesis_seconds": 2.0}, {"native_seconds": 0.5})
+    assert stages["synthesis"]["seconds"] == 2.0
+    assert stages["synthesis"]["clock"] == "time.perf_counter"
+    assert stages["native_combined"]["seconds"] == 0.5
+    assert stages["native_combined"]["included_in"] == "synthesis"
+    assert stages["native_combined"]["clock"] == "std::chrono::steady_clock"
+    for key in ("optimization", "mapping"):
+        assert stages[key]["status"] == "unavailable"
+        assert stages[key]["seconds"] is None
+    assert stages["routing"]["status"] == "not_enabled"
+    absent = study._stage_timings({}, {})["native_combined"]
+    assert absent["status"] == "unavailable"
+    assert absent["seconds"] is None
+
+
+def test_network_statistics_are_structural_and_do_not_guess_lut_depth():
+    graph = {
+        "nodes": [
+            {"id": 0, "kind": "constant", "fanins": []},
+            {"id": 1, "kind": "input", "fanins": []},
+            {"id": 2, "kind": "input", "fanins": []},
+            {"id": 3, "kind": "xor", "fanins": [{"node": 1}, {"node": 2}]},
+            {"id": 4, "kind": "and", "fanins": [{"node": 1}, {"node": 3}]},
+            {"id": 5, "kind": "and", "fanins": [{"node": 4}, {"node": 2}]},
+        ],
+        "inputs": [1, 2],
+        "outputs": [{"node": 5}],
+    }
+    stats = study._network_statistics(graph, "fixture")
+    assert (stats["AND"], stats["XOR"], stats["LUT"]) == (2, 1, 0)
+    assert stats["logic_depth"] == 3
+    assert stats["multiplicative_depth"] == 2
+    assert stats["source"] == "fixture"
+    graph["nodes"][-1]["kind"] = "lut"
+    stats = study._network_statistics(graph, "fixture")
+    assert stats["LUT"] == 1
+    assert stats["multiplicative_depth"] is None
+    assert study._network_statistics(None, "missing")["status"] == "unavailable"
+
+
+@pytest.mark.parametrize("iterations", [0, 1])
+def test_workspace_provenance_partitions_reserved_component_wires(iterations):
+    case = study.assemble_case(
+        ColoringProblem((2, 8, 90), ((2, 8), (8, 90)), 2),
+        "sb_balanced",
+        "R2",
+        iterations=iterations,
+    )
+    md = case.metadata
+    assert md["metadata_version"] == 2
+    assert md["peak_memory"] == {"status": "unavailable", "bytes": None}
+    assert md["structural_statistics"]["network"]["status"] == "unavailable"
+    for component, circuit in case.circuits.items():
+        workspace = md["component_workspace"][component]
+        wires = [q for group in workspace["roles"].values() for q in group]
+        assert sorted(wires) == list(range(circuit.num_qubits))
+        assert workspace["peak_reserved_qubits"] == circuit.num_qubits
+        assert workspace["peak_live_workspace_qubits"] is None
+        assert workspace["role_counts"]["mcx_ancilla"] == 0
+    raw = md["component_workspace"]["raw"]["roles"]
+    oracle = md["component_workspace"]["oracle"]["roles"]
+    assert raw["output"] == oracle["kickback"]
+    assert not raw["kickback"] and not oracle["output"]
+    assert oracle["constraint"] == md["backend_metadata"]["constraint_qubits"]
+    assert oracle["unknown"] == md["backend_metadata"]["workspace_qubits"]
+
+
+@pytest.mark.integration
+def test_native_workspace_remains_unknown_with_network_evidence():
+    if BRIDGE is None:
+        pytest.skip("shared native bridge unavailable")
+    case = study.assemble_case(
+        ColoringProblem((2, 9), ((2, 9),), 3),
+        "xag_bennett",
+        "R2",
+        executable=BRIDGE,
+    )
+    md = case.metadata
+    roles = md["component_workspace"]["oracle"]["roles"]
+    assert roles["unknown"] == md["qubit_roles"]["synthesis_workspace"]
+    assert roles["unknown"]
+    assert "AND" not in roles
+    assert (
+        md["stage_timings"]["native_combined"]["seconds"]
+        == md["backend_metadata"]["native_seconds"]
+    )
+    for name in ("source_network", "network"):
+        stats = md["structural_statistics"][name]
+        assert stats["AND"] == sum(
+            n["kind"] == "and" for n in md["backend_metadata"][name]["nodes"]
+        )
+
+
+def test_saved_metadata_uses_monotonic_clock_and_reads_old_tables(
+    tmp_path, monkeypatch
+):
+    from itertools import count
+    from types import SimpleNamespace
+    from logique.benchmarks.results import load_results
+
+    def forbidden():
+        raise AssertionError("wall clock must not measure elapsed durations")
+
+    # Restrict the runner's clock without altering Qiskit/logging wall timestamps.
+    ticks = count(100, 0.25)
+    monkeypatch.setattr(
+        study, "time", SimpleNamespace(perf_counter=lambda: next(ticks), time=forbidden)
+    )
+    output = study.run_coloring_study(
+        load_config(
+            write_config(
+                tmp_path,
+                seeds=[7],
+                iterations=[0],
+                common_basis=True,
+                optimization_level=0,
+            )
+        )
+    )
+    manifest = json.loads((output / "run.json").read_text())
+    assert manifest["schema_version"] == 1
+    assert manifest["metadata_version"] == 2
+    case = manifest["cases"][0]
+    assert case["status"] == "complete"
+    assert case["stage_timings"]["case_total"]["seconds"] == case["total_seconds"]
+    for key, elapsed in case["timings"].items():
+        assert elapsed == 0.25
+        assert case["stage_timings"][key.removesuffix("_seconds")]["seconds"] == elapsed
+    for artifact, record in case["artifact_statistics"].items():
+        import hashlib
+
+        assert (
+            record["sha256"]
+            == hashlib.sha256((output / artifact).read_bytes()).hexdigest()
+        )
+        with (output / artifact).open("rb") as stream:
+            metrics = circuit_metrics(qpy.load(stream)[0])
+        assert record["metrics"] == {**metrics, "metric_level": record["metric_level"]}
+        lowering = record["stage_timings"]["lowering"]
+        if record["metric_level"] == "logical":
+            assert lowering == {"status": "not_requested", "seconds": None}
+        else:
+            assert lowering["status"] == "measured"
+            assert lowering["seconds"] >= 0
+    current = load_results(output)
+    legacy_columns = [
+        "benchmark",
+        "method",
+        "regime",
+        "component",
+        "iteration",
+        "seed",
+        "metric_level",
+        "qubits",
+        "depth",
+        "gates",
+        "artifact",
+    ]
+    legacy = tmp_path / "legacy.csv"
+    current[legacy_columns].to_csv(legacy, index=False)
+    assert load_results(legacy).equals(current[legacy_columns])
+
+
+def test_failed_lowering_retains_partial_evidence_without_cost_rows(
+    tmp_path, monkeypatch
+):
+    import logique.benchmarks.metrics as metrics
+
+    def fail(*args, **kwargs):
+        raise RuntimeError("injected common-basis failure")
+
+    monkeypatch.setattr(metrics, "lower_circuit", fail)
+    output = study.run_coloring_study(
+        load_config(
+            write_config(
+                tmp_path,
+                methods=["sb_balanced"],
+                seeds=[7],
+                iterations=[0],
+                common_basis=True,
+            )
+        )
+    )
+    manifest = json.loads((output / "run.json").read_text())
+    assert manifest["status"] == "complete_with_failures"
+    case = manifest["cases"][0]
+    assert case["status"] == "failed"
+    assert case["reason"] == "RuntimeError: injected common-basis failure"
+    assert len(case["artifact_statistics"]) == 1
+    assert next(iter(case["artifact_statistics"].values()))["metric_level"] == "logical"
+    assert case["stage_timings"]["case_total"]["seconds"] >= 0
+    assert not (output / "summary.csv").exists()

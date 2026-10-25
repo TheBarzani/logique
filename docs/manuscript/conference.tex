@@ -282,12 +282,14 @@ The specific contributions of this work are as follows:
 % The Outcome
 We evaluate our approach on standard graph benchmarks and report circuit depth and width reductions of roughly 49.4\% and 41.7\%, respectively, versus the framework of Saha \cite{saha} and its Belletti extensions \cite{belletti}. To validate our flow, we run synthesized circuits for linear graphs of 3-8 vertices on \textbf{IBM’s 133-qubit Heron-r1 QPU (\texttt{ibm\_torino})} and results show improved success probabilities.
 
+% Revision status: background and semantic corrections are independent of results.
+% Abstract, evaluation and contribution claims still await the corrected evidence gate.
 \section{Background And Related Work}
 In this section, we provide the preliminaries used in the paper and review prior work on quantum circuits for graph $k$-coloring.
 
 \subsection{Quantum Algorithms and Operations}
 
-A quantum algorithm is a sequence of operations that prepares an initial state, manipulates it through intermediate steps, and measures the result to obtain a probabilistic solution. The state of a quantum system is represented by qubits. A single qubit state is denoted as $\ket{q} = \alpha\ket{0} + \beta\ket{1}$, where $\alpha, \beta \in \mathbb{C}$ and $|\alpha|^2 + |\beta|^2 = 1$. Upon measurement, a qubit collapses to $\ket{0}$ or $\ket{1}$ with a probability $|\alpha|^2$ or $|\beta|^2$, respectively. Qubits are classified as \textit{data} qubits (holding input/output) or \textit{ancilla} qubits (temporary memory). Ancilla qubits are \textit{clean} if initialized to a known state (e.g., $\ket{0}$) and \textit{dirty} otherwise.
+A quantum algorithm is a sequence of operations that prepares an initial state, manipulates it through intermediate steps, and measures the result to obtain a probabilistic solution. The state of a quantum system is represented by qubits. A single qubit state is denoted as $\ket{q} = \alpha\ket{0} + \beta\ket{1}$, where $\alpha, \beta \in \mathbb{C}$ and $|\alpha|^2 + |\beta|^2 = 1$. Upon measurement, a qubit collapses to $\ket{0}$ or $\ket{1}$ with a probability $|\alpha|^2$ or $|\beta|^2$, respectively. Qubits are classified as \textit{data} qubits (holding input/output) or \textit{ancilla} qubits (temporary memory). A clean ancilla starts in a specified state, usually $\ket{0}$, and a restoring construction returns it to that state. A borrowed dirty ancilla may start in an unknown state, including one entangled with other registers, and must be restored coherently. A throwaway ancilla starts clean but may retain garbage until an explicitly paired inverse removes it.
 
 Quantum algorithms are implemented via \textit{quantum circuits} composed of qubits and \textit{quantum gates}. Gates are unitary operators that evolve the state of one or more qubits.
 
@@ -307,9 +309,11 @@ CNOT = \begin{pmatrix}
 \normalsize
 performs a conditional bit-flip on a target qubit based on a control qubit. Applying $H$ to the control of a CNOT (with $\ket{00}$) yields the Bell state $\ket{\Phi^+} = \frac{1}{\sqrt{2}}(\ket{00} + \ket{11})$ \cite{Nielsen,Bell}.
 
-A universal gate set enables approximation of any unitary operation. The Clifford+$T$ gate set $\{H, S, CNOT, T\}$ is widely used for fault-tolerant quantum computing (FTQC) due to its compatibility with error correction \cite{Nielsen}. In noisy intermediate-scale quantum (NISQ) devices, connectivity constraints make CNOT gates particularly expensive \cite{nisq_two_qubit}. The non-Clifford $T$-gate is costly to implement (e.g., via magic-state distillation \cite{magic_state_distillation}) and is $50\times$ more expensive than Clifford gates in FTQC \cite{ftqc_cost}. Thus, $T$-count and CNOT-count are critical metrics for assessing quantum computation costs~\cite{Tcount}.
+A universal gate set enables approximation of any unitary operation. The Clifford+$T$ gate set $\{H, S, CNOT, T\}$ is widely used for fault-tolerant quantum computing (FTQC) due to its compatibility with error correction \cite{Nielsen}. In noisy intermediate-scale quantum (NISQ) devices, connectivity constraints make CNOT gates particularly expensive \cite{nisq_two_qubit}. The non-Clifford $T$ gate motivates separate logical resource accounting, including $T$-count and dependency-graph $T$-depth~\cite{Tcount}. We do not convert these logical metrics into physical error-correction resources or assume a fixed relative price for Clifford and $T$ gates.
 
-The \textit{Toffoli} gate (CCNOT)~\cite{toffoli_gate} is a reversible logic gate commonly used in quantum circuits. Its multi-controlled variant (MCT gate) has $n > 2$ control qubits and one target. MCT gates need to be decomposed into elementary gates, incurring significant overhead in depth, width, and ancilla count~\cite{toffoli_decomposition}. For depth-optimal decomposition, an $n$-control MCT gate requires at least $\lceil \log_2 n \rceil$ depth and $n-2$ dirty ancillae~\cite{toffoli_decomposition}. Figures \ref{fig:4-MCT} and \ref{fig:5-MCT} show the decomposition of MCT gates with 4 and 5 controls, respectively, using the tight $\lceil \log_2 n \rceil$ bound on Toffoli depth. Note that in our flow, we consider our circuit constructions over the Clifford+Toffoli set, which is an extension of Clifford+$T$, where the Toffoli is decomposed using its optimal ancilla-free construction~\cite{Tcount}. Hereafter, throughout this work, the depth, width, and gate count are measured with respect to this set, along with MCT's depth-optimal decomposition.
+The \textit{Toffoli} gate (CCNOT)~\cite{toffoli_gate} flips its target when both controls are one. We use MCT for its extension with more than two controls. A decomposition must specify both its emitted gates and its workspace contract. The trees in Figure~\ref{fig:mct-decomposition} use initially clean ancillas and leave intermediate conjunctions in them. They implement the desired target action but do not restore workspace. They are valid inside an oracle only when the inverse of the actual expanded block later removes that garbage on the same scratch wires. A final marking or diffusion gate with no such mirror requires a restoring construction. Ancilla cost is the peak number simultaneously held, including between a block and its inverse, rather than a sum over gates.
+
+We distinguish logical gate counts, explicitly lowered Clifford+$T$ circuits, a common one- and two-qubit basis, and routed native circuits. Barriers and measurements are excluded from gate counts. In the static unitary Clifford+$T$ model, the selected exact Toffoli construction uses seven $T$ gates and three $T$ layers. The verified relative-phase Toffoli gadgets use four $T$ gates; replacing a Toffoli by such a gadget is permitted only when the complete composition has the intended phases. Clifford+Toffoli is an intermediate description whose Toffoli gates are subsequently lowered; it is not an extension of the Clifford+$T$ gate set. Arbitrary rotations require a stated approximation method and an error budget covering the complete repeated algorithm. Measurement-assisted constructions are accounted for separately.
 
 \begin{figure}
     \centering
@@ -322,14 +326,14 @@ The \textit{Toffoli} gate (CCNOT)~\cite{toffoli_gate} is a reversible logic gate
              \qw & \ctrl{0} & \qw \\
              \qw & \targ{} & \qw 
         \end{quantikz}
-        $\equiv$ \hspace{-0.5cm} \begin{quantikz} [column sep=0.1cm, wire types={q,q,q,q,q}, row sep=0.2cm, thin lines]
+        $\equiv_{\mathrm{target}}$ \hspace{-0.5cm} \begin{quantikz} [column sep=0.1cm, wire types={q,q,q,q,q}, row sep=0.2cm, thin lines]
              \qw &\qw & \ctrl{5} & \qw & \qw & \qw\\
              \qw &\qw & \ctrl{0} & \qw & \qw & \qw\\
              \qw &\qw & \qw & \ctrl{4} & \qw & \qw\\
              \qw &\qw & \qw & \ctrl{0} & \qw & \qw\\
              \qw & \qw & \qw & \qw & \targ{} & \qw \\
-             \lstick{\small $\ket{a_1}$} & \qw & \targ{} & \qw & \ctrl{0} & \qw\\
-             \lstick{\small $\ket{a_2}$} & \qw & \qw & \targ{} & \ctrl{-2} & \qw
+             \lstick{\small $\ket{0}_{a_1}$} & \qw & \targ{} & \qw & \ctrl{0} & \qw\\
+             \lstick{\small $\ket{0}_{a_2}$} & \qw & \qw & \targ{} & \ctrl{-2} & \qw
         \end{quantikz}
         \vspace{0.8cm}
         \caption{MCT with 4 controls}
@@ -347,22 +351,22 @@ The \textit{Toffoli} gate (CCNOT)~\cite{toffoli_gate} is a reversible logic gate
              \qw & \ctrl{0} & \qw \\
              \qw & \targ{} & \qw 
         \end{quantikz}
-        $\equiv$ \hspace{-0.5cm}\begin{quantikz} [column sep=0.1cm, wire types={q,q,q,q,q}, row sep=0.2cm, thin lines]
+        $\equiv_{\mathrm{target}}$ \hspace{-0.5cm}\begin{quantikz} [column sep=0.1cm, wire types={q,q,q,q,q}, row sep=0.2cm, thin lines]
              \qw &\qw & \ctrl{6} & \qw & \qw & \qw & \qw\\
              \qw &\qw & \ctrl{0} & \qw & \qw & \qw & \qw\\
              \qw &\qw & \qw & \ctrl{5} & \qw & \qw & \qw\\
              \qw &\qw & \qw & \ctrl{0} & \qw & \qw & \qw\\
              \qw &\qw & \qw & \qw & \ctrl{4} & \qw & \qw\\
              \qw & \qw & \qw & \qw & \qw & \targ{} & \qw\\
-             \lstick{\small $\ket{a_1}$} & \qw & \targ{} & \qw & \ctrl{0} & \qw & \qw\\
-             \lstick{\small $\ket{a_2}$} & \qw & \qw & \targ{} & \qw & \ctrl{0} & \qw \\
-             \lstick{\small $\ket{a_3}$} & \qw & \qw & \qw & \targ{} & \ctrl{-3} & \qw
+             \lstick{\small $\ket{0}_{a_1}$} & \qw & \targ{} & \qw & \ctrl{0} & \qw & \qw\\
+             \lstick{\small $\ket{0}_{a_2}$} & \qw & \qw & \targ{} & \qw & \ctrl{0} & \qw \\
+             \lstick{\small $\ket{0}_{a_3}$} & \qw & \qw & \qw & \targ{} & \ctrl{-3} & \qw
         \end{quantikz}
         \caption{MCT with 5 controls}
         \Description{MCT Gate with 5 controls}
         \label{fig:5-MCT}
     \end{subfigure}
-    \caption{Depth-optimal decomposition of MCT gates (Toffoli-depth) with dirty ancilla qubits $\ket{a}$}
+    \caption{Throwaway-ancilla trees for MCT target action. The ancillas start in $\ket{0}$ and retain garbage; an actual expanded inverse on the same scratch wires must remove it before the oracle ends. These are not restoring decompositions.}
     \Description{}
     \label{fig:mct-decomposition}
     \vspace{-0.6cm}
@@ -370,15 +374,19 @@ The \textit{Toffoli} gate (CCNOT)~\cite{toffoli_gate} is a reversible logic gate
 
 \subsection{Grover's Algorithm}
 
-Grover's algorithm provides a quadratic speedup for searching an unstructured database of $N = 2^n$ items ~\cite{grover}. It finds a solution \(x^*\) to a \textbf{GF}(2) function \(f:\mathbb{B}^{n}\rightarrow\mathbb{B}\) with high probability using only \(\mathcal{O}(\sqrt{N})\) oracle queries, compared to \(\mathcal{O}(N)\) classically.
+For a uniform search domain of size $N$ containing $M$ marked assignments, Grover's algorithm uses $\mathcal{O}(\sqrt{N/M})$ oracle calls when $0<M<N$~\cite{grover,mosca}. With Hadamard preparation the binary domain has $N=2^n$ states; with uniform valid-color preparation and no precolors it has $N=k^{|V|}$. Let $A$ denote the actual preparation and $p$ its probability of a marked assignment. Writing $\theta=\arcsin\sqrt{p}$, ideal success after $j$ iterations is
+\begin{equation}
+P_j=\sin^2((2j+1)\theta).
+\end{equation}
+For $0<p<1$, the integer choices nearest $\pi/(4\theta)-1/2$ determine the first maximum; they are evaluated explicitly. If $p=0$ there is no marked solution, and if $p=1$ no amplification is needed. Unknown $M$ does not justify assuming one solution; iteration costs must remain parametric or use a documented estimate.
 
 As illustrated in Figure \ref{fig:grover_circuit}, the algorithm proceeds as follows:
 \begin{enumerate}
-    \item \textbf{Initialize} a register of \(n+1\) qubits to the state \(\ket{0}^{\otimes n}\ket{-}\).
-    \item \textbf{Create uniform quantum superposition $(UQS)$} by applying the UQS circuit, \(U_{UQS}^{\otimes n}\), to the first \(n\) qubits.
+    \item \textbf{Initialize} the $n$ data qubits and required workspace. A phase-kickback construction additionally prepares its target in $\ket{-}$.
+    \item \textbf{Prepare the data} by applying $A$, either a Hadamard stack or a product of valid-color preparations on vertex registers.
     \item \textbf{Apply the Grover oracle} \(U_f\), which performs a conditional phase shift (\(|x\rangle \mapsto (-1)^{f(x)}|x\rangle\)) on the desired basis state.
-    \item \textbf{Apply the diffusion operator} \(U_D\), which inverts all amplitudes about their mean, further amplifying the solution(s).
-    \item \textbf{Repeat} steps 3 and 4 for approximately \(\lfloor \frac{\pi}{4} \sqrt{N} \rfloor\) iterations~\cite{mosca}.
+    \item \textbf{Reflect about the prepared state} with $D=A(2|0^n\rangle\langle0^n|-I)A^\dagger$. In circuit order, apply $A^\dagger$, the zero-state reflection, then $A$.
+    \item \textbf{Repeat} the oracle and reflection $j$ times, with $j$ selected from $p$ when known. More iterations need not increase success.
     \item \textbf{Measure} the first \(n\) qubits.
 \end{enumerate}
 
@@ -401,7 +409,7 @@ An XAG represents a Boolean function as a directed acyclic graph where each node
 \begin{equation}
 x_i = x_{j_{1i}} \oplus x_{j_{2i}} \quad \text{or} \quad x_i = x_{j_{1i}}^{p_{1i}} \land x_{j_{2i}}^{p_{2i}}
 \end{equation}
-where \(p_{1i}, p_{2i} \in \{0,1\}\) are Boolean constants that determine if a gate's fan-in is complemented. This representation does not utilize multi-fan-in AND gates and thus it natively avoids MCT gates.
+where \(p_{1i}, p_{2i} \in \{0,1\}\) are Boolean constants that determine if a gate's fan-in is complemented. The representation uses two-input gates, but is not canonical. Its quantum cost depends on the mapping, phase conventions and cleanup strategy; properties of the representation alone do not establish a resource advantage.
 
 
 \subsection{Quantum Computing for Graph k-Coloring}
@@ -480,10 +488,10 @@ The generated Boolean function \(f_\Phi\) is synthesized into an XAG logic netwo
     \item \textbf{Syntactic Parsing:} An Abstract Syntax Tree (AST)-based parser transforms the Boolean expression for $f_\Phi$ into an intermediate logic network representation.
     \item \textbf{Structural Synthesis:} This intermediate representation is optimized and mapped onto network primitives, instantiating 2-input XOR gates, 2-input AND gates, and INVERTED fan-ins to form the final XAG.
 \end{enumerate}
-This resulting XAG, composed solely of these elementary logic components, provides a canonical and efficient representation that is ideal for the quantum circuit compilation step.
+The resulting XAG provides a Boolean representation for quantum compilation. Equivalent XAGs may have different size, multiplicative depth and mapping costs.
 
 \subsubsection{XAG-Based Quantum Compilation}
-The XAG network is compiled into a quantum oracle circuit using the method from Meuli et al.~\cite{XAGCompilation}. This method constructs the linear parity functions for each AND gate in the XAG using CNOT chains and computes the AND operations using optimized ancilla-based patterns. The result is a circuit that marks invalid colorings through phase kick-back.
+The XAG network is compiled into a quantum oracle circuit using the method from Meuli et al.~\cite{XAGCompilation}. This method constructs the linear parity functions for each AND gate in the XAG using CNOT chains and computes the AND operations using optimized ancilla-based patterns. The result is a circuit that marks proper colorings through phase kick-back.
 
 \subsection{UQS State Preparation}
 \label{subsec:uqs-prep}
@@ -501,15 +509,21 @@ This is achieved with a gate depth and complexity of only $\mathcal{O}(\log_2 k)
 
 The flow combines the synthesized components into a complete Grover circuit. This involves preparing the diffusion operator and composing the full circuit.
 
-\textbf{Diffusion Operator Preparation:} The diffusion operator is constructed as $D = U_{\Psi}^{\dagger} \cdot (2|0^n\rangle\langle 0^n| - I) \cdot U_{\Psi}$, where $U_{\Psi}$ is the circuit that prepares the UQS state $|\Psi\rangle$. Its standard implementation requires applying, in sequence, its adjoint operator $U_{\Psi}^{\dagger}$, a multi-controlled Z gate, and $U_{\Psi}$ to perform the inversion-about-the-average operation.
+\textbf{Diffusion Operator Preparation:} The diffusion operator is constructed as $D = U_{\Psi} \cdot (2|0^n\rangle\langle 0^n| - I) \cdot U_{\Psi}^{\dagger}$, where $U_{\Psi}$ is the circuit that prepares the UQS state $|\Psi\rangle$. Its standard implementation requires applying, in sequence, its adjoint operator $U_{\Psi}^{\dagger}$, a multi-controlled Z gate, and $U_{\Psi}$ to perform the inversion-about-the-average operation.
 
 \textbf{Circuit Composition:} The complete Grover's circuit is assembled in sequence:
 \begin{enumerate}
     \item \textbf{Initialization:} The UQS circuit is applied to each vertex’s register of $c = \lceil \log_2 k \rceil$ qubits. A single ancilla qubit is initialized to $|-\rangle$ for the oracle’s phase kickback.
-    \item \textbf{Oracle Application:} The synthesized oracle circuit $U_f$ is applied to mark invalid colorings via a phase-flip.
+    \item \textbf{Oracle Application:} The synthesized oracle circuit $U_f$ is applied to mark proper colorings via a phase-flip.
     \item \textbf{Diffusion Amplification:} The diffusion operator $D$ is applied to amplify the probability amplitudes of the valid states through the inversion-about-the-average operation.
 \end{enumerate}
-This sequence of oracle and diffusion applications is repeated for the optimal number of \(\lfloor \frac{\pi}{4} \sqrt{N} \rfloor\) queries~\cite{mosca}.
+This sequence is repeated $j$ times, selected from the marked fraction as above. Valid color encodings exclude unused binary codes; proper colorings additionally satisfy every edge constraint. Preparing valid codes does not by itself prepare proper colorings. On the supported valid-code subspace, removing unused-code checks preserves the oracle predicate. The three evaluation regimes distinguish the effect of this removal from the effect of preparation.
+
+For a static unitary Clifford+$T$ implementation, let $T_A$, $T_O$ and $T_{S_0}$ be the costs of preparation, the clean phase oracle and the zero-state reflection. The complete search has
+\begin{equation}
+T_{\mathrm{search}}=T_A+j(2T_A+T_{S_0}+T_O).
+\end{equation}
+The emitted approximation of $A$ is synthesized once and its actual inverse is reused for $A^\dagger$. The rotation error budget counts all occurrences, including repeated preparations and inverse preparations. This gate-count identity does not replace a dependency-graph calculation of the complete circuit's $T$-depth.
 
 \begin{figure}[t]
     \centering
@@ -526,8 +540,8 @@ This sequence of oracle and diffusion applications is repeated for the optimal n
         \caption{UQS Circuit for $k=3$}
         \label{fig:usp-circuit}
     \end{subfigure}
-    \caption{(a) The $K_3$ graph, a 3-coloring problem input (b) The 2-qubit UQS circuit to prepare the uniform superposition {$\frac{1}{\sqrt{3}}\ket{00}+ \ket{01}+ \ket{10}$} for each vertex}
-    \Description{(a) The $K_3$ graph, a 3-coloring problem input (b) The 2-qubit UQS circuit to prepare the uniform superposition {$\frac{1}{\sqrt{3}}\ket{00}+ \ket{01}+ \ket{10}$} for each vertex}
+    \caption{(a) The $K_3$ graph, a 3-coloring problem input (b) The 2-qubit UQS circuit to prepare the uniform superposition {$(\ket{00}+\ket{01}+\ket{10})/\sqrt{3}$} for each vertex}
+    \Description{(a) The $K_3$ graph, a 3-coloring problem input (b) The 2-qubit UQS circuit to prepare the uniform superposition {$(\ket{00}+\ket{01}+\ket{10})/\sqrt{3}$} for each vertex}
     \label{fig:K3_example}
     \vspace{-0.2cm}
 \end{figure}

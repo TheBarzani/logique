@@ -44,6 +44,117 @@ CONFIG_FIELDS = {
 }
 
 
+def _qpy_standard_gate_classes() -> set[type]:
+    """Return recognized QPY gate classes with explicit numeric/control state."""
+    from qiskit.circuit.library import MCXGate
+    from qiskit.circuit.library.standard_gates import get_standard_gate_name_mapping
+
+    # The fixed-arity catalogue omits generic MCX. Retain this serializable
+    # class so preparation resolution does not implicitly lower logical MCX.
+    return {gate.base_class for gate in get_standard_gate_name_mapping().values()} | {
+        MCXGate
+    }
+
+
+def _resolved_qpy_circuit(circuit: QuantumCircuit) -> tuple[QuantumCircuit, dict]:
+    """Resolve emitted definitions to standard gates, preserving order and phase.
+
+    Qiskit 2.1.1 QPY reconstructs inverse StatePreparation as forward. Never
+    serialize that object, even inside another definition. Use its *actual*
+    definition (including its inverse and scalar phases), not its amplitudes.
+    This is a bounded definition-based representation, not support for arbitrary
+    opaque operations, dynamic circuits, or an ideal-amplitude certificate.
+    """
+    standard = _qpy_standard_gate_classes()
+    resolved = circuit.copy_empty_like()
+    resolved.global_phase = 0
+    expanded = Counter()
+    visited = 0
+
+    def visit(block, wires, depth):
+        nonlocal visited
+        if depth > 32:
+            raise ValueError("QPY definition resolution exceeds depth limit 32")
+        if block.num_clbits or block.parameters:
+            raise ValueError("QPY resolution requires bound, quantum-only circuits")
+        if not math.isfinite(float(block.global_phase)):
+            raise ValueError("QPY resolution requires finite scalar phases")
+        resolved.global_phase += block.global_phase
+        for item in block.data:
+            visited += 1
+            if visited > 100_000:
+                raise ValueError("QPY definition resolution exceeds 100000 operations")
+            operation = item.operation
+            mapped = [wires[block.find_bit(q).index] for q in item.qubits]
+            controls = getattr(operation, "num_ctrl_qubits", 0)
+            closed_controls = getattr(operation, "ctrl_state", None) in (
+                None,
+                (1 << controls) - 1,
+            )
+            # QPY 2.1.1 also loses generic MCX open-control state. Its emitted
+            # definition is X conjugation around a closed-control instance.
+            # Resolve open controls consistently, without lowering closed MCX.
+            if operation.base_class in standard and closed_controls:
+                # Standard gates have numeric parameters; reject nonfinite ones
+                # before QPY, including hidden NaN/Inf in a nested definition.
+                for param in operation.params:
+                    value = complex(param)
+                    if not (math.isfinite(value.real) and math.isfinite(value.imag)):
+                        raise ValueError("QPY resolution requires finite parameters")
+                resolved.append(operation, mapped)
+            else:
+                definition = operation.definition
+                if definition is None:
+                    raise ValueError(
+                        f"Unsupported opaque QPY operation: {operation.name}"
+                    )
+                if definition.num_qubits != operation.num_qubits:
+                    raise ValueError("QPY operation definition changes register width")
+                expanded[operation.name] += 1
+                visit(definition, mapped, depth + 1)
+
+    visit(circuit, list(circuit.qubits), 0)
+    return resolved, {
+        "policy": "recursive_emitted_definitions_to_standard_gates_v1",
+        "representation": "resolved_standard_gates",
+        "expanded_definitions": dict(expanded),
+        "visited_operations": visited,
+        "source_global_phase": float(circuit.global_phase),
+        "resolved_global_phase": float(resolved.global_phase),
+        "limits": {"definition_depth": 32, "visited_operations": 100_000},
+        "semantic_scope": "actual recursive definitions and scalar phases; no ideal-amplitude guarantee",
+    }
+
+
+def _qpy_semantic_signature(circuit: QuantumCircuit) -> dict:
+    """Describe flat standard-gate semantics without allocating an operator."""
+    standard = _qpy_standard_gate_classes()
+    if circuit.num_clbits or circuit.parameters:
+        raise ValueError("Unsupported classical or unbound QPY readback")
+    operations = []
+    for item in circuit.data:
+        op = item.operation
+        if op.base_class not in standard:
+            raise ValueError(f"Unsupported unresolved QPY operation: {op.name}")
+        operations.append(
+            {
+                "class": f"{op.base_class.__module__}.{op.base_class.__qualname__}",
+                "name": op.name,
+                "qubits": [circuit.find_bit(q).index for q in item.qubits],
+                "parameters": [
+                    [complex(p).real.hex(), complex(p).imag.hex()] for p in op.params
+                ],
+                "controls": getattr(op, "num_ctrl_qubits", 0),
+                "control_state": getattr(op, "ctrl_state", None),
+            }
+        )
+    return {
+        "qubits": circuit.num_qubits,
+        "global_phase": float(circuit.global_phase).hex(),
+        "operations": operations,
+    }
+
+
 def _stage_timings(timings: dict, backend: dict) -> dict:
     """Describe overlapping measurements without inventing native stage splits."""
     stages = {
@@ -597,7 +708,7 @@ def run_coloring_study(config: dict, *, executable=None) -> Path:
     manifest = {
         "schema_version": 1,
         "metadata_version": 2,
-        "metadata_contract": "Additive v2 fields; legacy timings, roles and CSV columns retained",
+        "metadata_contract": "Additive v2 fields; legacy timings, roles and CSV columns retained; resolved QPY representation recorded per artifact",
         "config": config,
         "status": "running",
         "cases": [],
@@ -669,6 +780,7 @@ def run_coloring_study(config: dict, *, executable=None) -> Path:
                                 )
                                 case.update(assembled.metadata)
                                 artifacts = {}
+                                case["artifacts"] = artifacts
                                 case["artifact_statistics"] = {}
                                 for component, circuit in assembled.circuits.items():
                                     for level in ["logical"] + (
@@ -701,14 +813,74 @@ def run_coloring_study(config: dict, *, executable=None) -> Path:
                                                 "Lowering changed the workspace register"
                                             )
                                         artifact = f"{name}_{component}_{level}.qpy"
+                                        record = {
+                                            "metric_level": level,
+                                            "status": "resolving",
+                                            "emitted_metrics": circuit_metrics(
+                                                measured
+                                            ),
+                                            "metric_level_detail": (
+                                                "logical circuit with recursive definitions resolved to standard gates; mixed granularity, not historical opaque-operation counts"
+                                                if level == "logical"
+                                                else "unrouted U/CX basis, followed by serialization resolution"
+                                            ),
+                                            "component_register": assembled.metadata[
+                                                "component_registers"
+                                            ][component],
+                                        }
+                                        case["artifact_statistics"][artifact] = record
+                                        resolve_start = time.perf_counter()
+                                        resolved, representation = (
+                                            _resolved_qpy_circuit(measured)
+                                        )
+                                        expected = _qpy_semantic_signature(resolved)
+                                        resolve_seconds = (
+                                            time.perf_counter() - resolve_start
+                                        )
+                                        record.update(
+                                            status="resolved",
+                                            serialization=representation,
+                                        )
                                         artifact_start = time.perf_counter()
                                         with (output / artifact).open("wb") as stream:
-                                            qpy.dump(measured, stream)
+                                            qpy.dump(resolved, stream)
+                                        artifacts[f"{component}_{level}"] = artifact
+                                        record.update(
+                                            status="written_unverified",
+                                            sha256=hashlib.sha256(
+                                                (output / artifact).read_bytes()
+                                            ).hexdigest(),
+                                        )
                                         with (output / artifact).open("rb") as stream:
                                             saved_circuit = qpy.load(stream)[0]
+                                        actual = _qpy_semantic_signature(saved_circuit)
+                                        record["readback_signatures"] = {
+                                            label: hashlib.sha256(
+                                                json.dumps(
+                                                    value, sort_keys=True
+                                                ).encode()
+                                            ).hexdigest()
+                                            for label, value in (
+                                                ("expected", expected),
+                                                ("actual", actual),
+                                            )
+                                        }
+                                        if actual != expected:
+                                            raise ValueError(
+                                                "QPY semantic signature changed on readback"
+                                            )
                                         artifact_seconds = (
                                             time.perf_counter() - artifact_start
                                         )
+                                        representation["readback_check"] = {
+                                            "status": "exact_standard_gate_signature_match",
+                                            "signature_sha256": hashlib.sha256(
+                                                json.dumps(
+                                                    expected, sort_keys=True
+                                                ).encode()
+                                            ).hexdigest(),
+                                            "scope": "gate classes, ordered wires, numeric parameters, controls and scalar phase; no dense simulation",
+                                        }
                                         metric_start = time.perf_counter()
                                         metrics = circuit_metrics(saved_circuit)
                                         metric_seconds = (
@@ -717,42 +889,49 @@ def run_coloring_study(config: dict, *, executable=None) -> Path:
                                         workspace = assembled.metadata[
                                             "component_workspace"
                                         ][component]
-                                        case["artifact_statistics"][artifact] = {
-                                            "metric_level": level,
-                                            "metrics": {
-                                                **metrics,
+                                        record.update(
+                                            {
+                                                "status": "verified",
                                                 "metric_level": level,
-                                            },
-                                            "sha256": hashlib.sha256(
-                                                (output / artifact).read_bytes()
-                                            ).hexdigest(),
-                                            "workspace": workspace,
-                                            "stage_timings": {
-                                                "lowering": {
-                                                    "status": (
-                                                        "measured"
-                                                        if level == "common_basis"
-                                                        else "not_requested"
-                                                    ),
-                                                    "seconds": (
-                                                        elapsed
-                                                        if level == "common_basis"
-                                                        else None
-                                                    ),
+                                                "metrics": {
+                                                    **metrics,
+                                                    "metric_level": level,
                                                 },
-                                                "qpy_write_read": {
-                                                    "status": "measured",
-                                                    "seconds": artifact_seconds,
+                                                "sha256": hashlib.sha256(
+                                                    (output / artifact).read_bytes()
+                                                ).hexdigest(),
+                                                "workspace": workspace,
+                                                "stage_timings": {
+                                                    "serialization_resolution": {
+                                                        "status": "measured",
+                                                        "seconds": resolve_seconds,
+                                                        "scope": "resolve emitted recursive definitions and compute expected signature",
+                                                    },
+                                                    "lowering": {
+                                                        "status": (
+                                                            "measured"
+                                                            if level == "common_basis"
+                                                            else "not_requested"
+                                                        ),
+                                                        "seconds": (
+                                                            elapsed
+                                                            if level == "common_basis"
+                                                            else None
+                                                        ),
+                                                    },
+                                                    "qpy_write_read": {
+                                                        "status": "measured",
+                                                        "seconds": artifact_seconds,
+                                                    },
+                                                    "metrics_from_saved_qpy": {
+                                                        "status": "measured",
+                                                        "seconds": metric_seconds,
+                                                    },
                                                 },
-                                                "metrics_from_saved_qpy": {
-                                                    "status": "measured",
-                                                    "seconds": metric_seconds,
-                                                },
-                                            },
-                                            "clock": "time.perf_counter",
-                                            "included_in": "case.total_seconds",
-                                        }
-                                        artifacts[f"{component}_{level}"] = artifact
+                                                "clock": "time.perf_counter",
+                                                "included_in": "case.total_seconds",
+                                            }
+                                        )
                                         case_rows.append(
                                             {
                                                 "benchmark": path.stem,
@@ -763,6 +942,9 @@ def run_coloring_study(config: dict, *, executable=None) -> Path:
                                                 "seed": seed,
                                                 **metrics,
                                                 "metric_level": level,
+                                                "representation": representation[
+                                                    "representation"
+                                                ],
                                                 "artifact": artifact,
                                                 "input_sha256": digest,
                                                 "validation": assembled.metadata[

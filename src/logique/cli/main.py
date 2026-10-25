@@ -27,6 +27,10 @@ def parser() -> argparse.ArgumentParser:
     build.add_argument("--source", type=Path, required=True)
     build.add_argument("--build", type=Path)
     build.add_argument("--jobs", type=int, default=2)
+    balance_build = native.add_parser("balance-build")
+    balance_build.add_argument("--source", type=Path, required=True)
+    balance_build.add_argument("--build", type=Path)
+    balance_build.add_argument("--jobs", type=int, default=1)
     synth = commands.add_parser(
         "synthesize", help="Compile a .col, .v, .aig, or .aag input"
     )
@@ -111,9 +115,14 @@ def dispatch(args) -> None:
             )
         )
     elif args.command == "native":
-        from logique.synthesis.native import build_native
+        if args.action == "balance-build":
+            from logique.synthesis.balancing import build_balancer
 
-        print(build_native(args.source, build=args.build, jobs=args.jobs))
+            print(build_balancer(args.source, build=args.build, jobs=args.jobs))
+        else:
+            from logique.synthesis.native import build_native
+
+            print(build_native(args.source, build=args.build, jobs=args.jobs))
     elif args.command == "synthesize":
         from qiskit import qpy
         from logique import read_dimacs, encode_coloring

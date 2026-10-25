@@ -608,3 +608,60 @@ scaling/DIMACS positive/negative witnesses and resources; full acceptance,
 provenance/build/offline notebooks/isolated replay; traced manuscript, reviewer
 responses, evidence gate and independent final correctness/claim/reproducibility
 reviews. No interval/ideal-amplitude/RUS or paper approval. Full paper stays open.
+
+
+## Emitted parallel structure admission: bounded coordinator triage
+
+Worker `structure-parallel-1025081040` completed, not blocked. No previous
+completed handoff existed for `coordinate-structure-parallel-1025081040`.
+Actual source/tests and saved evidence were independently inspected and
+hash-verified before integrating only correctness commit `fb5d072` as `4ab4235`.
+The [bounded admission](structure_parallel_admission.md) records exact hashes,
+proof, commands, failure history, limits and concrete dispatcher handoff.
+
+Admission covers opt-in emitted logical vertex-disjoint layers with actual
+nonoverlapping data/flag/private-scratch supports, full-wire barrier fences,
+exact XOR/phase action and actual-inverse restoration. Allocated width is
+n+F+W(c-1)+1, including retained flags and output, excluding lowered ancillas.
+Sequential default compute/XOR/phase/metadata remain exactly admitted bytes.
+Domain-free coloring equivalence still requires valid-code preparation support;
+precolors and dirty initial scratch/flags remain unsupported. Logical scheduling
+is distinct from emitted lowering, routed/FT resources, saved comparison
+scientific evidence and paper acceptance.
+
+Integrated regressions: **193 passed**, no skips/deselections; relevant Black,
+Ruff, one-file mypy and diff checks passed. Independent candidate/integrated
+scalar probes: 206 cases, 21,708 XOR/phase checks, 2,728 primitive checks,
+6,092 actual comparator-boundary checks and 400 disjoint emitted blocks.
+Supplementary preserved worker replay: 444 cases/55,512 XOR-phase checks,
+including 222 exact sequential compatibility cases. All 19 saved evidence
+identities and 457 protected files match. Sequential numerical/static children
+used existing research Python, explicit src/cache/private native, 180s timeouts
+and threads=1; measured maximum child RSS 107,806,720 bytes. Dense operators
+<=4/statevectors <=5 in tests; extra probes use scalar maps only. No numerical
+failure/build/metrics change. Sandbox ps/index-lock failures are retained; scoped
+Git escalation succeeded without automatic approval rejection.
+
+Run `dump/1025173122-parallel-coordinator-triage/` records the atomic three-job
+handoff: ideal-iterations-1025173122, ideal-iterations-review-1025173122 and
+coordinate-ideal-iterations-1025173122. The next slice is an analytical ideal
+iteration ledger with known fractions, bounded first-peak-plus-one sweeps,
+independent recurrence and explicit random-trial cost basis. It does not own
+native, controls/QPY, structure comparison, static FT or RUS files. Dispatcher
+alone launches models and pushes committed integration HEAD; no worker branch
+push. Finished-dependency independent review/coordinator prevent a blocked
+predecessor from disappearing from triage. Existing queue header/prior jobs
+remain immutable. Do not redispatch this completed bounded handoff.
+
+Remaining full plan: native mappings/alias correction, MC reduction/balancing
+profiles and SAT; structure common lowering/workspace/saved R1-R3 comparisons;
+full decomposition/workspace/stage/routing/precision/limits controls and
+post-pilot freeze; nine-graph/multilevel strongest-baseline/ablation comparisons
+and five routed seeds; meaningful graph static FT within the exact restricted
+rotation numerical contract; separate RUS/dynamic and preparation break-even;
+ideal/noisy iteration, leakage/confidence/random-sampling/cost-per-success;
+controlled scaling/DIMACS with five repeats and positive/negative witnesses;
+full tests/build/provenance/offline notebooks/isolated historical replay;
+every manuscript number traced to admitted evidence, reviewer responses and
+independent final quantum-correctness/claim/reproducibility reviews. No interval,
+ideal-amplitude, RUS or paper approval is added. Full paper remains unfinished.

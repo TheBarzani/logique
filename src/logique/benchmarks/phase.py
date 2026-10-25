@@ -6,8 +6,7 @@ from pathlib import Path
 import time
 
 from logique.coloring import read_dimacs, encode_coloring
-from logique.paths import native_executable
-from .provenance import environment, checkout_revision
+from .provenance import environment, checkout_revision, native_provenance
 from .runner import new_run_directory
 
 
@@ -34,13 +33,7 @@ def run_phase_benchmarks(config: dict, *, executable=None) -> Path:
         raise ValueError("optimization_level must be 0, 1, 2, or 3")
     seed = config.get("seed", 7)
     validation = config.get("validation", "auto")
-    tool = native_executable(executable)
-    build_info = tool.parent / "build_provenance.json"
-    native = {
-        "executable": str(tool),
-        "sha256": hashlib.sha256(tool.read_bytes()).hexdigest(),
-        "build": json.loads(build_info.read_text()) if build_info.exists() else None,
-    }
+    native = native_provenance(executable)
     output = new_run_directory(
         config.get("output"), description="coloring-phase-oracle-benchmark"
     )
@@ -90,7 +83,7 @@ def run_phase_benchmarks(config: dict, *, executable=None) -> Path:
                 result = synthesize(
                     encoding,
                     method,
-                    executable=tool,
+                    executable=native["executable"],
                     **config.get("parameters", {}),
                 )
                 oracle = result.phase_oracle()

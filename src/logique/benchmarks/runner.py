@@ -6,7 +6,7 @@ from pathlib import Path
 import time
 from logique.coloring import read_dimacs, encode_coloring
 from logique.paths import new_dump_directory
-from .provenance import environment, checkout_revision
+from .provenance import environment, checkout_revision, native_provenance
 
 
 def new_run_directory(
@@ -98,6 +98,8 @@ def run_benchmarks(config: dict, *, executable=None) -> Path:
         "status": "running",
         "cases": [],
     }
+    if any(not method.startswith("sb_") for method in methods):
+        manifest["native"] = native_provenance(executable)
 
     def save():
         (output / "run.json").write_text(json.dumps(manifest, indent=2) + "\n")

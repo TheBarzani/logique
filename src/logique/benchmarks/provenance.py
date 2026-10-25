@@ -1,9 +1,12 @@
 """Dependency and checkout provenance without mandatory optional imports."""
 
+import hashlib
 import importlib.metadata
+import json
 import platform
 from pathlib import Path
 import subprocess
+from logique.paths import native_executable
 from logique.synthesis.native import REFERENCE_REVISION
 
 
@@ -27,6 +30,17 @@ def environment() -> dict:
         except importlib.metadata.PackageNotFoundError:
             versions[name] = "not installed"
     return versions
+
+
+def native_provenance(executable: str | Path | None = None) -> dict:
+    """Identify the native executable and the build record written beside it."""
+    tool = native_executable(executable)
+    build_info = tool.parent / "build_provenance.json"
+    return {
+        "executable": str(tool),
+        "sha256": hashlib.sha256(tool.read_bytes()).hexdigest(),
+        "build": json.loads(build_info.read_text()) if build_info.exists() else None,
+    }
 
 
 def checkout_revision(directory: str | Path) -> dict:

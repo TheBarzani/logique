@@ -39,6 +39,7 @@ uv run --no-sync logique notebook run experiments/tutorials/boolean_workspace.ip
 uv run --no-sync logique notebook run experiments/tutorials/illustrative_example_v2.ipynb --offline
 uv run --no-sync logique notebook run experiments/studies/coloring_comparison.ipynb --offline
 uv run --no-sync logique notebook run experiments/studies/boolean_visual_study.ipynb --offline
+uv run --no-sync logique notebook run experiments/studies/mcx_decompositions.ipynb --offline
 ```
 
 The runner uses the invoking interpreter, a temporary kernel specification, and a fresh results directory. Use `--workspace /path/to/checkout` when launching elsewhere. The notebook source is never overwritten, including on execution failure. Offline execution blocks Python socket connections in the notebook kernel; this is a reproducibility check, not an operating-system network sandbox.

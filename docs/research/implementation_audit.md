@@ -13,7 +13,7 @@ Audited on 25 October 2026 from transferred HEAD `3ec511d` on
 | 2 | Config loader, synthesis/comparison/phase runners; normalized historical baseline adapter; coherent monomial verification | Controlled R1–R3 assembly, per-input witnesses, iterations/seeds, explicit precolor removal, QPY export and validated baseline components are implemented (`94665c0`, `4fa714c`, `8058826`). Unsupported precision/routing/profile/limit controls are rejected, not silently ignored. Stage timing and qubit-role classification still need extension. |
 | 3 | `costs.py` (`2ed650b`, `2848f21`), `routing.py` (`059e865`), `mcx_decompositions.ipynb` (`3ec511d`) | Explicit restoring and throwaway constructions, exact gadgets, dependency-graph T-depth, Dutta analytical reference, leading-order rotation estimate, success/iteration helpers, five-seed routing, and isolated 3–20-control study exist. Quantum smoke tests passed. Paired monomial compute-Z-uncompute lowering now holds scratch and uses the actual expanded inverse (`8f3a08d`). Whole-algorithm emitted rotation synthesis is under implementation/review. Gray-code rows above ten controls still need bounded execution or explicit infeasibility records; the existing notebook caps them at ten. |
 | 4 | Existing all-bitstrings comparison and phase-oracle runner | The K3/K5/myciel3 logical pilot completed 144 validated cases with 18 explicit original-baseline exclusions and no failures. Every completed case exercised a marked input. All 720 metric rows were reproduced from saved QPY; per-instance strongest-baseline summaries are saved separately (`ba6b5b8`). Full nine-graph/multilevel evaluation, complete workspace classification and protocol freeze remain open; these pilot results are not headline evidence. |
-| 5 | Five maintained synthesis methods, native bridge and standalone balancing tool | Balanced AND/OR encoder association is opt-in and validated against independent predicates (`e6f3b45`). The standalone tool supports XAG, algebraic and ESOP passes with per-pass and serialization equivalence checks (`90df410`). Exhaustive pinned-action serialization and opt-in shared native preprocessing are integrated (`fcc52d4`, `7aeacb6`); omitted controls preserve legacy defaults. Additional mappings, MC reduction/profile integration, SAT pebbling and structure-aware scheduled oracles remain open. Dependency pins remain fixed. |
+| 5 | Five maintained synthesis methods, native bridge and standalone balancing tool | Balanced AND/OR encoder association is opt-in and validated against independent predicates (`e6f3b45`). The standalone tool supports XAG, algebraic and ESOP passes with per-pass and serialization equivalence checks (`90df410`). Exhaustive pinned-action serialization and opt-in shared native preprocessing are integrated (`fcc52d4`, `7aeacb6`); omitted controls preserve legacy defaults. Opt-in in-place Bennett/eager mappings are integrated after emitted-action review (`ce93291`); low-T and other mappings, MC reduction/profile integration, SAT pebbling and structure-aware scheduled oracles remain open. Dependency pins remain fixed. |
 | 6 | Per-circuit Clifford+T gadgets; hash-bound admitted static rotation compiler (`54c58c3`); independent derivation/RUS review | The independent reviews establish the unitary composition and separate RUS derivation, with explicit limitations. The previously reviewed repair admits a near-unitary matrix that violates its requested search budget. The corrected matrix-admission/norm implementation is now admitted and integrated for the restricted numerical contract in [the independent admission](rotation_norm_admission.md). The root prototype was preserved before replacement. This is not ideal-amplitude certification or RUS admission. FT comparisons, complete-search experiments and preparation break-even results remain open. |
 | 7 | Correct matching-reflection Grover wrapper and small independent amplification regression | Complete ideal/noisy iteration sweeps, leakage, confidence intervals and random-sampling/cost-per-success study remain open. |
 | 8 | General benchmark runner and fixed 180-second native timeout | The three requested legacy inputs were restored byte-for-byte from `95f6167`, with hashes (`040d420`). Remaining source inputs, controlled families, five repetitions, stage memory/timeouts and larger-instance witnesses remain open. The restored color parameters are historical inputs, not verified chromatic-number claims. |
@@ -265,3 +265,91 @@ DIMACS with five repetitions, time/memory/timeouts and larger positive witnesses
 full research checks, offline notebooks, isolated 135-metric historical replay,
 claim-evidence gate, reviewer responses and independent final correctness/claim
 reviews. The full paper remains unfinished.
+
+## In-place Bennett and eager admission: bounded mapping integration
+
+Task `native-inplace-eager-1025030802` and its isolated checkpoint both report
+**complete**, with no remaining blocker for the declared mapping contract.
+Coordinator `coordinate-mapping-1025030802` had no prior completed handoff.
+Only the six owned files of implementation `3cd712e` were cherry-picked as
+`ce93291`; the original checkpoint is preserved byte-for-byte in
+[native_mapping_inplace_eager.md](native_mapping_inplace_eager.md). No build,
+dependency or research-metric change was mixed into that correctness commit.
+
+Admission covers opt-in actual pinned Bennett, in-place Bennett and eager
+classes on AIG/XAG Bennett methods. Input allocation includes unused PIs and
+preserves order through common preprocessing/conversion. In-place targets are
+node indices resolved through live qubit stacks; reverse XOR restoration is
+required before ancestor uncomputation. The stale in-place stack entry is not
+read again in these once-computed, non-recomputing schedules. Eager retains
+shared/PO fanout and releases cleaned wires before later output computations.
+Actual gates, not just serialized steps, exercise both input and gate-node
+in-place targets, nested aliases and early eager reuse. AIG has no XOR in-place
+steps. A complemented PI output may change a raw input; arbitrary-target XOR
+and selected-output phase wrappers restore inputs/workspace. General mixed or
+recomputing schedules and level actions are outside admission.
+
+Independent candidate replay passed **353 tests, 27 explicitly deselected,
+no skips**. The exclusions retain the handoff's <=5-qubit dense-check bound;
+aliases/constants and larger fixtures receive compositional monomial coverage.
+A separately written seeded source-DAG evaluator and scalar circuit interpreter
+checked **144 mapping cases / 71,424 coherent checks**, across both common
+policies and all three strategies on AIG/XAG: five declared inputs with an
+unused PI, asymmetric ordering, shared intermediate POs, complemented PIs,
+repeated projections, every joint XOR-target pattern and every selected phase
+output. Twelve actual in-place actions and 32 early-cleanup schedules were
+exercised. These are bounded correctness fixtures, not performance evidence.
+The independent harness initially applied Z unconditionally; that harness bug
+was corrected. A retry also used the root's pre-integration API and rejected the
+new keyword; the subsequent candidate run used the correct explicit PYTHONPATH.
+Both failed logs are retained; neither was a native correctness failure.
+
+All **135 exact omitted-strategy native comparisons** and **three historical
+expression comparisons** pass against the hash-verified foundation executable,
+excluding only timing and additive mapping evidence. The compiled action probe
+passes 13 exact rows across seven variants; it is supporting serialization
+coverage only. Integrated-tree replay passed **370 tests, 27 deselected, no
+skips**. Relevant Black/Ruff, configured five-file mypy and diff checks pass.
+Source, binary, pinned headers, tool and compatibility-overlay identities were
+verified before reusing the private executable; root binaries were untouched.
+Sequential local research-Python jobs used explicit worktree source, cache and
+native paths; maximum child RSS **251,592,704 bytes**. No compiler rebuild or
+OS address-space guarantee is claimed. Evidence is in
+`dump/1025072819-native-mapping-triage/`.
+
+All 158 original protected root/history/archive identities, plus the two saved
+unapproved rotation prototypes, match this batch's intake. README, current
+rotation source/tests, prototype backups, archived manuscript outputs, nested
+histories, pins and root executable remain byte-identical. The older native
+foundation batch's blocked FT statement is historical: the separate exact-hash
+scientific admission is recorded in `rotation_norm_admission.md` and the server
+manifest. Its gate and all caller obligations are preserved without extension;
+this mapping work grants no rotation/FT, RUS or scientific performance admission.
+
+The entire 17-job queue was inspected before appending exactly two unique jobs:
+`native-xag-lowt-1025072819` (native profile, 1800 seconds, four attempts) and
+`coordinate-xag-lowt-1025072819` (coordinator, 1200 seconds, four attempts,
+finished-dependency triage). Existing header and entries are immutable. The
+worker starts at `ce93291` in isolated `codex/coloring-xag-lowt-1025072819` and
+owns only pinned `caterpillar::xag_mapping_strategy` via opt-in `xag_low_t` on
+XAG Bennett, with emitted-action correctness/legacy acceptance. Fast-low-T,
+low-depth/level paths, SAT and measurement-assisted free uncomputation are
+excluded. Its checkpoint is `XAG_LOWT_CHECKPOINT.md`; the coordinator must
+independently admit it or append a concrete correction. Dispatcher exclusively
+owns launches. This bounded integration and handoff are complete; release on
+resumption without re-integrating or appending duplicates.
+
+Full remaining scope: the queued low-T contract and subsequent fast-low-T,
+low-depth and other mapping admission; MC reduction and balancing optimization
+profiles; SAT pebbling; queued structure-aware sequential/parallel oracles and
+workspace trade-offs; decomposition/workspace/routing/precision/limits controls,
+stage statistics and post-pilot protocol freeze; nine-graph R1/R2/R3 multilevel
+strongest-baseline comparisons, saved circuits, five routed seeds and ablations;
+complete-search static FT under exact-byte scientific admission and caller
+obligations (pilot queued), separate dynamic/RUS and preparation break-even;
+ideal/noisy iteration through first maximum plus one, leakage, confidence
+intervals, random sampling and cost per success; controlled scaling and selected
+DIMACS with five repeats, stage memory/timeouts and larger positive witnesses;
+full research acceptance, provenance/build checks, offline notebooks and isolated
+135-metric replay; traced manuscript numbers, reviewer responses, evidence gate
+and independent correctness/claim/final reviews. The full paper remains open.

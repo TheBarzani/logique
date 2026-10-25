@@ -46,6 +46,21 @@ To run it directly (or restore the tmux status window), use:
 
 Add `--once` for a plain-text snapshot. Redirected output also renders once.
 
+The separate `activity` tmux window follows agent messages, commands, exit codes
+and recent command output, automatically switching to new worker attempts. It
+refreshes every two seconds from `attempts/*/events.jsonl`, without model calls.
+During pauses it displays the latest saved activity. Command output appears when
+the CLI emits its event, usually on command completion; this is not a terminal
+attached to the worker. Internal reasoning is excluded. To run it directly:
+
+```bash
+.venv/bin/python tools/coloring_dashboard.py --activity \
+  --queue dump/1025021922-coloring-auto-dispatch/queue.json
+```
+
+Select `activity` with **Ctrl-b**, then **w**. Its header identifies the displayed
+task, model and event modification time. Closing it leaves the worker running.
+
 Run from the integration checkout:
 
 ```bash

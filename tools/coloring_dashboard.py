@@ -9,12 +9,13 @@ import json
 from pathlib import Path
 import shutil
 import sys
+import textwrap
 import time
 
 
 def clean(value: object) -> str:
     """Keep checkpoint text on one line without terminal control sequences."""
-    return " ".join("".join(c for c in str(value) if c.isprintable()).split())
+    return " ".join("".join(c if c.isprintable() else " " for c in str(value)).split())
 
 
 def local_time(value: object) -> str:
@@ -183,11 +184,99 @@ def render(queue: Path, *, now: float, width: int, height: int) -> str:
     return "\n".join(clean(line)[: max(1, width - 1)] for line in lines + [footer])
 
 
+def render_activity(queue: Path, *, now: float, width: int, height: int) -> str:
+    """Show recent public messages and tool events, following new worker attempts."""
+    header = ["COLORING PAPER | AGENT ACTIVITY", f"Server time: {local_time(now)}"]
+    body = []
+    try:
+        state = json.loads((queue.parent / "state.json").read_text())
+        candidates = []
+        for task, record in state.get("jobs", {}).items():
+            if record.get("attempt"):
+                path = Path(record["attempt"]) / "events.jsonl"
+                if path.exists():
+                    candidates.append(
+                        (
+                            record.get("status") in ("running", "launching"),
+                            path.stat().st_mtime,
+                            task,
+                            record,
+                            path,
+                        )
+                    )
+        header.append(f"Dispatcher: {clean(state.get('phase', 'unknown'))}")
+        if state.get("phase") != "worker_running":
+            header.append(
+                f"Last saved activity | {clean(state.get('reason', 'no active worker'))}"
+            )
+        if candidates:
+            _, _, task, record, path = max(candidates, key=lambda row: row[:2])
+            header += [
+                f"Task: {task} | {record.get('status', '?')}",
+                f"Model: {record.get('model', '?')} / {record.get('effort', '?')} / Standard",
+                f"Events last written: {local_time(path.stat().st_mtime)}",
+            ]
+            # Read only a bounded tail. Ignore incomplete JSON during writes.
+            with path.open("rb") as stream:
+                start = max(0, path.stat().st_size - 1_000_000)
+                stream.seek(start)
+                raw = stream.read(1_000_000).decode(errors="replace")
+            entries = {}
+            for line in raw.splitlines()[1 if start else 0 :]:
+                try:
+                    event = json.loads(line)
+                except ValueError:
+                    continue
+                item = event.get("item") or {}
+                kind = item.get("type")
+                if kind == "agent_message":
+                    message = "AGENT: " + clean(item.get("text", ""))
+                elif kind == "command_execution":
+                    status = clean(item.get("status", event.get("type")))
+                    code = item.get("exit_code")
+                    message = (
+                        f"COMMAND [{status}, exit {code}]: "
+                        + clean(item.get("command", ""))[:1200]
+                    )
+                    output = item.get("aggregated_output", "")
+                    if output:
+                        message += "\nOUTPUT: " + "\n".join(
+                            clean(row) for row in output.splitlines()[-6:]
+                        )
+                elif event.get("type") in ("error", "turn.failed"):
+                    message = "ERROR: " + clean(
+                        event.get("message", event.get("error", "See raw events"))
+                    )
+                else:
+                    # Internal reasoning is deliberately excluded from this view.
+                    continue
+                entries[item.get("id") or str(len(entries))] = message
+            for message in list(entries.values())[-12:]:
+                for paragraph in message.splitlines():
+                    body.extend(textwrap.wrap(paragraph, width=max(1, width - 1)))
+                body.append("")
+            if not body:
+                body = ["Waiting for the next agent message or command event..."]
+        else:
+            body = ["No saved worker events yet."]
+    except (OSError, ValueError) as error:
+        body = [f"Activity temporarily unavailable: {type(error).__name__}"]
+    footer = "Read-only | refresh 2s | commands/results arrive as CLI events | Ctrl-C closes view"
+    budget = max(1, height - len(header) - 2)
+    return "\n".join(
+        clean(line)[: max(1, width - 1)]
+        for line in header + [""] + body[-budget:] + [footer]
+    )
+
+
 def main() -> int:
     """Display checkpoints once or refresh in a terminal without affecting workers."""
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--queue", type=Path, required=True)
     parser.add_argument("--once", action="store_true")
+    parser.add_argument(
+        "--activity", action="store_true", help="Follow worker messages and commands"
+    )
     args = parser.parse_args()
     interactive = sys.stdout.isatty() and not args.once
     try:
@@ -195,7 +284,8 @@ def main() -> int:
             print("\033[?1049h\033[?25l", end="", flush=True)
         while True:
             size = shutil.get_terminal_size((120, 40))
-            screen = render(
+            renderer = render_activity if args.activity else render
+            screen = renderer(
                 args.queue, now=time.time(), width=size.columns, height=size.lines
             )
             print(("\033[H\033[2J" if interactive else "") + screen, flush=True)

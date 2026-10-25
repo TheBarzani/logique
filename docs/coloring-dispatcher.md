@@ -20,6 +20,32 @@ unfinished work. A stopped/blocked queue is not overall research completion.
 
 ## Controls
 
+The read-only `status` tmux window shows quota usage and reset countdowns,
+checkpoint freshness, queue counts, the active/next ready task, model/session,
+and remote push status. Open it with:
+
+```bash
+tmux attach -t coloring-paper
+tmux select-window -t coloring-paper:status
+```
+
+If already attached, press **Ctrl-b**, then **w**, and choose `status`. Detach
+with **Ctrl-b**, then **d**; the dispatcher and dashboard keep running.
+The dashboard refreshes from local checkpoint files every two seconds; the
+dispatcher checks usage every 60 seconds while idle or 15 seconds while active.
+It labels stale checkpoints rather than claiming a stopped process is healthy.
+Closing the dashboard does not stop the dispatcher. No network or model calls
+are made by the dashboard.
+
+To run it directly (or restore the tmux status window), use:
+
+```bash
+.venv/bin/python tools/coloring_dashboard.py \
+  --queue dump/1025021922-coloring-auto-dispatch/queue.json
+```
+
+Add `--once` for a plain-text snapshot. Redirected output also renders once.
+
 Run from the integration checkout:
 
 ```bash

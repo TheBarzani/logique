@@ -391,3 +391,51 @@ iteration/noise/scaling, evidence-gated manuscript and independent final reviews
 remain in scope. Rotation admission retains the existing exact hashes,
 numerical contract and caller semantics; no broader FT, interval,
 ideal-amplitude, RUS or paper approval is inferred here.
+
+## Sequential structure admission: bounded coordinator triage
+
+Worker `structure-oracle-1025034429` completed its foundation; this coordinator
+had no prior completed batch/handoff. Only its two owned correctness files
+were integrated from `ed6f8a3` as `0a56cd2`. The exact-byte contract and
+independent proof assessment are in
+[structure_oracle_admission.md](structure_oracle_admission.md). Admission covers
+logical sequential complete/domain-free predicates, arbitrary-target XOR,
+phase/restoration on clean workspace and explicit disjoint workspace roles.
+It does not admit emitted parallel depth, lowered MCX resources, saved-study
+semantics, research superiority, static FT extensions or paper claims.
+
+Candidate and integrated focused suites each passed **84 tests**, no skips or
+deselections, plus relevant Black/Ruff and one-file mypy. Separate seeded direct
+predicate/scalar-gate probes each passed **222 graph/policy cases**, **27,756
+XOR/phase checks** and **2,728 comparator checks**, including compute boundaries
+and independently calculated workspace/schedule requirements. The comparator
+and prefix proof establishes coherent clean-subspace action; bounded testing
+supplements it. Dense operators remain <=4 qubits, statevectors <=5; wider
+checks use integer monomial evaluation. Maximum recorded child RSS upper bound
+was **93,077,504 bytes**. Exact commands, logs, hashes, failures and preservation
+evidence are in `dump/1025081040-structure-oracle-triage/batch.json`.
+
+All 165 protected identities and external index/gitlinks match intake. Initial
+sandbox-denied Git metadata writes succeeded under scoped automatic escalation;
+`ps` remained unavailable. No numerical/static failure or model launch occurred.
+The whole 22-job queue was inspected and exactly two unique bounded jobs appended
+atomically, with immutable header/prior definitions: isolated emitted-parallel
+structure implementation and coordinator triage, including blocked status.
+These require private concurrent scratch, emitted dependency evidence and exact
+restoration. Existing native mapping, QPY/control correction and static FT jobs
+retain their scopes. This bounded batch/handoff is complete and must not be
+repeated on resumption. Full paper remains unfinished.
+
+Remaining scope: emitted parallel structure and later comparison integration;
+additional native mappings, MC reduction/balancing profiles and SAT; blocked
+QPY semantics and affected pilot review; all decomposition/workspace/routing/
+precision/limits controls and post-pilot protocol freeze; full nine-graph R1/R2/R3
+multilevel strongest-baseline comparisons with five routing seeds and ablations;
+whole-search static FT under exact admitted hashes/caller obligations, separate
+RUS/dynamic and preparation break-even; ideal/noisy iteration through first
+maximum plus one, leakage/confidence intervals/random sampling/cost per success;
+scaling and selected DIMACS with five repetitions and positive/negative witnesses;
+full research/static/build/provenance checks, offline notebooks and isolated
+135-metric replay; evidence-gated manuscript, traced numbers, reviewer responses
+and independent final correctness/claim/reproducibility reviews. Rotation
+admission is unchanged; no interval/ideal-amplitude/RUS/paper approval is added.

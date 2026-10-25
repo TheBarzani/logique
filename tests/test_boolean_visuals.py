@@ -187,7 +187,7 @@ def test_walkthrough_dot_labels_preserve_xag_edges(tmp_path):
         pytest.skip("System Graphviz is required")
     source = (
         Path(__file__).resolve().parents[1]
-        / "experiments/tutorials/paper_benchmark_walkthrough.ipynb"
+        / "experiments/tutorials/illustrative_example_v2.ipynb"
     )
     notebook = json.loads(source.read_text())
     cell = next(c for c in notebook["cells"] if c["id"] == "1d59e1bc")

@@ -36,7 +36,7 @@ The same reader handles historical wide CSV and nested JSON comparison formats, 
 ```bash
 uv run --no-sync logique notebook run experiments/tutorials/graph_coloring.ipynb --offline
 uv run --no-sync logique notebook run experiments/tutorials/boolean_workspace.ipynb --offline
-uv run --no-sync logique notebook run experiments/tutorials/paper_benchmark_walkthrough.ipynb --offline
+uv run --no-sync logique notebook run experiments/tutorials/illustrative_example_v2.ipynb --offline
 uv run --no-sync logique notebook run experiments/studies/coloring_comparison.ipynb --offline
 uv run --no-sync logique notebook run experiments/studies/boolean_visual_study.ipynb --offline
 ```

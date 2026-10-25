@@ -249,8 +249,10 @@ def test_rotations_are_counted_and_priced_separately():
     per_rotation = costs.rotation_t_count(1e-3)
     assert per_rotation == 30
     metrics = costs.ft_metrics(lowered, rotation_t=per_rotation)
-    assert (metrics["t_count"], metrics["rotation_count"]) == (2, 1)
-    assert metrics["total_t_count"] == 2 + 30
+    # Strict admission retains Qiskit's tiny nonzero residual rather than
+    # silently snapping it away. This is an explicit estimate, not synthesis.
+    assert (metrics["t_count"], metrics["rotation_count"]) == (2, 2)
+    assert metrics["total_t_count"] == 2 + 2 * 30
     with pytest.raises(ValueError, match="Clifford"):
         costs.ft_metrics(single(CCXGate(), 3))
     with pytest.raises(ValueError, match="decompose_mcx"):

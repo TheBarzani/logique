@@ -1,0 +1,21 @@
+{
+  "kind": "coloring_study",
+  "inputs": [
+    "../datasets/graphs/benchmarks/K3.col",
+    "../datasets/graphs/benchmarks/K5.col",
+    "../datasets/graphs/benchmarks/myciel3.col"
+  ],
+  "methods": ["xag", "aig_bennett", "xag_bennett", "klut_bennett", "best_fit", "sb_original", "sb_simple", "sb_minimal", "sb_balanced"],
+  "regimes": ["R1", "R2", "R3"],
+  "iterations": [0, 1],
+  "seeds": [7],
+  "remove_precolors": true,
+  "validation": "auto",
+  "samples": 32,
+  "verification_assignments": {
+    "../datasets/graphs/benchmarks/K3.col": [36, 0, 63],
+    "../datasets/graphs/benchmarks/K5.col": [18056, 0, 32767],
+    "../datasets/graphs/benchmarks/myciel3.col": [645700, 0, 4194303]
+  },
+  "common_basis": false
+}

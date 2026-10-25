@@ -27,7 +27,13 @@ def load_config(path: str | Path, **overrides) -> dict:
     """Resolve paths relative to the config; supplied options take precedence."""
     path = Path(path).resolve()
     config = json.loads(path.read_text())
-    allowed = {
+    if config.get("kind") == "coloring_study":
+        from .coloring_study import CONFIG_FIELDS
+
+        allowed = CONFIG_FIELDS
+    else:
+        allowed = None
+    allowed = allowed or {
         "inputs",
         "methods",
         "parameters",
@@ -51,11 +57,26 @@ def load_config(path: str | Path, **overrides) -> dict:
     config["inputs"] = [str((path.parent / p).resolve()) for p in config["inputs"]]
     if config.get("output") and overrides.get("output") is None:
         config["output"] = str((path.parent / config["output"]).resolve())
+    if config.get("kind") == "coloring_study":
+        from .coloring_study import validate_study_config
+
+        assignments = config.get("verification_assignments", {})
+        if isinstance(assignments, dict):
+            config["verification_assignments"] = {
+                str((path.parent / p).resolve()): values
+                for p, values in assignments.items()
+            }
+        return validate_study_config(config)
     return config
 
 
 def run_benchmarks(config: dict, *, executable=None) -> Path:
     """Export each completed case and record failed runs with their diagnostics."""
+    if config.get("kind") == "coloring_study":
+        from .coloring_study import run_coloring_study
+
+        return run_coloring_study(config, executable=executable)
+
     import pandas as pd
     from qiskit import qpy
     from logique.synthesis import synthesize, METHODS

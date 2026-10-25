@@ -151,6 +151,44 @@ def test_tree_toffoli_counts(method, controls, count, depth):
     assert (metrics["toffoli_count"], metrics["toffoli_depth"]) == (count, depth)
 
 
+def test_relative_phase_toffolis_cancel_only_in_mirrored_blocks():
+    block = QuantumCircuit(6)
+    block.ccx(0, 1, 4)
+    block.ccx(2, 3, 5, ctrl_state=1)
+    block.ccx(4, 5, 3)
+    relative = costs.relative_phase_toffolis(block)
+    assert relative.count_ops() == {"rccx": 3, "x": 2}
+    assert not np.allclose(Operator(relative).data, Operator(block).data)
+
+    def mirrored(compute):
+        oracle = compute.copy()
+        oracle.z(3)
+        oracle.compose(compute.inverse(), inplace=True)
+        return oracle
+
+    np.testing.assert_allclose(
+        Operator(mirrored(relative)).data, Operator(mirrored(block)).data, atol=1e-9
+    )
+
+
+@pytest.mark.parametrize("controls", [3, 6, 20])
+def test_isolated_costs_of_restoring_trees(controls):
+    row = costs.isolated_mcx_costs("clean_tree", controls)
+    # n - 2 relative-phase compute/uncompute pairs and one exact Toffoli.
+    assert row["t_count"] == 8 * controls - 9
+    assert row["ancillas"] == controls - 2 and row["rotation_count"] == 0
+    kg24 = costs.isolated_mcx_costs("2_clean_kg24", controls)
+    assert kg24["ancillas"] == 2
+
+
+def test_dutta_costs_follow_theorem_one():
+    row = costs.dutta_mcx_costs(32, 3)
+    assert (row["ancillas"], row["toffoli_count"], row["toffoli_depth"]) == (5, 58, 16)
+    assert row["t_count"] == 8 * 32 - 4 * 3 - 12
+    with pytest.raises(ValueError, match="range"):
+        costs.dutta_mcx_costs(5, 3)
+
+
 def test_rotations_are_counted_and_priced_separately():
     from qiskit.circuit.library.data_preparation.state_preparation import (
         UniformSuperpositionGate,

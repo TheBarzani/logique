@@ -14,7 +14,7 @@ from typing import Callable
 
 from qiskit import AncillaRegister, QuantumCircuit, transpile
 from qiskit.circuit import ControlledGate
-from qiskit.circuit.library import CHGate
+from qiskit.circuit.library import CHGate, RCCXGate
 from qiskit.synthesis.multi_controlled import mcx_synthesis as _mcx
 
 CLIFFORD_T_BASIS = ("h", "s", "sdg", "t", "tdg", "x", "y", "z", "sx", "sxdg", "cx")
@@ -33,7 +33,13 @@ class MCXDecomposition:
 
 
 def _tree(controls: int, *, uncompute: bool) -> QuantumCircuit:
-    """Combine controls pairwise into n - 2 clean ancillas, then the target."""
+    """Combine controls pairwise into n - 2 clean ancillas, then the target.
+
+    With uncomputation, internal nodes use relative-phase Toffoli gates whose
+    phases cancel when each node is uncomputed, as in Maslov's construction;
+    only the gate on the target is an exact Toffoli. Without uncomputation the
+    tree uses exact Toffoli gates throughout, as drawn in the manuscript.
+    """
     qc = QuantumCircuit(2 * controls - 1)
     layer = list(range(controls))
     ancillas = iter(range(controls + 1, 2 * controls - 1))
@@ -42,14 +48,17 @@ def _tree(controls: int, *, uncompute: bool) -> QuantumCircuit:
         merged = []
         for left, right in zip(layer[::2], layer[1::2]):
             node = next(ancillas)
-            qc.ccx(left, right, node)
+            if uncompute:
+                qc.append(RCCXGate(), [left, right, node])
+            else:
+                qc.ccx(left, right, node)
             computed.append((left, right, node))
             merged.append(node)
         layer = merged + ([layer[-1]] if len(layer) % 2 else [])
     qc.ccx(layer[0], layer[1], controls)
     if uncompute:
         for left, right, node in reversed(computed):
-            qc.ccx(left, right, node)
+            qc.append(RCCXGate().inverse(), [left, right, node])
     return qc
 
 
@@ -94,7 +103,7 @@ MCX_DECOMPOSITIONS = {
         MCXDecomposition(
             "clean_tree",
             "clean",
-            "Toffoli tree with uncomputation",
+            "Toffoli tree with relative-phase uncomputation (after Maslov, 2016)",
             lambda n: _tree(n, uncompute=True),
         ),
         MCXDecomposition(
@@ -221,6 +230,34 @@ def decompose_mcx(
         "garbage_ancillas": fresh if workspace == "throwaway" else 0,
     }
     return result, info
+
+
+def relative_phase_toffolis(block: QuantumCircuit) -> QuantumCircuit:
+    """Replace exact Toffoli gates by relative-phase Toffoli gates.
+
+    Valid only for a compute block B that is later undone by its exact inverse,
+    with operations in between that are diagonal in the computational basis of
+    B's qubits, such as a phase flip or a kick-back controlled by its outputs.
+    The extra phases of B then commute with that operation and cancel in B
+    inverse, so each Toffoli costs four T gates instead of seven.
+    """
+    result = block.copy_empty_like()
+    for inst in block.data:
+        operation = inst.operation
+        if not (is_mcx(operation, 2) and operation.num_ctrl_qubits == 2):
+            result.append(operation, inst.qubits, inst.clbits, copy=False)
+            continue
+        opened = [
+            q
+            for i, q in enumerate(inst.qubits[:2])
+            if not (operation.ctrl_state >> i) & 1
+        ]
+        if opened:
+            result.x(opened)
+        result.append(RCCXGate(), inst.qubits)
+        if opened:
+            result.x(opened)
+    return result
 
 
 def _ccz() -> QuantumCircuit:
@@ -436,6 +473,74 @@ def ft_metrics(circuit: QuantumCircuit, *, rotation_t: int | None = None) -> dic
             circuit, {"t": 1, "tdg": 1, "rz": rotation_t}
         )
     return metrics
+
+
+def isolated_mcx_costs(method: str, controls: int) -> dict:
+    """Cost one MCX gate whose spare wires can be borrowed but are not clean.
+
+    The circuit holds the controls, the target and controls - 2 spare wires, so
+    dirty constructions borrow existing wires while clean ones append ancillas.
+    A throwaway tree is costed as built, leaving garbage for a mirrored gate.
+    """
+    circuit = QuantumCircuit(2 * controls - 1)
+    circuit.mcx(list(range(controls)), controls)
+    decomposed, info = decompose_mcx(circuit, method)
+    toffoli = toffoli_metrics(decomposed)
+    ft = ft_metrics(clifford_t(decomposed))
+    return {
+        "method": method,
+        "controls": controls,
+        "workspace": info["mcx_workspace"],
+        "ancillas": info["appended_ancillas"] + info["borrowed_dirty_wires"],
+        "appended_ancillas": info["appended_ancillas"],
+        "toffoli_count": toffoli["toffoli_count"],
+        "toffoli_depth": toffoli["toffoli_depth"],
+        **{
+            key: ft[key]
+            for key in ("t_count", "t_depth", "rotation_count", "cx_count", "depth")
+        },
+        "reference": info["mcx_reference"],
+    }
+
+
+def dutta_mcx_costs(controls: int, m1: int) -> dict:
+    """Analytical costs of Dutta et al. (PRA 111, 052611; Theorem 1, Table II).
+
+    The construction uses m1 + 2 clean ancillas and 2n - m1 - 3 Toffoli gates
+    with four T gates each. Theorem 1 states the Toffoli depth for n in
+    [(m1 + 2^(floor(log2 m1) - 1)) 2^(k-1) + k - 1, m1 2^k + k - 2] as
+    2 floor(log2 m1) + 4k, and for n in [m1 2^k + k - 1,
+    (m1 + 2^(floor(log2 m1) - 1)) 2^k + k - 1] as 2 floor(log2 m1) + 4k + 2,
+    with k >= 2. Their Example 1 reports 14 rather than 16 for n = 32 and
+    m1 = 3, so these depths are the theorem's values, not measured ones.
+    """
+    if m1 < 2:
+        raise ValueError("Theorem 1 requires m1 >= 2")
+    log_m1 = int(math.floor(math.log2(m1)))
+    width = m1 + 2 ** (log_m1 - 1)
+    depth = None
+    for k in range(2, 64):
+        if width * 2 ** (k - 1) + k - 1 <= controls <= m1 * 2**k + k - 2:
+            depth = 2 * log_m1 + 4 * k
+        elif m1 * 2**k + k - 1 <= controls <= width * 2**k + k - 1:
+            depth = 2 * log_m1 + 4 * k + 2
+        if depth is not None:
+            break
+    if depth is None:
+        raise ValueError("controls lie below the smallest range of Theorem 1")
+    toffoli = 2 * controls - m1 - 3
+    return {
+        "method": f"dutta25_m1_{m1}",
+        "controls": controls,
+        "workspace": "clean",
+        "ancillas": m1 + 2,
+        "toffoli_count": toffoli,
+        "toffoli_depth": depth,
+        "t_count": 4 * toffoli,
+        "t_depth": depth,
+        "reference": "Dutta et al., Phys. Rev. A 111, 052611 (2025), Theorem 1",
+        "metric_level": "analytical",
+    }
 
 
 def rotation_t_count(epsilon: float) -> int:

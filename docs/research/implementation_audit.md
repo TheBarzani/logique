@@ -353,3 +353,41 @@ DIMACS with five repeats, stage memory/timeouts and larger positive witnesses;
 full research acceptance, provenance/build checks, offline notebooks and isolated
 135-metric replay; traced manuscript numbers, reviewer responses, evidence gate
 and independent correctness/claim/final reviews. The full paper remains open.
+
+## Stage controls triage: blocked saved-QPY semantics
+
+The completed worker `stage-controls-1025034429` supplied owned source/tests
+in `71ed6a4`, with truthful additive timing/statistics and reserved-wire
+provenance. Actual hashes match its checkpoint. Coordinator
+`coordinate-stage-controls-1025034429` independently reran **79 tests** (31
+bounded deselections, no skips), relevant Black/Ruff, all **240 saved metric
+rows**, 24 independent network checks and 18 predicate/restoration cases.
+**Neither candidate file is integrated.**
+
+The [independent semantic review](stage_controls_qpy_review.md) blocks admission:
+installed Qiskit 2.1.1 QPY readback changes inverse `StatePreparation` into its
+forward form. Minimal two-qubit operator distance is `1.9986497753173806`.
+Original/saved preparation and diffusion comparisons found **16 failures among
+48** bounded operators, maximum distance `1.93829197958024`, in R2/R3 diffusion.
+Wider search semantics are not admitted by reproduced counts. This predates
+the candidate; earlier pilot artifacts remain preserved and their affected
+serialization paths need review before paper evidence admission. Width, gate
+and depth totals are unchanged in the 240-row tiny comparison, but 24 gate-type
+maps differ; trace representation/metric changes separately from correctness.
+
+Evidence, exact hashes, failures, resource bounds and queue handoff are in
+`dump/1025074732-stage-controls-triage/batch.json`. Next is bounded correction
+in isolated `codex/coloring-qpy-correction-1025074732`, independent isolated
+review and coordinator triage, including blocked status. Queue header and all
+prior definitions stay unchanged; existing native, structure and static-FT
+jobs retain ownership. Dispatcher exclusively launches the three appended
+jobs. This bounded triage is complete; do not repeatedly dispatch its handoff.
+The full paper remains unfinished.
+
+After QPY admission, restoring decomposition/fresh-scratch controls are next.
+Remaining workspace, routing, precision/limits and instrumentation controls,
+post-pilot freeze, nine-graph/multilevel comparisons, separate RUS/break-even,
+iteration/noise/scaling, evidence-gated manuscript and independent final reviews
+remain in scope. Rotation admission retains the existing exact hashes,
+numerical contract and caller semantics; no broader FT, interval,
+ideal-amplitude, RUS or paper approval is inferred here.

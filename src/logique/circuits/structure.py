@@ -1,8 +1,8 @@
-"""Sequential coloring constraints with clean, reusable comparator workspace.
+"""Coloring constraints with clean sequential or private parallel workspace.
 
 This logical construction has no preparation, diffusion, MCX decomposition or
-benchmark integration. Disjoint-edge layers describe a possible future schedule;
-the emitted circuit is sequential and does not realize that parallel depth.
+benchmark integration. Parallel emission uses vertex-disjoint edge layers and
+private scratch within each layer; the default remains sequential.
 """
 
 from __future__ import annotations
@@ -100,7 +100,7 @@ def _pattern_toggle(
 
 @dataclass(frozen=True)
 class StructureOracle:
-    """Logical sequential oracle with explicit disjoint wire roles.
+    """Logical coloring oracle with explicit disjoint wire roles.
 
     ``compute`` fills constraint flags and restores comparator scratch. All
     non-data wires except the XOR target must start at zero. ``circuit`` then
@@ -132,9 +132,12 @@ class StructureOracle:
 
 
 def structure_oracle(
-    problem: ColoringProblem, *, domain_policy: str = "complete"
+    problem: ColoringProblem,
+    *,
+    domain_policy: str = "complete",
+    emission: str = "sequential",
 ) -> StructureOracle:
-    """Build sequential edge inequalities and, optionally, valid-code flags.
+    """Build edge inequalities and, optionally, valid-code flags.
 
     Data uses ColoringEncoding's sorted labels and LSB-first contiguous words,
     including isolated vertices. ``complete`` checks x_v < k and every edge.
@@ -143,13 +146,21 @@ def structure_oracle(
     coloring_preparation). Precolors are explicitly unsupported in this slice.
     Empty conjunctions are true; a self-loop supplies a constant-false flag.
 
-    Each edge has one retained flag. Non-loop comparators share c-1 clean
-    scratch wires and restore them before the next edge. Valid-code flags use
-    disjoint binary prefix patterns for x < k, at most c toggles per vertex,
-    with no scratch. All flags are uncomputed using the actual emitted inverse.
-    For hypothetical concurrent disjoint edges, each active comparator would
-    need its own c-1 scratch wires. That separate requirement is reported; no
-    parallel circuit or lowered MCX resource claim is made here.
+    Each edge has one retained flag. ``emission="sequential"`` shares c-1 clean
+    scratch wires, restored before the next edge. ``emission="parallel"`` emits
+    deterministic vertex-disjoint layers with explicit barrier boundaries.
+    The w non-loop comparators in a layer have private c-1-wire scratch slots,
+    reused only after cleanup at the layer boundary. Their emitted gates touch
+    disjoint wires, allowing concurrent logical execution within that layer.
+    Slots across layers share an allocation of W(c-1), W=max(w).
+
+    Valid-code flags remain sequential and use disjoint binary prefix patterns
+    for x < k, at most c toggles per vertex, with no scratch. All flags are
+    uncomputed using the actual emitted inverse, including layer boundaries.
+    With F retained flags, allocated non-data width is exactly F+scratch+1,
+    including the arbitrary XOR output (zero for phase). All scratch is clean
+    at layer/domain/conjunction boundaries, while flags live until the inverse.
+    No lowered MCX resources or physical duration are implied.
     """
     from qiskit import QuantumCircuit
 
@@ -157,6 +168,8 @@ def structure_oracle(
         raise ValueError("Structure oracle does not support precolored vertices")
     if domain_policy not in ("complete", "domain_free"):
         raise ValueError("domain_policy must be 'complete' or 'domain_free'")
+    if emission not in ("sequential", "parallel"):
+        raise ValueError("emission must be 'sequential' or 'parallel'")
     encoding = ColoringEncoding(problem)
     c = encoding.bits_per_color
     mapping = encoding.input_mapping
@@ -168,17 +181,54 @@ def structure_oracle(
     count = len(problem.edges) + len(domains)
     n = encoding.input_count
     flags = list(range(n, n + count))
+    layers = disjoint_edge_layers(problem)
+    concurrent = max((sum(u != v for u, v in layer) for layer in layers), default=0)
     has_comparator = any(u != v for u, v in problem.edges)
-    scratch_count = c - 1 if has_comparator else 0
+    sequential_scratch = c - 1 if has_comparator else 0
+    scratch_count = (
+        concurrent * (c - 1) if emission == "parallel" else sequential_scratch
+    )
     scratch = list(range(n + count, n + count + scratch_count))
     target = n + count + scratch_count
     compute = QuantumCircuit(target + 1, name="structure_compute")
     comparator = edge_inequality(c) if has_comparator else None
-    for flag, (u, v) in zip(flags, problem.edges):
-        if u != v:
-            compute.compose(
-                comparator, [*mapping[u], *mapping[v], flag, *scratch], inplace=True
+    emitted_layers: list[dict[str, Any]] = []
+    if emission == "sequential":
+        for flag, (u, v) in zip(flags, problem.edges):
+            if u != v:
+                compute.compose(
+                    comparator, [*mapping[u], *mapping[v], flag, *scratch], inplace=True
+                )
+    else:
+        edge_flags = dict(zip(problem.edges, flags))
+        for index, layer in enumerate(layers):
+            compute.barrier(label=f"edge_layer_{index}_start")
+            start = len(compute.data)
+            comparators: list[dict[str, Any]] = []
+            for u, v in layer:
+                if u == v:
+                    continue  # Its retained zero flag makes the predicate false.
+                slot = len(comparators)
+                private = scratch[slot * (c - 1) : (slot + 1) * (c - 1)]
+                wires = [*mapping[u], *mapping[v], edge_flags[u, v], *private]
+                first = len(compute.data)
+                compute.compose(comparator, wires, inplace=True)
+                comparators.append(
+                    {
+                        "edge": (u, v),
+                        "qubits": wires,
+                        "scratch": private,
+                        "instruction_range": (first, len(compute.data)),
+                    }
+                )
+            emitted_layers.append(
+                {
+                    "edges": layer,
+                    "instruction_range": (start, len(compute.data)),
+                    "comparators": comparators,
+                }
             )
+            compute.barrier(label=f"edge_layer_{index}_end")
     for flag, vertex in zip(flags[len(problem.edges) :], domains):
         # x < k iff the first differing bit (from MSB down) has x=0,k=1.
         # These prefixes are disjoint, so XOR of their indicators equals OR.
@@ -190,8 +240,6 @@ def structure_oracle(
     circuit = compute.copy()
     _toggle(circuit, flags, target)
     circuit.compose(compute.inverse(), inplace=True)
-    layers = disjoint_edge_layers(problem)
-    concurrent = max((sum(u != v for u, v in layer) for layer in layers), default=0)
     roles = {
         "data": list(range(n)),
         "constraint": flags,
@@ -199,7 +247,7 @@ def structure_oracle(
         "target": [target],
     }
     metadata = {
-        "method": "structure_sequential",
+        "method": f"structure_{emission}",
         "domain_policy": domain_policy,
         "bits_per_color": c,
         "input_mapping": {v: list(qs) for v, qs in mapping.items()},
@@ -214,14 +262,27 @@ def structure_oracle(
         "qubit_counts": {role: len(qs) for role, qs in roles.items()},
         "metric_level": "logical",
         "mcx_decomposition": "not lowered; additional ancillas not included",
-        "sequential_comparator_scratch": scratch_count,
-        "sequential_clean_ancillas": count + scratch_count + 1,
+        "sequential_comparator_scratch": sequential_scratch,
+        "sequential_clean_ancillas": count + sequential_scratch + 1,
         "edge_layers": layers,
-        "parallel_schedule_only": True,
+        "parallel_schedule_only": emission == "sequential",
         "parallel_max_active_comparators": concurrent,
         "parallel_comparator_scratch": concurrent * (c - 1),
         "parallel_clean_ancillas_requirement": count + concurrent * (c - 1) + 1,
         "parallel_logical_width_requirement": n + count + concurrent * (c - 1) + 1,
         "validation": {"status": "not run"},
     }
+    if emission == "parallel":
+        metadata.update(
+            {
+                "emitted_edge_layers": emitted_layers,
+                "peak_workspace_including_flags_output": count + scratch_count + 1,
+                "scratch_lifetime": (
+                    "private within each layer; restored by each comparator's actual "
+                    "inverse; shared slots reused across barrier-separated layers; "
+                    "clean during sequential domains and conjunction"
+                ),
+                "flag_lifetime": "retained through conjunction until compute inverse",
+            }
+        )
     return StructureOracle(compute, circuit, metadata)

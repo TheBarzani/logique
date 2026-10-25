@@ -1,0 +1,10 @@
+# Generated LaTeX files stay local; sources and figures belong in the parent repo.
+*.pdf
+*.bbl
+*.aux
+*.log
+*.fls
+*.fdb_latexmk
+*.synctex.gz
+*.out
+*.blg

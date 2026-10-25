@@ -1,0 +1,699 @@
+%%
+%% This is file `sample-sigconf.tex',
+%% generated with the docstrip utility.
+%%
+%% The original source files were:
+%%
+%% samples.dtx  (with options: `all,proceedings,bibtex,sigconf')
+%% 
+%% IMPORTANT NOTICE:
+%% 
+%% For the copyright see the source file.
+%% 
+%% Any modified versions of this file must be renamed
+%% with new filenames distinct from sample-sigconf.tex.
+%% 
+%% For distribution of the original source see the terms
+%% for copying and modification in the file samples.dtx.
+%% 
+%% This generated file may be distributed as long as the
+%% original source files, as listed above, are part of the
+%% same distribution. (The sources need not necessarily be
+%% in the same archive or directory.)
+%%
+%%
+%% Commands for TeXCount
+%TC:macro \cite [option:text,text]
+%TC:macro \citep [option:text,text]
+%TC:macro \citet [option:text,text]
+%TC:envir table 0 1
+%TC:envir table* 0 1
+%TC:envir tabular [ignore] word
+%TC:envir displaymath 0 word
+%TC:envir math 0 word
+%TC:envir comment 0 0
+%%
+%% The first command in your LaTeX source must be the \documentclass
+%% command.
+%%
+%% For submission and review of your manuscript please change the
+%% command to \documentclass[manuscript, screen, review]{acmart}.
+%%
+%% When submitting camera ready or to TAPS, please change the command
+%% to \documentclass[sigconf]{acmart} or whichever template is required
+%% for your publication.
+%%
+%%
+\documentclass[sigconf, natbib]{acmart}
+% \usepackage{cite}
+% \usepackage{amsmath,amssymb,amsfonts}
+\usepackage{algorithmic}
+% \usepackage{graphicx}
+% \usepackage{textcomp}
+% \usepackage{xcolor}
+% \usepackage{lipsum}
+\usepackage[ruled, linesnumbered]{algorithm2e}
+% \usepackage{braket}
+% \usepackage{minted}
+\usepackage{multirow}
+% \usepackage{colonequals}
+\usepackage{amsthm}
+% \usepackage{indentfirst}
+\usepackage{tikz}
+% \usepackage{caption}
+\usepackage{subcaption}
+\usepackage{etoolbox}
+\usepackage{amsmath}
+\usepackage{amsfonts}
+\usepackage{graphicx}
+\usepackage{subcaption}
+\usepackage{booktabs}
+\usepackage{xcolor}
+
+\usetikzlibrary{quantikz2}
+
+\newcounter{examplecounter}
+\newcommand{\example}{%
+    \stepcounter{examplecounter}%
+    \textbf{Example \theexamplecounter:}\hspace{0.5em}%
+}
+
+\settopmatter{printacmref=false}
+
+%%
+%% \BibTeX command to typeset BibTeX logo in the docs
+\AtBeginDocument{%
+  \providecommand\BibTeX{{%
+    Bib\TeX}}}
+
+%% Rights management information.  This information is sent to you
+%% when you complete the rights form.  These commands have SAMPLE
+%% values in them; it is your responsibility as an author to replace
+%% the commands and values with those provided to you when you
+%% complete the rights form.
+\setcopyright{rightsretained}
+\copyrightyear{2026}
+\acmYear{2026}
+\acmDOI{XXXXXXX.XXXXXXX}
+%% These commands are for a PROCEEDINGS abstract or paper.
+\acmConference[DAC '26]{63rd ACM/IEEE Design Automation Conference}{July 26--29, 2026}{Long Beach, CA, USA}
+%%
+%%  Uncomment \acmBooktitle if the title of the proceedings is different
+%%  from ``Proceedings of ...''!
+%%
+% \acmBooktitle{DAC '24: Proceedings of the 61st ACM/IEEE Design Automation Conference, July 26--29, 2026, Long Beach, CA, USA}
+\acmISBN{XXX-X-XXXX-XXXX-X/26/XX}
+
+
+%%
+%% Submission ID.
+%% Use this when submitting an article to a sponsored event. You'll
+%% receive a unique submission ID from the organizers
+%% of the event, and this ID should be used as the parameter to this command.
+%%\acmSubmissionID{123-A56-BU3}
+
+%%
+%% For managing citations, it is recommended to use bibliography
+%% files in BibTeX format.
+%%
+%% You can then either use BibTeX with the ACM-Reference-Format style,
+%% or BibLaTeX with the acmnumeric or acmauthoryear sytles, that include
+%% support for advanced citation of software artefact from the
+%% biblatex-software package, also separately available on CTAN.
+%%
+%% Look at the sample-*-biblatex.tex files for templates showcasing
+%% the biblatex styles.
+%%
+
+%%
+%% The majority of ACM publications use numbered citations and
+%% references.  The command \citestyle{authoryear} switches to the
+%% "author year" style.
+%%
+%% If you are preparing content for an event
+%% sponsored by ACM SIGGRAPH, you must use the "author year" style of
+%% citations and references.
+%% Uncommenting
+%% the next command will enable that style.
+%%\citestyle{acmauthoryear}
+
+
+%%
+%% end of the preamble, start of the body of the document source.
+\begin{document}
+
+%%
+%% The "title" command has an optional parameter,
+%% allowing the author to define a "short title" to be used in page headers.
+\title{From Graph \texorpdfstring{$k$}{k}-Coloring to Grover's Circuits via Logic Synthesis}
+
+%
+% The "author" command and its associated commands are used to define
+% the authors and their affiliations.
+% Of note is the shared affiliation of the first two authors, and the
+% "authornote" and "authornotemark" commands
+% used to denote shared contribution to the research.
+\author{Ismael Barzani}
+\affiliation{%
+  \institution{ECE Department - Concordia University}
+  \city{Montréal}
+  \state{Québec}
+  \country{Canada}
+}
+\email{ismael.ridha@mail.concordia.ca}
+
+\author{Sébastien Le Beux}
+\affiliation{%
+  \institution{ECE Department - Concordia University}
+  \city{Montréal}
+  \state{Québec}
+  \country{Canada}
+}
+\email{sebastien.lebeux@concordia.ca}
+
+% Uncomment the above for the info. Uncomment the header author info also.
+% \author{Omitted-for-blind-review}
+% \affiliation{%
+%   \institution{Omitted-for-blind-review}
+%   \city{Omitted}
+%   \state{Omitted}
+%   \country{Omitted}
+% }
+% \email{Omitted-for-blind-review}
+
+
+%%
+%% By default, the full list of authors will be used in the page
+%% headers. Often, this list is too long, and will overlap
+%% other information printed in the page headers. This command allows
+%% the author to define a more concise list
+%% of authors' names for this purpose.
+\renewcommand{\shortauthors}{Barzani \& Le Beux}
+% \renewcommand{\shortauthors}{Omitted-for-blind-review}
+
+%%
+%% The abstract is a short summary of the work to be presented in the
+%% article.
+\begin{abstract}
+In the quantum computing realm, Grover's search algorithm has become a candidate for studying how quantum advantage might be achieved. It offers a quadratic speedup for search-based formulations of graph $k$-coloring problems, which arise in domains such as chemical storage, unit commitment in power systems, and industrial compilers. However, existing Grover's quantum circuits rely on \textit{multi-controlled Toffoli} (MCT) gates, which are not native primitives to practical quantum hardware. This incurs large decomposition overheads in circuit depth and width. In this work, we present an end-to-end high-level synthesis flow that automatically generates MCT-free Grover oracles from the high-level description of $k$-coloring instances. Our flow compiles edge constraints into GF(2) Boolean functions designed to avoid multi-fan-in AND gates, maps these functions to Xor-And-Inverter (XAG) logic networks, and integrates state-of-the-art uniform quantum superposition (UQS) preparation to exclude invalid color encodings. Experimental evaluation on benchmark instances shows that, compared to state-of-the-art, our approach reduces circuit depth and width by $49.4\%$ and $41.7\%$, respectively, with improved success probabilities.
+\end{abstract}
+
+%%
+%% The code below is generated by the tool at http://dl.acm.org/ccs.cfm.
+%% Please copy and paste the code instead of the example below.
+%%
+% \begin{CCSXML}
+% <ccs2012>
+%  <concept>
+%   <concept_id>00000000.0000000.0000000</concept_id>
+%   <concept_desc>Do Not Use This Code, Generate the Correct Terms for Your Paper</concept_desc>
+%   <concept_significance>500</concept_significance>
+%  </concept>
+%  <concept>
+%   <concept_id>00000000.00000000.00000000</concept_id>
+%   <concept_desc>Do Not Use This Code, Generate the Correct Terms for Your Paper</concept_desc>
+%   <concept_significance>300</concept_significance>
+%  </concept>
+%  <concept>
+%   <concept_id>00000000.00000000.00000000</concept_id>
+%   <concept_desc>Do Not Use This Code, Generate the Correct Terms for Your Paper</concept_desc>
+%   <concept_significance>100</concept_significance>
+%  </concept>
+%  <concept>
+%   <concept_id>00000000.00000000.00000000</concept_id>
+%   <concept_desc>Do Not Use This Code, Generate the Correct Terms for Your Paper</concept_desc>
+%   <concept_significance>100</concept_significance>
+%  </concept>
+% </ccs2012>
+% \end{CCSXML}
+
+% \ccsdesc[500]{Do Not Use This Code~Generate the Correct Terms for Your Paper}
+% \ccsdesc[300]{Do Not Use This Code~Generate the Correct Terms for Your Paper}
+% \ccsdesc{Do Not Use This Code~Generate the Correct Terms for Your Paper}
+% \ccsdesc[100]{Do Not Use This Code~Generate the Correct Terms for Your Paper}
+
+%%
+%% Keywords. The author(s) should pick words that accurately describe
+%% the work being presented. Separate the keywords with commas.
+% \keywords{Quantum Computing, Multi-Controlled Toffoli, Graph Coloring, High-Level Synthesis, Logic Synthesis}
+% %% A "teaser" image appears between the author and affiliation
+% %% information and the body of the document, and typically spans the
+% %% page.
+% \begin{teaserfigure}
+%   \includegraphics[width=\textwidth]{sampleteaser}
+%   \caption{Seattle Mariners at Spring Training, 2010.}
+%   \Description{Enjoying the baseball game from the third-base
+%   seats. Ichiro Suzuki preparing to bat.}
+%   \label{fig:teaser}
+% \end{teaserfigure}
+
+% \received{20 February 2007}
+% \received[revised]{12 March 2009}
+% \received[accepted]{5 June 2009}
+
+%%
+%% This command processes the author and affiliation and title
+%% information and builds the first part of the formatted document.
+\maketitle
+\section{Introduction}
+% The Big Picture
+Quantum computation has attracted wide research interest for over three decades as a route to practical speedups for hard problems \cite{Vazirani,np2024}. Quantum phenomena such as superposition, entanglement, and interference enable algorithmic primitives that outperform classical methods. Notable examples include Grover's algorithm, which offers a quadratic speedup for unstructured search \cite{grover}, and Shor’s algorithm, which yields exponential speedups for integer factorization compared to the best-known classical algorithms \cite{shor}. 
+
+% The Specific Problem
+A quintessential hard problem is graph $k$-coloring, first identified in Karp's seminal list of 21 NP-complete problems \cite{Karp1972}. It is a widely studied problem in graph theory with practical applications in safe storage of chemicals \cite{chemicalstorage_application},  optimization of power grids \cite{uc_application}, and resource allocation for compilers \cite{compiler_application}. Graph $k$-coloring is a subset of the vertex coloring problem where it asks whether a graph can be colored using at most 
+$k$ colors; any valid solution is a \textit{proper $k$-coloring}. The minimum number of colors required for a proper coloring is the graph’s \textit{chromatic} number, denoted $\chi(G)$.
+
+% The Tool
+Many solution approaches for $k$-coloring can be cast as search problems, making them natural candidates for Grover-based speedups. Grover's algorithm can provide a quadratic reduction in the number of queries needed to find a valid coloring. The algorithm utilizes a \textit{quantum oracle} that marks valid solutions within a superposition of all possible colorings. A key challenge, however, is the efficient implementation of this oracle using practical quantum gates.
+
+% The Limitation
+Existing synthesis flows for Grover's oracle in $k$-coloring rely heavily on \textit{multi-controlled Toffoli} (MCT) gates \cite{saha, belletti} and hand-crafted Boolean functions \cite{DATE21}. While convenient for logic synthesis, MCT gates are not native to practical quantum hardware architectures. Consequently, they must be decomposed into elementary one- and two-qubit gates (e.g., Clifford+$T$), a process that introduces substantial overhead in circuit depth, width, and $T$-count. These overheads can eliminate much of Grover’s practical advantage and increase mapping complexity to both NISQ and fault-tolerant architectures. As a result, there is a need for synthesis flows that inherently avoid MCT gates.
+
+% Our Solution
+To this end, for the first time, we propose an end-to-end automated framework that leverages logic synthesis and uniform quantum superposition (UQS) state preparation to generate MCT-free Grover's circuits directly from a high-level description of graph $k$-coloring problems. Our approach avoids the need for MCT gates by compiling the problem's constraints into \textbf{GF(2)} Boolean functions designed without multi-fan-in AND gates, which are then synthesized into quantum circuits via Xor-And-Inverter Graphs (XAGs).
+% Our Contributions
+The specific contributions of this work are as follows: 
+
+\begin{itemize}
+    \item We propose an end-to-end high-level synthesis (HLS) flow that inputs a $k$-coloring instance and automatically generates Grover's circuits with MCT-free oracles.
+    \item We design a constraint-to-Boolean-function compilation algorithm that generates a \textbf{GF(2)} Boolean function for a graph's edge constraints.
+    \item We integrate state-of-the-art uniform quantum superposition state preparation algorithm to restrict the search space to valid colorings.
+\end{itemize}
+% The Outcome
+We evaluate our approach on standard graph benchmarks and report circuit depth and width reductions of roughly 49.4\% and 41.7\%, respectively, versus the framework of Saha \cite{saha} and its Belletti extensions \cite{belletti}. To validate our flow, we run synthesized circuits for linear graphs of 3-8 vertices on \textbf{IBM’s 133-qubit Heron-r1 QPU (\texttt{ibm\_torino})} and results show improved success probabilities.
+
+\section{Background And Related Work}
+In this section, we provide the preliminaries used in the paper and review prior work on quantum circuits for graph $k$-coloring.
+
+\subsection{Quantum Algorithms and Operations}
+
+A quantum algorithm is a sequence of operations that prepares an initial state, manipulates it through intermediate steps, and measures the result to obtain a probabilistic solution. The state of a quantum system is represented by qubits. A single qubit state is denoted as $\ket{q} = \alpha\ket{0} + \beta\ket{1}$, where $\alpha, \beta \in \mathbb{C}$ and $|\alpha|^2 + |\beta|^2 = 1$. Upon measurement, a qubit collapses to $\ket{0}$ or $\ket{1}$ with a probability $|\alpha|^2$ or $|\beta|^2$, respectively. Qubits are classified as \textit{data} qubits (holding input/output) or \textit{ancilla} qubits (temporary memory). Ancilla qubits are \textit{clean} if initialized to a known state (e.g., $\ket{0}$) and \textit{dirty} otherwise.
+
+Quantum algorithms are implemented via \textit{quantum circuits} composed of qubits and \textit{quantum gates}. Gates are unitary operators that evolve the state of one or more qubits.
+
+\example
+The Hadamard gate \small $H = \frac{1}{\sqrt{2}}$ \scriptsize $\begin{pmatrix}1 & 1 \\ 1 & -1\end{pmatrix}$ \normalsize maps $\ket{0}$ to the uniform superposition state \small $\ket{+} = \frac{1}{\sqrt{2}}(\ket{0} + \ket{1})$ \normalsize \cite{Nielsen}.
+
+\example
+ The CNOT gate \scriptsize
+\[
+CNOT = \begin{pmatrix}
+1 & 0 & 0 & 0 \\
+0 & 1 & 0 & 0 \\
+0 & 0 & 0 & 1 \\
+0 & 0 & 1 & 0
+\end{pmatrix}
+\] 
+\normalsize
+performs a conditional bit-flip on a target qubit based on a control qubit. Applying $H$ to the control of a CNOT (with $\ket{00}$) yields the Bell state $\ket{\Phi^+} = \frac{1}{\sqrt{2}}(\ket{00} + \ket{11})$ \cite{Nielsen,Bell}.
+
+A universal gate set enables approximation of any unitary operation. The Clifford+$T$ gate set $\{H, S, CNOT, T\}$ is widely used for fault-tolerant quantum computing (FTQC) due to its compatibility with error correction \cite{Nielsen}. In noisy intermediate-scale quantum (NISQ) devices, connectivity constraints make CNOT gates particularly expensive \cite{nisq_two_qubit}. The non-Clifford $T$-gate is costly to implement (e.g., via magic-state distillation \cite{magic_state_distillation}) and is $50\times$ more expensive than Clifford gates in FTQC \cite{ftqc_cost}. Thus, $T$-count and CNOT-count are critical metrics for assessing quantum computation costs~\cite{Tcount}.
+
+The \textit{Toffoli} gate (CCNOT)~\cite{toffoli_gate} is a reversible logic gate commonly used in quantum circuits. Its multi-controlled variant (MCT gate) has $n > 2$ control qubits and one target. MCT gates need to be decomposed into elementary gates, incurring significant overhead in depth, width, and ancilla count~\cite{toffoli_decomposition}. For depth-optimal decomposition, an $n$-control MCT gate requires at least $\lceil \log_2 n \rceil$ depth and $n-2$ dirty ancillae~\cite{toffoli_decomposition}. Figures \ref{fig:4-MCT} and \ref{fig:5-MCT} show the decomposition of MCT gates with 4 and 5 controls, respectively, using the tight $\lceil \log_2 n \rceil$ bound on Toffoli depth. Note that in our flow, we consider our circuit constructions over the Clifford+Toffoli set, which is an extension of Clifford+$T$, where the Toffoli is decomposed using its optimal ancilla-free construction~\cite{Tcount}. Hereafter, throughout this work, the depth, width, and gate count are measured with respect to this set, along with MCT's depth-optimal decomposition.
+
+\begin{figure}
+    \centering
+    \begin{subfigure}[b]{0.2\textwidth}
+        \centering
+        \begin{quantikz} [column sep=0.1cm, wire types={q,q,q,q,q}, row sep=0.2cm, thin lines]
+             \qw & \ctrl{4} & \qw \\
+             \qw & \ctrl{0} & \qw \\
+             \qw & \ctrl{0} & \qw \\
+             \qw & \ctrl{0} & \qw \\
+             \qw & \targ{} & \qw 
+        \end{quantikz}
+        $\equiv$ \hspace{-0.5cm} \begin{quantikz} [column sep=0.1cm, wire types={q,q,q,q,q}, row sep=0.2cm, thin lines]
+             \qw &\qw & \ctrl{5} & \qw & \qw & \qw\\
+             \qw &\qw & \ctrl{0} & \qw & \qw & \qw\\
+             \qw &\qw & \qw & \ctrl{4} & \qw & \qw\\
+             \qw &\qw & \qw & \ctrl{0} & \qw & \qw\\
+             \qw & \qw & \qw & \qw & \targ{} & \qw \\
+             \lstick{\small $\ket{a_1}$} & \qw & \targ{} & \qw & \ctrl{0} & \qw\\
+             \lstick{\small $\ket{a_2}$} & \qw & \qw & \targ{} & \ctrl{-2} & \qw
+        \end{quantikz}
+        \vspace{0.8cm}
+        \caption{MCT with 4 controls}
+        \Description{MCT Gate with 4 controls}
+        \label{fig:4-MCT}
+    \end{subfigure}
+    \hspace{0.2cm}
+    \begin{subfigure}[b]{0.2\textwidth}
+        \centering
+        \begin{quantikz} [column sep=0.1cm, wire types={q,q,q,q,q}, row sep=0.2cm, thin lines]
+             \qw & \ctrl{5} & \qw \\
+             \qw & \ctrl{0} & \qw \\
+             \qw & \ctrl{0} & \qw \\
+             \qw & \ctrl{0} & \qw \\
+             \qw & \ctrl{0} & \qw \\
+             \qw & \targ{} & \qw 
+        \end{quantikz}
+        $\equiv$ \hspace{-0.5cm}\begin{quantikz} [column sep=0.1cm, wire types={q,q,q,q,q}, row sep=0.2cm, thin lines]
+             \qw &\qw & \ctrl{6} & \qw & \qw & \qw & \qw\\
+             \qw &\qw & \ctrl{0} & \qw & \qw & \qw & \qw\\
+             \qw &\qw & \qw & \ctrl{5} & \qw & \qw & \qw\\
+             \qw &\qw & \qw & \ctrl{0} & \qw & \qw & \qw\\
+             \qw &\qw & \qw & \qw & \ctrl{4} & \qw & \qw\\
+             \qw & \qw & \qw & \qw & \qw & \targ{} & \qw\\
+             \lstick{\small $\ket{a_1}$} & \qw & \targ{} & \qw & \ctrl{0} & \qw & \qw\\
+             \lstick{\small $\ket{a_2}$} & \qw & \qw & \targ{} & \qw & \ctrl{0} & \qw \\
+             \lstick{\small $\ket{a_3}$} & \qw & \qw & \qw & \targ{} & \ctrl{-3} & \qw
+        \end{quantikz}
+        \caption{MCT with 5 controls}
+        \Description{MCT Gate with 5 controls}
+        \label{fig:5-MCT}
+    \end{subfigure}
+    \caption{Depth-optimal decomposition of MCT gates (Toffoli-depth) with dirty ancilla qubits $\ket{a}$}
+    \Description{}
+    \label{fig:mct-decomposition}
+    \vspace{-0.6cm}
+\end{figure}
+
+\subsection{Grover's Algorithm}
+
+Grover's algorithm provides a quadratic speedup for searching an unstructured database of $N = 2^n$ items ~\cite{grover}. It finds a solution \(x^*\) to a \textbf{GF}(2) function \(f:\mathbb{B}^{n}\rightarrow\mathbb{B}\) with high probability using only \(\mathcal{O}(\sqrt{N})\) oracle queries, compared to \(\mathcal{O}(N)\) classically.
+
+As illustrated in Figure \ref{fig:grover_circuit}, the algorithm proceeds as follows:
+\begin{enumerate}
+    \item \textbf{Initialize} a register of \(n+1\) qubits to the state \(\ket{0}^{\otimes n}\ket{-}\).
+    \item \textbf{Create uniform quantum superposition $(UQS)$} by applying the UQS circuit, \(U_{UQS}^{\otimes n}\), to the first \(n\) qubits.
+    \item \textbf{Apply the Grover oracle} \(U_f\), which performs a conditional phase shift (\(|x\rangle \mapsto (-1)^{f(x)}|x\rangle\)) on the desired basis state.
+    \item \textbf{Apply the diffusion operator} \(U_D\), which inverts all amplitudes about their mean, further amplifying the solution(s).
+    \item \textbf{Repeat} steps 3 and 4 for approximately \(\lfloor \frac{\pi}{4} \sqrt{N} \rfloor\) iterations~\cite{mosca}.
+    \item \textbf{Measure} the first \(n\) qubits.
+\end{enumerate}
+
+The central compilation challenge is the efficient implementation of the phase oracle \(U_f\), which encodes the problem-specific function \(f\). Moreover, to shrink the search space, UQS preparation circuits are needed instead of a Hadamard stack.
+
+\begin{figure}
+    \centering
+    \includegraphics[width=1\linewidth]{figures/grover_circuit_v2.png}
+    \caption{High-level Grover’s circuit for $k$-coloring. Qubits: data ($v_0, \dots, v_n$), ancilla ($A$), and phase kick-back ($\ket{-}$)}
+    \Description{High-level Grover’s circuit for $k$-coloring. Qubits: data ($v_0, \dots, v_n$), ancilla ($A$), and phase kick-back ($\ket{-}$)}
+    \label{fig:grover_circuit}
+    \vspace{-0.5cm}
+\end{figure}
+
+\subsection{Boolean Functions and Logic Networks}
+
+In this work, we consider Boolean functions of the form \(f:\mathbb{B}^{n}\rightarrow\mathbb{B}\), where \(\mathbb{B} = \mathbf{GF}(2) = \{0,1\}\) and \(n \geq 1\). We specifically focus on the gate basis \(\{\neg, \oplus, \land\}\), which defines and can be modeled by Xor-And-Inverter Graph (XAG) logic networks~\cite{XAIG}.
+ 
+An XAG represents a Boolean function as a directed acyclic graph where each node is either a 2-input XOR or a 2-input AND gate. Formally, for a function with inputs \(x_1, ..., x_n\), an XAG is represented as a Boolean chain:
+\begin{equation}
+x_i = x_{j_{1i}} \oplus x_{j_{2i}} \quad \text{or} \quad x_i = x_{j_{1i}}^{p_{1i}} \land x_{j_{2i}}^{p_{2i}}
+\end{equation}
+where \(p_{1i}, p_{2i} \in \{0,1\}\) are Boolean constants that determine if a gate's fan-in is complemented. This representation does not utilize multi-fan-in AND gates and thus it natively avoids MCT gates.
+
+
+\subsection{Quantum Computing for Graph k-Coloring}
+Karp's 21 NP-complete problems~\cite{Karp1972} are a foundational benchmark for developing quantum algorithms. Early quantum approaches to graph coloring explored higher-dimensional~\cite{Wang2011TernaryGrover} and adiabatic~\cite{Lucas2014IsingNP} models, proposing a ternary Grover's variant and a quantum annealing solution, respectively. However, the gate-based, qubit-centric model has emerged as the dominant paradigm for practical quantum computing due to its universality, programmability~\cite{Nielsen}, and current hardware alignment enabling superior control through two-state systems~\cite{qubit-engineering}.
+
+Within the gate-based paradigm, Saha et al. pioneered circuit design for $k$-coloring, first with a pattern-based design~\cite{saha2015} and later a comparator-based approach that provides an end-to-end framework~\cite{saha}. Their work was subsequently analyzed and extended by Belletti et al.~\cite{belletti}, who introduced depth-optimized (\textit{simple}), width-optimized (\textit{minimal}), and \textit{balanced} variants of the framework in \cite{saha}. A key limitation of these comparator-based approaches is their heavy reliance on (MCT) gates. The decomposition of these non-native gates into elementary operations introduces significant overhead in ancilla count, $T$-count, and CNOT-count. In a separate direction, Schmitt et al.~\cite{DATE21} demonstrated an alternative, manual flow that synthesizes a Grover oracle from a hand-crafted Boolean function for a specific $k$-coloring instance.
+
+We extend the Boolean function approach of~\cite{DATE21} and draw inspiration from the automation in~\cite{saha, belletti}. As a result, our key contribution is a fully automated, end-to-end synthesis framework that entirely avoids MCT gates, resulting in lower gate-count, and reduced circuit width and depth.
+
+\section{Proposed MCT-free HLS Flow} \label{section:hls-flow}
+ This section details our automated high-level synthesis flow for generating MCT-free Grover circuits. We begin with a conceptual overview of the integrated stages, followed by a detailed breakdown of each component: constraint compilation, oracle synthesis, state preparation, and circuit assembly. The section concludes with an illustrative example applied on a small graph.
+
+\subsection{Overview}
+\label{subsec:overview}
+
+Our automated flow compiles the high-level description of a $k$-coloring instance into a complete MCT-free Grover circuit. Figure~\ref{fig:vcgc_flow} shows the overview of our proposed HLS flow. It begins through receiving the input graph, defined by its vertices $V$, edges $E$, and number of colors $k$. The process then splits into two parallel paths:
+\begin{itemize}
+    \item \textbf{Grover’s Oracle Synthesis:} Edge constraints $E$ are compiled into a GF(2) Boolean function (Algorithm \ref{alg:multibit-boolean}), synthesized into an XAG network, and compiled into a quantum oracle using the technique in  \cite{XAGCompilation}, avoiding MCT gates.
+    \item \textbf{UQS State Preparation:} The value \(k\) is used by the Shukla-Vedula algorithm~\cite{Shukla2024} to generate a uniform quantum superposition (UQS) circuit, preparing only $k$ valid color encodings for each vertex $v$.
+\end{itemize}
+
+The final stage assembles the UQS, oracle, and diffusion operator circuits into an executable Grover circuit.
+
+\begin{figure}[t]
+    \centering
+    \includegraphics[width=0.9\linewidth]{figures/vcgc_workflow_dac.png}
+    \caption{Overview of the proposed HLS flow}
+    \Description{Overview of the proposed HLS flow}
+    \label{fig:vcgc_flow}
+\end{figure}
+
+\subsection{Grover's Oracle Synthesis}
+This path synthesizes the quantum oracle $U_f$ by compiling the graph's edge constraints into an executable quantum circuit, entirely avoiding multi-controlled gates. The process consists of three sequential steps, as outlined in Figure \ref{fig:vcgc_flow}: constraint compilation to a Boolean function, synthesis into an XAG network, and quantum circuit compilation.
+
+\subsubsection{From Edge Constraints to GF(2) Boolean Function}
+Each edge in the graph represents a constraint \(c \in \mathcal{C}\) requiring adjacent vertices to have different colors. Algorithm~\ref{alg:multibit-boolean} processes the edge set \(E\) to generate a GF(2) Boolean function \(f_\Phi\). For each vertex \(v\), it creates \(\lceil \log_2 k \rceil\) binary variables \(x_{v,i}\). For each edge \((u, v)\), it constructs a clause ensuring the color encodings differ in at least one bit:
+\begin{equation}
+    c_{u,v} = \bigvee_{i=0}^{\lceil \log_2 k \rceil - 1} (x_{u,i} \oplus x_{v,i})
+\end{equation}
+The overall function \(f_\Phi\) is the conjunction of all edge constraints \(c \in \mathcal{C}\), evaluating to \textit{true} only for valid colorings.
+
+\begin{algorithm}
+    \caption{$GF(2)$ Boolean Function Synthesis}
+    \label{alg:multibit-boolean}
+        \KwIn{Network $G = (V, E)$ with vertices $V$ and edges $E$}
+        \KwIn{Number of colors $k$}
+        \KwOut{Boolean function over GF(2), representing graph coloring constraints}
+        \Begin{ 
+            
+            % CREATE VERIABLE NAMES BASED ON VERTICES AND COLORS
+            $\mathcal{V} \gets \{x_{v,i} : v \in V, i \in \{0, 1, \ldots, \lceil \log_2(k) \rceil - 1\}\}$\;
+
+            % EMPTY SET FOR CONSTRAINTS
+            $\mathcal{C} \gets \emptyset$\;
+
+            % EXTRACT CONSTRAINTS
+            \ForEach{$e (u, v) \in E$}{
+                $c_{u,v} \gets \bigvee_{i=0}^{\lceil \log_2(k) \rceil - 1} (x_{u,i} \oplus x_{v,i})$\;
+                $\mathcal{C} \gets \mathcal{C} \cup \{c_{u,v}\}$\;
+            }
+
+            $\Phi \gets \begin{cases} 
+            \top & \text{if } |\mathcal{C}| = 0 \\
+            c & \text{if } |\mathcal{C}| = 1 \text{ and } \mathcal{C} = \{c\} \\
+            \bigwedge_{c \in \mathcal{C}} c & \text{otherwise}
+            \end{cases}$\
+            
+            \Return{$f_\Phi$ where $f_\Phi(\mathcal{V}) = \Phi$}\;
+        }
+
+\end{algorithm}
+
+\subsubsection{From Boolean Function to XAG Synthesis}
+The generated Boolean function \(f_\Phi\) is synthesized into an XAG logic network using the \texttt{tweedledum} library~\cite{tweedledum}. This is accomplished through a two-stage process:
+\begin{enumerate}
+    \item \textbf{Syntactic Parsing:} An Abstract Syntax Tree (AST)-based parser transforms the Boolean expression for $f_\Phi$ into an intermediate logic network representation.
+    \item \textbf{Structural Synthesis:} This intermediate representation is optimized and mapped onto network primitives, instantiating 2-input XOR gates, 2-input AND gates, and INVERTED fan-ins to form the final XAG.
+\end{enumerate}
+This resulting XAG, composed solely of these elementary logic components, provides a canonical and efficient representation that is ideal for the quantum circuit compilation step.
+
+\subsubsection{XAG-Based Quantum Compilation}
+The XAG network is compiled into a quantum oracle circuit using the method from Meuli et al.~\cite{XAGCompilation}. This method constructs the linear parity functions for each AND gate in the XAG using CNOT chains and computes the AND operations using optimized ancilla-based patterns. The result is a circuit that marks invalid colorings through phase kick-back.
+
+\subsection{UQS State Preparation}
+\label{subsec:uqs-prep}
+To restrict the search space to only valid colorings, we prepare a uniform quantum superposition (UQS) over the $k$ valid color encodings for each vertex. This is necessary since we aim to avoid the $2^c - k$ invalid states produced by a standard stack of Hadamard gates (where $c = \lceil \log_2 k \rceil$).
+
+We leverage the Shukla-Vedula algorithm~\cite{Shukla2024} for this task. For a given $k$, the algorithm efficiently generates a circuit that prepares the state:
+\begin{equation}
+    \ket{\Psi} = \frac{1}{\sqrt{k}} \sum_{j=0}^{k-1} \ket{j}
+\end{equation}
+This is achieved with a gate depth and complexity of only $\mathcal{O}(\log_2 k)$. When $k$ is a power of 2, the algorithm simply prepares a Hadamard stack. For the other cases, it leverages rotation and controlled-Hadamard gates to prepare a UQS. Critically, the generated UQS circuit requires no ancilla qubits and is composed solely of elementary gates, natively avoiding any multiple-control operations and aligning with our MCT-free design objective.
+
+\subsection{Grover's Circuit Assembly}
+\label{subsec:assembly}
+
+
+The flow combines the synthesized components into a complete Grover circuit. This involves preparing the diffusion operator and composing the full circuit.
+
+\textbf{Diffusion Operator Preparation:} The diffusion operator is constructed as $D = U_{\Psi}^{\dagger} \cdot (2|0^n\rangle\langle 0^n| - I) \cdot U_{\Psi}$, where $U_{\Psi}$ is the circuit that prepares the UQS state $|\Psi\rangle$. Its standard implementation requires applying, in sequence, its adjoint operator $U_{\Psi}^{\dagger}$, a multi-controlled Z gate, and $U_{\Psi}$ to perform the inversion-about-the-average operation.
+
+\textbf{Circuit Composition:} The complete Grover's circuit is assembled in sequence:
+\begin{enumerate}
+    \item \textbf{Initialization:} The UQS circuit is applied to each vertex’s register of $c = \lceil \log_2 k \rceil$ qubits. A single ancilla qubit is initialized to $|-\rangle$ for the oracle’s phase kickback.
+    \item \textbf{Oracle Application:} The synthesized oracle circuit $U_f$ is applied to mark invalid colorings via a phase-flip.
+    \item \textbf{Diffusion Amplification:} The diffusion operator $D$ is applied to amplify the probability amplitudes of the valid states through the inversion-about-the-average operation.
+\end{enumerate}
+This sequence of oracle and diffusion applications is repeated for the optimal number of \(\lfloor \frac{\pi}{4} \sqrt{N} \rfloor\) queries~\cite{mosca}.
+
+\begin{figure}[t]
+    \centering
+    \begin{subfigure}[t]{0.11\textwidth}
+        \centering
+        \includegraphics[width=\textwidth]{figures/K3_graph.png}
+        \caption{$K_3$ graph}
+        \label{fig:K3_graph}
+    \end{subfigure}
+    \hfill
+    \begin{subfigure}[t]{0.35\textwidth}
+        \centering
+        \includegraphics[width=\textwidth]{figures/usp_latex.png}
+        \caption{UQS Circuit for $k=3$}
+        \label{fig:usp-circuit}
+    \end{subfigure}
+    \caption{(a) The $K_3$ graph, a 3-coloring problem input (b) The 2-qubit UQS circuit to prepare the uniform superposition {$\frac{1}{\sqrt{3}}\ket{00}+ \ket{01}+ \ket{10}$} for each vertex}
+    \Description{(a) The $K_3$ graph, a 3-coloring problem input (b) The 2-qubit UQS circuit to prepare the uniform superposition {$\frac{1}{\sqrt{3}}\ket{00}+ \ket{01}+ \ket{10}$} for each vertex}
+    \label{fig:K3_example}
+    \vspace{-0.2cm}
+\end{figure}
+
+\begin{figure}[t]
+    \centering
+    \includegraphics[width=0.6\linewidth]{figures/K3_example_xag_drawio.png}
+    \caption{The XAG logic network for Boolean function (\ref{eq:bool-func})}
+    \Description{The XAG logic network for Boolean function (\ref{eq:bool-func})}
+    \label{fig:xag_logic_network}
+    \vspace{-0.5cm}
+\end{figure}
+
+\begin{figure*}[t]
+    \centering
+    \includegraphics[width=1\linewidth]{figures/K3_circuit_latex.png}
+    \caption{The automatically-synthesized Grover's circuit for $K_3$}
+    \Description{The automatically-synthesized Grover's circuit for $K_3$}
+    \label{fig:full_circuit}
+\end{figure*}
+
+\subsection{Illustrative Example}
+\label{subsec:example}
+
+We demonstrate our synthesis flow using the complete graph \(K_3\) (Figure~\ref{fig:K3_graph}) with \(k=3\) colors. The flow begins by analyzing the graph's structure. Since \(k=3\), each vertex requires \(c = \lceil \log_2 3 \rceil = 2\) qubits for encoding. The two synthesis paths are then executed:
+
+\begin{enumerate}
+    \item \textbf{Grover Oracle Synthesis:} The graph's three edges are compiled into constraints. Algorithm~\ref{alg:multibit-boolean} processes these to generate the GF(2) Boolean function \(f_{K_3}\) that evaluates to true only for valid colorings:
+    \begin{equation}
+    \label{eq:bool-func}
+    \scalebox{0.89}{$
+    \begin{aligned}
+        f_{K_3} &= ((v_{1,0} \oplus v_{2,0})  \vee  (v_{1,1} \oplus v_{2,1}))  \wedge  ((v_{1,0} \oplus v_{3,0})  \vee \\ 
+        &\quad (v_{1,1} \oplus v_{3,1}))  \wedge  ((v_{2,0} \oplus v_{3,0})  \vee  (v_{2,1} \oplus v_{3,1}))
+    \end{aligned}
+    $}
+    \end{equation}
+
+    This function is synthesized into an XAG network (Figure~\ref{fig:xag_logic_network}) and compiled into the MCT-free quantum oracle.
+    \item \textbf{UQS State Preparation:} The Shukla-Vedula algorithm generates a circuit to prepare the uniform superposition of the three valid color encodings, \(\{\ket{00}, \ket{01}, \ket{10}\}\), while excluding the invalid state \(\ket{11}\). The resulting UQS circuit for one vertex is shown in Figure~\ref{fig:usp-circuit}.
+\end{enumerate}
+
+Finally, the complete Grover circuit is assembled by integrating the UQS circuits for each vertex, the synthesized oracle, and the diffusion operator. The compiled circuit for \(K_3\) is shown in Figure~\ref{fig:full_circuit}.
+
+
+
+\section{Experimental Results}
+\label{sec:experiments}
+This section presents an experimental evaluation of our proposed MCT-free synthesis flow. We assess the performance and validity of our approach by compiling Grover circuits for various $k$-coloring benchmark instances and executing them on IBM's quantum hardware. Moreover, we compare our synthesized circuits against the circuits synthesized using the baseline approaches.
+
+\subsection{Experimental Setup}
+\label{subsec:setup}
+% Results Table
+
+We developed a Python library, \texttt{vcgc}, to implement our proposed flow and all associated methods. The source code for \texttt{vcgc} is publicly available on GitHub\footnote{\url{Omitted-for-blind-review}}. For a controlled comparison, we also adapted the Python code for the baseline frameworks in the same repository. 
+
+A critical constraint of current NISQ hardware is its limited coherence time, which restricts the depth of executable quantum circuits. To perform a concrete analysis of circuit metrics and to enable execution on real hardware, we compiled all Grover circuits for a \textbf{single query} (one oracle and one diffusion call). This allows for obtaining meaningful results to assess each synthesis method.
+
+For functional verification, we executed compiled circuits for linear graphs of increasing size (3-8 vertices) on \textbf{IBM's 133-qubit Heron-r1 QPU (\texttt{ibm\_torino})}. The device, with a heavy-hex lattice architecture, had a median CZ gate error of 0.0029 and readout error of 0.0289 at the time of execution, providing a NISQ environment.
+
+Our benchmark suite consists of small graph coloring instances with chromatic numbers $\chi(G) = 3$ to $\chi(G) = 20$. It is composed of complete graphs $K_3$ to $K_{20}$ and graphs selected from the \textit{Graph Coloring Benchmarks} webpage\footnote{\url{https://sites.google.com/site/graphcoloring/vertex-coloring}}. We also include the \textit{Zed city problem} instance from an IBM quantum hackathon\footnote{\url{https://github.com/quantum-challenge/2019/}} for further validation. These instances are provided in the standard DIMACS\footnote{\url{http://www.stasbusygin.org/writings/ccformat.pdf}} format.
+
+\begin{figure} [t]
+    \centering
+    \includegraphics[width=1\linewidth]{figures/ieee_success_probability.png}
+    \caption{Measured total probability of the desired solution states as the number of vertices grows}
+    \Description{Measured total probability of the desired solution states as the number of vertices grows}
+    \label{fig:validation}
+    \vspace{-0.5cm}
+\end{figure}
+
+\begin{figure*}[htbp]
+\centering
+
+% Top row: Width and Depth plots
+\begin{subfigure}[b]{0.48\textwidth}
+    \centering
+    \includegraphics[width=\textwidth]{figures/width_comparison_log.png}
+    \caption{Comparison of the Circuit Widths of the Synthesized Circuits}
+    \label{fig:width_comparison}
+\end{subfigure}
+\hfill
+\begin{subfigure}[b]{0.48\textwidth}
+    \centering
+    \includegraphics[width=\textwidth]{figures/depth_comparison_log.png}
+    \caption{Comparison of the Circuit Depths of the Synthesized Circuits}
+    \label{fig:depth_comparison}
+\end{subfigure}
+
+\vspace{0.2cm}
+
+% Bottom row: Gates plot and Improvement table
+\begin{subfigure}[b]{0.48\textwidth}
+    \centering
+    \includegraphics[width=\textwidth]{figures/gates_comparison_log.png}
+    \caption{Comparison of the Gate Counts of the Synthesized Circuits}
+    \label{fig:gates_comparison}
+\end{subfigure}
+\hfill
+\begin{subfigure}[b]{0.47\textwidth}
+    \centering
+    % \small
+    \raisebox{2.05cm}{
+        \begin{tabular}{lccc}
+        \toprule
+        \textbf{Baseline Method} & \textbf{Width (\%)} & \textbf{Depth (\%)} & \textbf{\# Gates (\%)} \\
+        \midrule
+        Saha et al.        & 35.5 & 71.9 & 52.2 \\
+        Belletti-Minimal   & 56.1 & 90.5 & 89.6 \\
+        Belletti-Simple    & 36.8 & -9.5 & 36.7 \\
+        Belletti-Balanced  & 38.7 & 44.9 & 62.2 \\
+        \midrule
+        \textbf{Average}   & \textbf{41.7} & \textbf{49.4} & \textbf{60.1} \\
+        \bottomrule
+        \end{tabular}
+    }
+    \caption{Percentage \% Reduction in Width, Depth, and Gate Count incurred by the Proposed HLS Flow with respect to the Baseline Flows}
+    \label{fig:improvement_table}
+\end{subfigure}
+
+\caption{Comparison of the proposed HLS flow against baseline methods. (a-c) show circuit metrics on benchmark graphs, while (d) summarizes the average percentage improvement of the Proposed HLS flow against the Baseline Flows.}
+\Description{Comparison of the proposed HLS flow against baseline methods. (a-c) show circuit metrics on benchmark graphs, while (d) summarizes the average percentage improvement of the Proposed HLS flow against the Baseline Flows.}
+\label{fig:comprehensive_comparison}
+\vspace{-0.4cm}
+\end{figure*}
+
+\subsection{Validation of the Proposed Flow}
+
+To validate our flow, we executed the synthesized circuits on IBM's quantum computers using the \texttt{Qiskit}~\cite{qiskit2024} library. We used 2-colorable linear graphs of increasing size as a benchmark, where the success probability is defined as the combined measured probabilities of the two valid alternating-color states after a single Grover iteration. The final measurements represent the average of expectation values obtained from separate executions of the Qiskit \texttt{Sampler} primitive, with batch sizes of 1,000 and 10,000 shots.
+
+As shown in Figure~\ref{fig:validation}, our approach consistently achieves higher success probabilities. For example, at $v=3$, our flow achieves a success probability of 0.86 versus $\sim$0.69 for other approaches. Investigating the circuits at this instance, we observe competing circuits require a 3-control MCT gate (transpilation depth: 27), while ours requires only a Toffoli gate (transpilation depth: 11). Therefore due to our MCT-free design, we observe up to 15\% improvement for graphs of 3-5 vertices. For larger instances (6-8 vertices), success probabilities become negligible as circuits approach the hardware's coherence limits, highlighting the need for improved quantum processors to scale experimental validation.
+
+
+\subsection{Comparison of Synthesized Circuits}
+\label{subsec:resource_comparison}
+
+To compare our proposed flow against the baseline frameworks, all MCT gates present in the baseline are decomposed to Toffoli gates using the depth-optimal dirty-ancilla decomposition from~\cite{toffoli_decomposition}. As demonstrated in Figure~\ref{fig:mct-decomposition}, this is done by associating a depth of $\lceil \log_2 n \rceil$ and dirty-ancillae count of $n-2$ to each MCT gate, where $n$ is the number of controls. 
+
+Figures~\ref{fig:width_comparison} -~\ref{fig:gates_comparison} show the circuit complexity results obtained for each flow across 9 graph coloring benchmarks. For the \texttt{K10} instance, we outperform the next-best flow, \emph{Belletti-Simple}, by at least $3\times$ in width, $1.4\times$ in depth, and $1.8\times$ in gate-count. While \emph{Belletti-Simple} achieves better depth in some instances (up to $1.7\times$ for \texttt{myciel5}), we maintain better width ($1.7\times$) and gate-count ($1.5\times$) performance. This width overhead makes their circuits for \texttt{myciel5} and \texttt{K20} incompatible with certain qpu topologies, such as \textbf{IBM's 1,121-Qubit Condor} processor, while ours are compatible.
+
+% For the benchmarks where the number of colors $k\leq4$, our flow achieves comparable width results compared to the other methods. When $k\leq4$, only $c = \lceil \log_2 4 \rceil$ or $2$ qubits are required to represent each vertex. In the baseline approaches, they apply an MCT gate on the qubits of each vertex and store the results in an ancilla qubit for \textit{invalid color detection}~\cite{saha,belletti}. Given each vertex is represented with 2 qubits for $k\leq4$, this means there is minimal usage of MCT gates, and Toffoli gates are rather used instead. However, our approach performs better in depth for these instances than the baseline approaches, except \emph{Belletti-Simple}. On the other hand, when $k>4$, the baseline approaches start heavily utilizing MCT gates due to the aforementioned reasons. For the \texttt{K5} and \texttt{K10} instances, we can see that our flow achieves better results in all metrics.
+
+The advantage of our MCT-free flow becomes increasingly pronounced for problems requiring more than four colors, $k>4$. In these cases, baseline approaches must synthesize higher-control MCT gates for\textit{ comparison} and \textit{invalid color detection}~\cite{saha,belletti}, incurring significant decomposition overhead. This is clearly demonstrated in the \texttt{K5} and \texttt{K10} benchmarks, where our flow achieves improved results across all metrics. For smaller color counts $k\leq4$, where each vertex requires at most $\lceil \log_2 4 \rceil$ or $2$ qubits, baseline methods primarily use Toffoli gates instead of the larger MCTs, leading to comparable widths. However, even in this regime, our approach maintains a depth advantage over all baselines except the depth-optimized \emph{Belletti-Simple} variant.
+
+The \emph{Belletti-Simple} approach achieves depth improvements by parallelizing reversible comparator components through strategic reordering \cite{belletti}, leveraging the inherent reversibility of these elements originally introduced in \cite{saha}. Their method also further simplifies \textit{invalid color detection}. Incorporating similar parallelization strategies represents promising future work for our flow, though this requires careful runtime analysis to ensure net benefits. Additionally, future work will explore two optimization avenues: developing efficient Clifford+$T$ decompositions of UQS rotation gates, and applying advanced reduction techniques to intermediate XAGs.
+
+As summarized in Figure~\ref{fig:improvement_table}, our approach delivers substantial resource reductions: \textbf{41.7\%} in width, \textbf{49.4\%} in depth, and \textbf{60.1\%} in gate-count compared to baseline methods. Collectively, these results demonstrate that proactively avoiding MCT gates during synthesis, rather than decomposing them post-synthesis, represents a fundamentally more efficient quantum compilation strategy.
+
+\vspace{-0.5cm}
+\section{Conclusion}
+\label{sec:conclusion}
+We have presented an automated end-to-end high-level synthesis flow for compiling graph $k$-coloring problems into MCT-free Grover quantum circuits. By leveraging GF(2) Boolean compilation, XAG-based logic synthesis, and efficient uniform state preparation methods, our approach entirely avoids the use of multi-controlled Toffoli gates and their associated decomposition overhead. Experimental results demonstrate significant improvements: a 49.4\% reduction in circuit depth, 60.1\% reduction in gate-count, and 41.7\% reduction in width compared to state-of-the-art MCT-based approaches. Hardware execution on \textbf{IBM's Heron-r1 processor} confirmed that our shallower, more compact circuits exhibit improved noise resilience and higher success probabilities. These results establish that avoiding MCT gates at the synthesis level is a critical strategy for practical quantum algorithm compilation. Future work will focus on depth optimizations, developing FTQC-aware rotation decompositions, and extending the method to other NP-hard problems.
+
+% Balance columns on the last page
+\balance
+
+% ----- bibliography -----
+\bibliographystyle{ACM-Reference-Format}
+\bibliography{refs}
+
+
+%%
+%% If your work has an appendix, this is the place to put it.
+% \appendix
+
+\end{document}
+\endinput
+%%
+%% End of file `sample-sigconf.tex'.

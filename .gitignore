@@ -174,7 +174,6 @@ pyrightconfig.json
 .venv/
 .vscode/
 *.DS_Store
-docs/manuscript/
 
 # DRAWIO stuff
 *.bkp
@@ -182,4 +181,3 @@ docs/manuscript/
 # Non-final runs and preserved local generated artifacts
 dump/
 src/logique/_version.py
-docs/research

@@ -1,0 +1,7 @@
+c FILE: K3.col
+c 3 vertices, 3 edges, 3 colors
+p edge 3 3
+e 1 2
+e 1 3
+e 2 3
+x colors 3

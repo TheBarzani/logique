@@ -555,3 +555,56 @@ traced manuscript numbers, reviewer responses, evidence gate and independent
 final correctness/claim/reproducibility reviews. The existing restricted exact-hash
 rotation admission and every caller obligation remain unchanged. No broader
 numeric target, interval/ideal-amplitude, RUS/dynamic or paper approval is added.
+
+
+## QPY correction: bounded semantic admission and integration
+
+Coordinator `coordinate-qpy-1025074732` verified no earlier completed own handoff;
+both QPY predecessors were complete. The original stage-controls coordinator
+was not redispatched. Exact source/test hashes match the explicit independent
+[QPY review](qpy_semantic_review.md). Owned foundation/correction commits are
+integrated as `b6743cb` / `2792427`; checkpoint-only commits were not integrated.
+The [coordinator admission](qpy_semantic_admission.md) records the bounded contract,
+proof coverage and exclusions. The former held foundation is admitted only with
+this correction; unsafe earlier saved artifacts are not retroactively admitted.
+
+Candidate and integrated replays each pass 381 phase-sensitive operators <=4
+qubits, 32 full-register statevectors <=5, 408 composition checks, 2816 monomial
+columns, 36 cases, 24 network checks and 240 saved metric rows. Actual inverse,
+signed diffusion, independent positive/negative predicates, clean scratch and
+two explicit mixed-success failure paths pass. Integrated regressions: 92 passed,
+31 bounded dense exclusions, no skips. Relevant Black/Ruff and diff checks pass.
+Wider logical composition is proved locally; general wider transpiler equivalence
+is not independently certified. Honest reserved roles, unknown residual workspace,
+overlapping stages and unavailable memory/liveness remain explicit.
+
+[Representation/count changes](qpy_representation_changes.md) are recorded
+separately in `a57e84f`: 48/240 maps, 36 gate/depth totals, zero widths change;
+these are not performance improvements. Historical research tables remain intact.
+Peak measured child RSS 219938816 bytes; sequential existing research Python,
+explicit src/private native/cache and single threads, <=120s child bounds.
+No build, broad suite, mypy, notebook or historical replay claim. Failures include
+reproduced original QPY corruption, deliberate rejection fixtures, denied `ps`
+and initial Git sequencer sandbox denial followed by scoped successful escalation.
+An intentional interruption after intake was resumed without duplicate work.
+All 1153 intake protected identities and external index/pins must match at handoff.
+
+Checkpoint: `dump/1025125442-qpy-coordinator-triage/batch.json`. Append only
+`restoring-mcx-1025125442`, `restoring-mcx-review-1025125442` and
+`coordinate-restoring-mcx-1025125442`: opt-in restoring MCX with fresh scratch,
+no cross-role borrowing, independent exact-hash review/coordinator acceptance,
+including blocked triage. Existing native/parallel-structure/static-FT/RUS scopes
+stay unchanged. Dispatcher alone launches and pushes committed integration HEAD.
+This bounded handoff is complete once its batch says bounded_batch_complete;
+repeat verifies/releases complete without new tests/integration/jobs.
+
+Remaining: all further decomposition/workspace/routing/precision/limits controls,
+post-pilot freeze, affected older QPY evidence, full nine-graph R1/R2/R3 multilevel
+saved-circuit comparisons with strongest baselines, ablations and five seeds;
+remaining native/profile/SAT/parallel structure; graph-domain static FT under
+unchanged hash-bound numerical contract; separate RUS/preparation break-even;
+iteration/noise/leakage/confidence/random-sampling/cost per success; five-repeat
+scaling/DIMACS positive/negative witnesses and resources; full acceptance,
+provenance/build/offline notebooks/isolated replay; traced manuscript, reviewer
+responses, evidence gate and independent final correctness/claim/reproducibility
+reviews. No interval/ideal-amplitude/RUS or paper approval. Full paper stays open.

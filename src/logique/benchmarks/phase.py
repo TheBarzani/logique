@@ -41,7 +41,7 @@ def run_phase_benchmarks(config: dict, *, executable=None) -> Path:
         "schema_version": 1,
         "run_id": output.name,
         "config": config,
-        "versions": environment(),
+        "versions": environment(executable=executable),
         "checkout": checkout_revision(Path.cwd()),
         "native": native,
         "oracle_contract": "(-1)^f(x), clean auxiliary qubits restored",

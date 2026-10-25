@@ -70,7 +70,7 @@ def synthesize(
         seconds=time.perf_counter() - start,
         source=str(Path(source).resolve()),
         source_sha256=hashlib.sha256(Path(source).read_bytes()).hexdigest(),
-        versions=environment(),
+        versions=environment(executable=executable),
     )
     return SynthesisResult(qc, md)
 
@@ -107,6 +107,6 @@ def synthesize_expression(
         expression=expression,
         source_sha256=hashlib.sha256(source_verilog.encode()).hexdigest(),
         source_verilog=source_verilog,
-        versions=environment(),
+        versions=environment(executable=executable),
     )
     return SynthesisResult(records_to_qiskit(md["gates"], md["num_qubits"]), md)

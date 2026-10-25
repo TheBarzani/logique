@@ -7,15 +7,24 @@ import platform
 from pathlib import Path
 import subprocess
 from logique.paths import native_executable
-from logique.synthesis.native import REFERENCE_REVISION
 
 
-def environment() -> dict:
-    """Record installed versions; absent optional packages are explicit."""
+def environment(*, executable: str | Path | None = None) -> dict:
+    """Record versions and the bridge's build declaration when available.
+
+    The reference revision describes the dependency declared by that build, not
+    a verification of its checkout. Source hashes remain in native_provenance().
+    Missing build records never imply that the reference sources were used.
+    """
+    try:
+        build = native_provenance(executable)["build"] or {}
+    except FileNotFoundError:
+        build = {}
     versions = {
         "python": platform.python_version(),
-        "caterpillar": REFERENCE_REVISION,
-        "bridge_fixes": "lhrs_uncompute_stack_pop, best_fit_cell_fanout",
+        "caterpillar": build.get("declared_reference_revision", "not recorded"),
+        "caterpillar_revision_kind": "declared build reference",
+        "bridge_fixes": build.get("fixes", "not recorded"),
     }
     for name in (
         "logique",

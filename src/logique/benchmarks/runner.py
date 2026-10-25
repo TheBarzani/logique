@@ -93,7 +93,7 @@ def run_benchmarks(config: dict, *, executable=None) -> Path:
         "schema_version": 1,
         "run_id": output.name,
         "config": config,
-        "versions": environment(),
+        "versions": environment(executable=executable),
         "checkout": checkout_revision(Path.cwd()),
         "status": "running",
         "cases": [],

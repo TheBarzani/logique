@@ -490,3 +490,68 @@ positive/negative witnesses; full research/static/build/provenance checks,
 offline notebooks and isolated historical replay; traced manuscript numbers,
 reviewer responses, evidence gate and independent final reviews. Full paper
 remains unfinished; rotation admission and its exact hashes are unchanged.
+
+## XAG low-T triage: pinned physical-alias blocker
+
+`native-xag-lowt-1025072819` is dispatcher-blocked after four attempts. Its
+isolated `XAG_LOWT_CHECKPOINT.md` and checkpoint-only commit `09020b0` confirm
+that the opt-in was not delivered: all maintained source files were restored to
+`ce93291`. This assigned coordinator had no previous completed batch; the
+supplied `1025072819-native-mapping-triage/batch.json` belongs to its predecessor.
+**No implementation or checkpoint-only commit was cherry-picked.**
+
+The [independent blocker review](native_xag_lowt_blocker_review.md) audits the
+actual pinned non-template XAG strategy, LHRS node-stack/buffer/in-place payloads
+and emitted static gates. Equal XOR cones alias both AND controls to one wire;
+common `none` emits invalid `[0,0]` controls with equal or contradictory
+polarities. Both are independently reproduced and correctly rejected by Python.
+Common `refactoring` passes those fixtures, without discharging `none`.
+Independent source/scalar/API-wrapper checks passed **1,760 coherent checks** on
+valid candidate and admitted predecessor fixtures, **105 exact omitted-control
+comparisons** across all five methods and three policies, and **three historical
+expression comparisons**. Two initial harness-only Verilog parse failures and
+their corrected passing replay are retained. No dense quantum allocation,
+rebuild, broad-suite or scientific-performance claim is made. Maximum measured
+child RSS: **72,220,672 bytes**; sequential existing research-Python processes,
+explicit src/native/cache, single threads and 180-second supervisor bounds.
+
+The static emitter actually executes inverse ANDs: the nested fixture emits five
+Toffolis, not a measurement-assisted zero-T cleanup. Serializer completeness and
+passing ordinary fixtures do not prove the alias invariant. Low-T remains
+**unadmitted**. Original evidence (93 files), 52 source/build identities and 160
+protected root/archive/history/prototype hashes match; README, rotations,
+prototype backups, binary/pins and existing research evidence remain unchanged.
+Scoped Git escalation created two isolated worktrees after an initial ref-lock
+sandbox denial. No models/agents/API/paid fallback/hardware/push/sync ran.
+
+The entire 27-job queue was inspected for scope and IDs. Append only
+`native-xag-alias-fix-1025121607` (native, 1800s),
+`native-xag-alias-review-1025121607` (critical_review, 1200s), and
+`coordinate-xag-alias-1025121607` (coordinator, 1200s), four attempts each.
+Review/coordinator use finished-predecessor triage. Existing queue header,
+definitions and prompt bytes stay immutable. The narrow correction must derive
+explicit physical literal normalization, preserve exact pinned class/defaults,
+fail closed on target aliases, exercise both preprocessing policies and coherent
+restoration, and receive independent exact-hash review. No next unrelated
+mapping/MC/balancing slice is added. Evidence, final preservation and exact
+handoff: `dump/1025121607-xag-lowt-coordinator-triage/batch.json`.
+This bounded batch/handoff is complete; verify and release on resumption without
+repeating tests/integration or appending duplicates. Dispatcher owns launches.
+
+Full remaining scope: correction and independent admission of pinned low-T;
+fast-low-T, low-depth/level/other mapping contracts, MC reduction/balancing
+profiles, common preprocessing studies and SAT/qubit budgets; parallel structure
+schedules and workspace trade-offs; held main-runner QPY correction/review,
+decomposition policies through 20 controls or explicit infeasibility, workspace,
+stage/routing/precision/resource controls and post-pilot freeze; nine-graph
+R1/R2/R3 multilevel saved-circuit comparisons, strongest-baseline aggregation,
+ablations and five routing seeds; meaningful graph-domain static FT beyond the
+isolated-vertex pilot, separate RUS ledger/review and preparation break-even;
+ideal/noisy iterations through first peak plus one, leakage/confidence intervals,
+random sampling and cost per success; scaling/DIMACS with five repetitions,
+stage time/memory/timeouts and positive/negative witnesses; full acceptance,
+static/build/provenance checks, offline notebooks and isolated 135-metric replay;
+traced manuscript numbers, reviewer responses, evidence gate and independent
+final correctness/claim/reproducibility reviews. The existing restricted exact-hash
+rotation admission and every caller obligation remain unchanged. No broader
+numeric target, interval/ideal-amplitude, RUS/dynamic or paper approval is added.

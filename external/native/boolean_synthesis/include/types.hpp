@@ -21,6 +21,7 @@
 #include <mockturtle/views/mapping_view.hpp>
 #include <caterpillar/synthesis/lhrs.hpp>
 #include <caterpillar/synthesis/strategies/bennett_mapping_strategy.hpp>
+#include <caterpillar/synthesis/strategies/eager_mapping_strategy.hpp>
 #include <caterpillar/synthesis/strategies/best_fit_mapping_strategy.hpp>
 
 using json = nlohmann::json;

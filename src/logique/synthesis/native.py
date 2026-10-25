@@ -55,4 +55,20 @@ def run_native(path: str | Path, method: str, *, executable=None, **parameters) 
             raise RuntimeError(
                 "Native bridge did not confirm the requested common preprocessing"
             )
+    if "strategy" in parameters:
+        evidence = response.get("mapping_strategy")
+        implementations = {
+            "bennett": "caterpillar::bennett_mapping_strategy",
+            "bennett_inplace": "caterpillar::bennett_inplace_mapping_strategy",
+            "eager": "caterpillar::eager_mapping_strategy",
+        }
+        if (
+            not isinstance(evidence, dict)
+            or evidence.get("explicit") is not True
+            or evidence.get("name") != parameters["strategy"]
+            or evidence.get("implementation")
+            != implementations.get(parameters["strategy"])
+            or not isinstance(response.get("steps"), list)
+        ):
+            raise RuntimeError("Native bridge did not confirm the requested strategy")
     return response

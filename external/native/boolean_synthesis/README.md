@@ -46,6 +46,44 @@ range from 2 through 6. Best-fit defaults to `outer_cut=16`, `inner_cut=4`.
 Omitting `outputs` selects all outputs. Input order is preserved when projecting
 outputs. Sequential AIGER is rejected.
 
+AIG/XAG Bennett accept an independent opt-in `"strategy":"bennett"`,
+`"bennett_inplace"` or `"eager"` control (Python: `synthesize(...,
+strategy="eager")`). These instantiate the pinned Caterpillar
+`bennett_mapping_strategy`, `bennett_inplace_mapping_strategy` and
+`eager_mapping_strategy` classes, respectively, after the selected preprocessing
+and representation conversion. Omission still uses Bennett. The other three
+methods reject every explicit strategy control, including `bennett`. Unknown
+values, low-T/low-depth, SAT and strategy-specific tuning are unsupported.
+`mapping_strategy` records `name`, `explicit`, and the qualified `implementation`;
+Python requires this confirmation and a step array for every explicit request,
+so the control cannot silently disappear at an older bridge. `steps` contains
+the actual strategy's full action payloads, as consumed by LHRS.
+
+In-place Bennett overwrites only last-use XOR fanins of non-output nodes and
+restores them in reverse order. The pinned AIG representation has no XOR gates,
+so this selection is supported but emits ordinary Bennett steps there. XAG may
+also emit no in-place steps if its graph offers no eligible XOR. `target_index`
+is a mapped **node** index, resolved through that node's live qubit stack, not a
+physical wire index. The pinned in-place uncompute handler leaves a stale node
+stack entry; these Bennett schedules compute each node once and restore every
+overwrite before earlier ancestors are uncomputed, so they never reuse that
+entry. This does not certify arbitrary recomputation or mixed in-place schedules.
+Eager computes nodes topologically and recursively cleans fanins when their last
+reference is released at an output. Output references keep output drivers live;
+fanout counts include repeated and complemented output aliases. The existing
+out-of-place uncompute stack-pop overlay remains necessary and unchanged.
+
+LHRS output preparation may complement a primary-input wire in the raw circuit
+when that input drives a complemented output; raw input restoration is therefore
+not guaranteed for aliases. The compute/copy/uncompute XOR and phase wrappers
+restore it. Unused primary inputs remain declared. Focused tests in
+`tests/test_native_mapping_strategies.py` check actual emitted gates against
+independent functions and coloring predicates, all joint XOR-target patterns,
+phase/workspace restoration, nested in-place targets, shared fanout, early eager
+cleanup and bounded superpositions. This is no admission of low-T/low-depth,
+level-based, LUT in-place, best-fit strategy overrides or SAT/recomputation
+variants, and makes no performance claim.
+
 Common preprocessing is **opt-in**. Add `"preprocessing":"none"` or
 `"preprocessing":"refactoring"` to the native request, or pass
 `preprocessing="none"` / `"refactoring"` to Python's `synthesize`. The bridge
@@ -93,7 +131,8 @@ Configure with `-DLOGIQUE_BUILD_CONTRACT_PROBES=ON` and run
 `ctest --test-dir YOUR_BUILD --output-on-failure` to check exact serialization of
 every variant, including populated and empty payloads. These probes validate
 serialization; they do not certify the gate-emission semantics of additional
-strategies. No new mapping algorithms or SAT controls are exposed by this batch.
+strategies. Gate-emission acceptance is separate from these serializer probes;
+SAT controls remain unsupported.
 
 The notebook compares these specific configurations, not published optimal
 resource counts. It explicitly distinguishes raw clean-output computations from

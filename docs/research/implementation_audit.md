@@ -665,3 +665,49 @@ full tests/build/provenance/offline notebooks/isolated historical replay;
 every manuscript number traced to admitted evidence, reviewer responses and
 independent final quantum-correctness/claim/reproducibility reviews. No interval,
 ideal-amplitude, RUS or paper approval is added. Full paper remains unfinished.
+
+## Analytical RUS ledger: bounded coordinator admission
+
+`rus-ledger-1025083656` and independent `rus-review-1025083656` completed,
+not blocked. No previous completed coordinator handoff existed. Only exact
+reviewed source/tests from `dd1aeb9` entered correctness commit `e3e6141`.
+The [independent review](rus_ledger_review.md) is preserved byte-for-byte;
+[coordinator admission](rus_ledger_admission.md) records hashes, proof, commands,
+failures, resources and exclusions. Admission covers ideal scalar-Kraus analytical
+accounting only: arbitrary-input/reference identities, actual inverse-prefix
+order and branch phases, unlimited expectations/variance, capped exhaustion,
+success-conditioned and unconditional serial abort costs, explicit unknown
+O/S0 charges and unpriced resources. No dynamic execution, retry runtime,
+quantum control, static substitution, hardware, graph advantage or paper approval.
+
+Candidate and integrated suites each passed 100 tests; independent review replay
+passed 1,304 checks, 56 rejections and 36 distributions. New coordinator probes
+passed 288 direct schedules/1,152 exact checks and 49 unequal branch lengths.
+Relevant Black/Ruff, one-file mypy and whitespace checks pass. Sequential existing
+research Python, explicit worktree src/cache/private native, single threads and
+60s numerical child timeouts; peak child RSS 97,239,040 bytes. Dense/vector replay
+<=3 qubits, no wider simulation/build/full suite/static FT retest. ps/index-lock
+sandbox failures and an accidental duplicate successful candidate/review replay
+are retained. Intake protects 1,310 identities, user README, evidence, archives,
+prototypes, nested histories, pins and both binaries.
+
+Checkpoint: `dump/1025175909-rus-coordinator-triage/batch.json`. Entire 36-job
+queue inspected; append only symbolic preparation-breakeven ledger, isolated
+critical review and coordinator (finished-predecessor triage). Supplied costs/j,
+unknowns and aborted-run renewal semantics must stay explicit; no graph costs
+or achieved break-even are inferred. Existing native, QPY/controls, parallel
+structure and ideal-iterations scopes stay owned. Dispatcher alone launches and
+pushes committed integration HEAD. Verify/release this completed handoff on
+resumption without repeating tests, integration or appending duplicates.
+
+Full controls and post-pilot freeze; affected older QPY evidence; remaining
+mappings/MC reduction/balancing/SAT; structure comparison/lowering; nine-graph
+R1/R2/R3 multilevel strongest-baseline comparisons, ablations and five seeds;
+meaningful static graph FT under unchanged exact hash-bound numerical/caller
+contract; actual preparation break-even and separate dynamic RUS admission;
+iteration/noise/leakage/confidence/random-sampling/cost per success; five-repeat
+scaling/DIMACS with witnesses and resources; full acceptance/build/provenance,
+offline notebooks/isolated historical replay; traced manuscript numbers,
+reviewer responses, evidence gate and independent final reviews remain open.
+No interval certificate, ideal-amplitude guarantee or blanket RUS/paper approval.
+Full paper unfinished.

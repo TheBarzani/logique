@@ -10,6 +10,11 @@ class ColoringEncoding:
     """Consecutive vertex inputs, least-significant color bit first."""
 
     problem: ColoringProblem
+    balanced: bool = False
+
+    def __post_init__(self) -> None:
+        if type(self.balanced) is not bool:
+            raise ValueError("balanced must be a Boolean")
 
     @property
     def bits_per_color(self) -> int:
@@ -49,6 +54,17 @@ class ColoringEncoding:
         def combine(items: list[str], op: str, identity: str) -> str:
             if not items:
                 return identity
+            if self.balanced:
+                while len(items) > 1:
+                    items = [
+                        (
+                            gate(items[i], op, items[i + 1])
+                            if i + 1 < len(items)
+                            else items[i]
+                        )
+                        for i in range(0, len(items), 2)
+                    ]
+                return items[0]
             result = items[0]
             for item in items[1:]:
                 result = gate(result, op, item)
@@ -110,9 +126,16 @@ class ColoringEncoding:
         return path
 
 
-def encode_coloring(problem: ColoringProblem) -> ColoringEncoding:
-    """Encode all vertices, valid colors, precolors, and edge inequalities."""
-    return ColoringEncoding(problem)
+def encode_coloring(
+    problem: ColoringProblem, *, balanced: bool = False
+) -> ColoringEncoding:
+    """Encode the complete predicate with optional balanced AND and OR trees.
+
+    The default retains the existing gate order. Balancing changes only the
+    association of conjunctions and disjunctions, preserving all constraints
+    and input ordering; it does not select a native optimization strategy.
+    """
+    return ColoringEncoding(problem, balanced=balanced)
 
 
 def edge_coloring_expression(problem: ColoringProblem) -> tuple[str, list[str]]:

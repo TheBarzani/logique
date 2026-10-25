@@ -48,6 +48,31 @@ def test_synthesis_matches_graph_predicate(problem, method):
     assert validate(result)["wrapped_restoration"]
 
 
+@pytest.mark.parametrize(
+    "problem",
+    [
+        ColoringProblem((1, 3, 8), ((1, 3), (3, 8)), 3),
+        ColoringProblem((2, 9), ((2, 9),), 5),
+        ColoringProblem((4,), (), 3),
+        ColoringProblem((4,), ((4, 4),), 2),
+        ColoringProblem((), (), 2),
+    ],
+)
+def test_balanced_encoder_preserves_independent_predicate(problem):
+    from logique.verification import verify_phase_oracle
+
+    original = synthesize(encode_coloring(problem))
+    encoding = encode_coloring(problem, balanced=True)
+    balanced = synthesize(encoding)
+    inputs = input_assignments(encoding.input_count)
+    np.testing.assert_array_equal(
+        truth_outputs(original.metadata["source_network"], inputs),
+        truth_outputs(balanced.metadata["source_network"], inputs),
+    )
+    assert balanced.metadata["coloring"]["balanced_encoder"]
+    assert verify_phase_oracle(balanced, encoding=encoding)["phase_exact"]
+
+
 @pytest.mark.parametrize("iterations", [0, 1, 2, 3])
 def test_grover_matches_independent_amplitude_amplification(iterations):
     from qiskit.quantum_info import Statevector

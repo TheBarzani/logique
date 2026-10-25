@@ -66,3 +66,37 @@ def test_classical_checker_checks_all_constraints():
         assert not problem.is_valid(assignment)
     with pytest.raises(TypeError):
         problem.precolored[1] = 1
+
+
+def test_balanced_encoder_reduces_association_depth_without_changing_gate_count():
+    """A power-of-two palette isolates conjunction depth from domain checks."""
+    problem = ColoringProblem(tuple(range(9)), tuple((i, i + 1) for i in range(8)), 2)
+
+    def structural_depth(source):
+        depths = {f"x{i}": 0 for i in range(9)}
+        for line in source.splitlines():
+            if not line.startswith("assign "):
+                continue
+            output, expression = (
+                line.removeprefix("assign ").removesuffix(";").split(" = ")
+            )
+            inputs = expression.split()
+            depths[output] = (
+                depths[inputs[0]]
+                if len(inputs) == 1
+                else 1 + max(depths[inputs[0]], depths[inputs[2]])
+            )
+        return depths["y0"]
+
+    sequential = encode_coloring(problem).verilog()
+    balanced = encode_coloring(problem, balanced=True).verilog()
+    assert sequential.count("assign ") == balanced.count("assign ")
+    assert structural_depth(sequential) == 8
+    assert structural_depth(balanced) == 4
+    assert balanced == encode_coloring(problem, balanced=True).verilog()
+    assert (
+        encode_coloring(problem).input_mapping
+        == encode_coloring(problem, balanced=True).input_mapping
+    )
+    with pytest.raises(ValueError, match="balanced"):
+        encode_coloring(problem, balanced="yes")

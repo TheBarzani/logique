@@ -46,6 +46,7 @@ def synthesize(
                 "precolored": dict(source.problem.precolored),
                 "bits_per_color": source.bits_per_color,
                 "input_mapping": source.input_mapping,
+                "balanced_encoder": source.balanced,
             },
         )
         if len(result.metadata["input_qubits"]) != source.input_count:

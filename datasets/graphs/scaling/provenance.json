@@ -1,0 +1,23 @@
+{
+  "description": "Byte-for-byte restoration of the three legacy scaling inputs required by the coloring revision plan; color counts and any precolor removal must be recorded by each experiment.",
+  "inputs": [
+    {
+      "file": "queen8_8.col",
+      "source_commit": "95f61674e803086f0998a12c87c4d3a8cf158de5",
+      "source_path": "data/big_benchmarks/queen8_8.col",
+      "sha256": "c8893ce5dc1bd8fe6a34fd4b84d5e1070a3ae443610e52c2980ea7a8bfe9720b"
+    },
+    {
+      "file": "5-FullIns_3.col",
+      "source_commit": "95f61674e803086f0998a12c87c4d3a8cf158de5",
+      "source_path": "data/big_benchmarks/5-FullIns_3.col",
+      "sha256": "b7b92bc6efadefef0a398c37171d755eacd73d7d4b56bb955ac830414cf72b64"
+    },
+    {
+      "file": "4-Insertions_3.col",
+      "source_commit": "95f61674e803086f0998a12c87c4d3a8cf158de5",
+      "source_path": "data/big_benchmarks/4-Insertions_3.col",
+      "sha256": "efb99099fbe360deb28e0bb8907e0ddbcc38eb009eaa75df46e6c3c2bc891125"
+    }
+  ]
+}

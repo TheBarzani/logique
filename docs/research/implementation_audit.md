@@ -776,3 +776,50 @@ traced manuscript numbers, reviewer responses, evidence gate and independent
 final quantum-correctness/claim/reproducibility reviews. No interval certificate,
 ideal-amplitude guarantee, new RUS/static FT or blanket paper admission.
 Bounded completion and scientific admission differ. Full paper unfinished.
+
+## Ideal iteration ledger: blocked categorical boundary triage
+
+Both ideal-iterations-1025173122 and ideal-iterations-review-1025173122 are
+**dispatcher complete**; scientific admission is **BLOCKED**, not inferred from
+129 passing supplied tests. THIS coordinator had no prior completed handoff.
+Source/test bytes and committed blobs match rejected ed1001b; the independent
+[review](ideal_iteration_boundary_review.md) is preserved byte-for-byte.
+[Coordinator triage](ideal_iteration_boundary_triage.md) independently assesses
+predicate/support/iteration/cost semantics, exact identities and counterexamples.
+**No candidate source, tests or worker checkpoint-only commit is integrated.**
+
+Exact Fraction probes confirm near-half and near-irrational wrong peaks/missing
+post-peak rows, two wrong floor/ceiling pairs near one quarter and wrongly
+accepted insufficient caps. These are categorical failures even when probability
+errors are small. The required correction must generally resolve or fail closed
+on ambiguous accepted integer-count decisions BEFORE constructing rows; named
+special cases and inflated tie tolerances are insufficient. Numerical formulae
+and supplied costs establish no circuit/noise/FT/RUS or paper admission.
+
+All 45 saved evidence hashes/receipts and 1,127 protected identities were checked.
+Two sequential scalar probes total 0.093275s, maximum measured RSS 20,283,392
+bytes, timeout60s each/300s cumulative; no quantum arrays/compiler/native call.
+The initial probe-only exact-float random-reference assertion failed, then passed
+with a numerical sanity tolerance; exact categorical comparisons are unchanged.
+Failure evidence, truncated/absent exploratory reads and Git ref-lock denial
+followed by successful scoped escalation remain recorded. No full suite/lint/
+mypy/build/notebook/replay claim. README, archives, prototypes, histories, pins,
+original worktrees and binaries remain unchanged; no automatic approval rejection.
+
+Checkpoint `dump/1026075259-ideal-iteration-coordinator-triage/batch.json` records
+bounded completion, blocked scientific scope and atomic unique handoff:
+ideal-boundary-fix-1026075259, ideal-boundary-review-1026075259 and
+coordinate-ideal-boundary-1026075259. Prior 42-job header/definitions/prompts stay
+immutable. Fix depends on THIS coordinator; review/coordinator use finished
+triage, with isolated codex/coloring- worktrees. Dispatcher alone launches/pushes.
+On completed resumption verify/release without repeated tests/integration/jobs.
+
+Full remaining plan and concrete correction acceptance are in the triage and
+server manifest: all executed iteration/noise/leakage/confidence/random-trial
+studies, native/MC/balancing/SAT, structure comparisons, remaining controls and
+post-pilot freeze, full nine-graph multilevel/five-seed comparisons, graph static
+FT under unchanged restricted exact-hash numerical/caller contract, separate
+dynamic RUS/achieved break-even, five-repeat scaling/DIMACS witnesses/resources,
+full acceptance and evidence-gated traced manuscript/final reviews remain open.
+Existing specialty ownership stays separate. No interval certificate,
+ideal-amplitude guarantee, new FT/RUS or paper approval. Full paper unfinished.

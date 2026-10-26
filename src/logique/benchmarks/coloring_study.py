@@ -1,7 +1,8 @@
 """Controlled R1/R2/R3 assembly and a sequential, local coloring pilot.
 
-Only logical and optional unrouted U/CX metrics are implemented. Validation uses
-monomial records, never statevectors. Sampled coverage is evidence, not proof.
+Logical, opt-in restoring-MCX and optional unrouted U/CX metrics are implemented.
+Validation uses monomial records, never statevectors. Sampled coverage is
+evidence, not proof.
 """
 
 from __future__ import annotations
@@ -471,6 +472,7 @@ def _restoring_mcx_block(circuit: QuantumCircuit) -> tuple[QuantumCircuit, dict]
     """
     from .costs import decompose_mcx, is_mcx
 
+    started = time.perf_counter()
     flat, resolution = _resolved_qpy_circuit(circuit, expand_wide=True)
     if any(
         is_mcx(item.operation, 3) and item.operation.num_ctrl_qubits > 20
@@ -494,6 +496,8 @@ def _restoring_mcx_block(circuit: QuantumCircuit) -> tuple[QuantumCircuit, dict]
         raise ValueError("Restoring MCX lowering left an unsupported wide gate")
     return lowered, {
         **info,
+        "decomposition_seconds": time.perf_counter() - started,
+        "decomposition_timing_scope": "definition resolution, one costs.decompose_mcx call and emitted-definition resolution; excludes artifact I/O and inverse assembly",
         "source_width": circuit.num_qubits,
         "source_resolution": resolution,
         "emitted_resolution": emitted,
@@ -952,6 +956,7 @@ def run_coloring_study(config: dict, *, executable=None) -> Path:
     saved too. No routing, FT precision, memory/timeout controls or profiles exist.
     """
     config = validate_study_config(config)
+    primary_level = "restoring_mcx" if "mcx_decomposition" in config else "logical"
     prepared = []
     for filename in config["inputs"]:
         path = Path(filename)
@@ -996,9 +1001,17 @@ def run_coloring_study(config: dict, *, executable=None) -> Path:
         "checkout": checkout_revision(Path.cwd()),
         "source_hashes": {
             source.name: hashlib.sha256(source.read_bytes()).hexdigest()
-            for source in (Path(__file__), Path(__file__).with_name("runner.py"))
+            for source in (
+                Path(__file__),
+                Path(__file__).with_name("runner.py"),
+                *(
+                    (Path(__file__).with_name("costs.py"),)
+                    if primary_level == "restoring_mcx"
+                    else ()
+                ),
+            )
         },
-        "implemented_metric_levels": ["logical"]
+        "implemented_metric_levels": [primary_level]
         + (["common_basis"] if config["common_basis"] else []),
     }
     (output / "config.json").write_text(json.dumps(config, indent=2) + "\n")
@@ -1073,7 +1086,7 @@ def run_coloring_study(config: dict, *, executable=None) -> Path:
                                 case["artifacts"] = artifacts
                                 case["artifact_statistics"] = {}
                                 for component, circuit in assembled.circuits.items():
-                                    for level in ["logical"] + (
+                                    for level in [primary_level] + (
                                         ["common_basis"]
                                         if config["common_basis"]
                                         else []
@@ -1081,7 +1094,7 @@ def run_coloring_study(config: dict, *, executable=None) -> Path:
                                         lower_start = time.perf_counter()
                                         measured = (
                                             circuit
-                                            if level == "logical"
+                                            if level == primary_level
                                             else lower_circuit(
                                                 circuit,
                                                 basis_gates=["u", "cx"],
@@ -1111,7 +1124,7 @@ def run_coloring_study(config: dict, *, executable=None) -> Path:
                                             ),
                                             "metric_level_detail": (
                                                 "logical circuit with recursive definitions resolved to standard gates; mixed granularity, not historical opaque-operation counts"
-                                                if level == "logical"
+                                                if level == primary_level
                                                 else "unrouted U/CX basis, followed by serialization resolution"
                                             ),
                                             "component_register": assembled.metadata[
@@ -1123,6 +1136,17 @@ def run_coloring_study(config: dict, *, executable=None) -> Path:
                                         resolved, representation = (
                                             _resolved_qpy_circuit(measured)
                                         )
+                                        if primary_level == "restoring_mcx":
+                                            representation["representation"] = (
+                                                "restoring_mcx_resolved_standard_gates"
+                                                if level == primary_level
+                                                else "restoring_mcx_common_basis_resolved_standard_gates"
+                                            )
+                                            record["metric_level_detail"] = (
+                                                "explicit clean_tree restoring MCX on dedicated fresh zero scratch; CCX retained"
+                                                if level == primary_level
+                                                else "unrouted U/CX basis from restoring-MCX components"
+                                            )
                                         expected = _qpy_semantic_signature(resolved)
                                         resolve_seconds = (
                                             time.perf_counter() - resolve_start
@@ -1241,12 +1265,34 @@ def run_coloring_study(config: dict, *, executable=None) -> Path:
                                                     "validation"
                                                 ]["status"],
                                                 "role_counts": (
-                                                    {"data": circuit.num_qubits}
-                                                    if component
-                                                    in ("preparation", "diffusion")
-                                                    else assembled.metadata[
-                                                        "role_counts"
-                                                    ]
+                                                    workspace["role_counts"]
+                                                    if primary_level == "restoring_mcx"
+                                                    else (
+                                                        {"data": circuit.num_qubits}
+                                                        if component
+                                                        in ("preparation", "diffusion")
+                                                        else assembled.metadata[
+                                                            "role_counts"
+                                                        ]
+                                                    )
+                                                ),
+                                                **(
+                                                    {
+                                                        "mcx_decomposition": config[
+                                                            "mcx_decomposition"
+                                                        ],
+                                                        "mcx_workspace": config[
+                                                            "mcx_workspace"
+                                                        ],
+                                                        "mcx_reserved_qubits": workspace[
+                                                            "mcx_reserved_qubits"
+                                                        ],
+                                                        "mcx_live_peak_upper_bound": workspace[
+                                                            "mcx_live_peak_upper_bound"
+                                                        ],
+                                                    }
+                                                    if primary_level == "restoring_mcx"
+                                                    else {}
                                                 ),
                                                 "workspace_role_counts": workspace[
                                                     "role_counts"

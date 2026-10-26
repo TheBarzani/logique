@@ -1357,6 +1357,11 @@ def test_restoring_saved_qpy_and_partial_failure(tmp_path, monkeypatch, fault):
     )
     manifest = json.loads((output / "run.json").read_text())
     rows = pd.read_csv(output / "summary.csv")
+    assert manifest["implemented_metric_levels"] == ["restoring_mcx", "common_basis"]
+    assert set(rows.metric_level) == {"restoring_mcx", "common_basis"}
+    assert set(rows.mcx_decomposition) == {"clean_tree"}
+    assert set(rows.mcx_workspace) == {"fresh_zero"}
+    assert "costs.py" in manifest["source_hashes"]
     assert [c["status"] for c in manifest["cases"]] == [
         "complete",
         "complete" if fault == "none" else "failed",

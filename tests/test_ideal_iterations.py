@@ -15,6 +15,144 @@ def ledger(m, n, **kwargs):
     return ideal.ideal_iteration_ledger(m, n, max_rows=100, max_iterations=99, **kwargs)
 
 
+def exact_reflections(m, n, steps):
+    """Independent O then signed D via its rational weighted dot product.
+
+    g=sqrt(p)*u and b=sqrt(1-p)*v; return (P_j, v_j). This uses two
+    first-order reflections, not the implementation's Chebyshev recurrences.
+    """
+    p = Fraction(m, n)
+    u = v = Fraction(1)
+    result = []
+    for _ in range(steps + 1):
+        result.append((p * u * u, v))
+        oracle_u = -u
+        dot = p * oracle_u + (1 - p) * v
+        u, v = 2 * dot - oracle_u, 2 * dot - v
+        assert p * u * u + (1 - p) * v * v == 1
+    return result
+
+
+def assert_exact_peak(m, n, candidates, peak):
+    """Check the bracket, exact probability ordering and required sweep extent."""
+    out = ledger(m, n)
+    assert out.first_peak_candidates == candidates
+    assert out.first_peak_iteration == peak
+    assert [r.iterations for r in out.rows] == list(range(peak + 2))
+    exact = exact_reflections(m, n, max(peak + 1, candidates[1]))
+    lower, upper = candidates
+    assert all(exact[j][1] > 0 for j in range(upper))
+    if lower == upper:
+        assert exact[upper][1] == 0
+    else:
+        assert exact[upper][1] < 0
+        if peak == lower:
+            assert exact[lower][0] >= exact[upper][0]
+        else:
+            assert exact[upper][0] > exact[lower][0]
+    # Later oscillations are not optimized: only compare first-lobe candidates.
+    for row in out.rows:
+        assert row.analytical_success_probability == pytest.approx(
+            float(exact[row.iterations][0]), abs=2e-14
+        )
+    return exact
+
+
+@pytest.mark.parametrize(
+    "m,n,candidates,peak",
+    [
+        (18014398509481983, 36028797018963968, (0, 1), 1),
+        (18014398509481985, 36028797018963968, (0, 1), 0),
+        (14644660940672623, 10**17, (1, 2), 2),
+        (14644660940672624, 10**17, (1, 2), 1),
+        (4503599627370495, 18014398509481984, (1, 2), 1),
+        (4503599627370497, 18014398509481984, (0, 1), 1),
+        (1, 4, (1, 1), 1),
+        (1, 2, (0, 1), 0),
+        (3, 4, (0, 1), 0),
+    ],
+)
+def test_exact_adversarial_counts(m, n, candidates, peak):
+    exact = assert_exact_peak(m, n, candidates, peak)
+    if 2 * m == n:
+        assert exact[0][0] == exact[1][0] == Fraction(1, 2)
+    elif peak > 0:
+        assert exact[peak][0] > exact[peak - 1][0]
+        assert exact[peak][0] > exact[peak + 1][0]
+
+
+@pytest.mark.parametrize("j", range(1, 9))
+@pytest.mark.parametrize("side", [-1, 1])
+def test_both_sides_of_candidate_boundaries(j, side):
+    # Float only locates a fixture; exact signs independently prove its side.
+    n = 10**17
+    m = round(n * math.sin(math.pi / (4 * j + 2)) ** 2) + side * 100
+    candidates = (j, j + 1) if side < 0 else (j - 1, j)
+    assert_exact_peak(m, n, candidates, j)
+
+
+@pytest.mark.parametrize("j", range(8))
+@pytest.mark.parametrize("side", [-1, 1])
+def test_both_sides_of_nearest_peak_boundaries(j, side):
+    n = 10**17
+    m = round(n * math.sin(math.pi / (4 * j + 4)) ** 2) + side * 100
+    peak = j + 1 if side < 0 else j
+    exact = assert_exact_peak(m, n, (j, j + 1), peak)
+    assert (exact[j + 1][0] > exact[j][0]) == (side < 0)
+
+
+@pytest.mark.parametrize(
+    "m,n,rows,iterations",
+    [
+        (18014398509481983, 36028797018963968, 2, 1),
+        (18014398509481983, 36028797018963968, 2, 2),
+        (18014398509481983, 36028797018963968, 3, 1),
+        (14644660940672623, 10**17, 3, 3),
+        (14644660940672623, 10**17, 4, 2),
+        (1, 2**64, 1000, 1000),
+        (0, 2**64, 1000, 1000),
+        (2**64 - 2, 2**64 - 1, 1000, 1000),
+        (1, 100000, 1000, 1000),
+        (1, 4, 2, 99),
+        (1, 2, 1, 99),
+    ],
+)
+def test_boundary_and_internal_caps_reject_before_rows(
+    monkeypatch, m, n, rows, iterations
+):
+    def forbidden(*args, **kwargs):
+        pytest.fail("Unresolved decision or insufficient cap reached row allocation")
+
+    monkeypatch.setattr(ideal, "IterationRow", forbidden)
+    with pytest.raises(ValueError, match="cap|float boundary"):
+        ideal.ideal_iteration_ledger(m, n, max_rows=rows, max_iterations=iterations)
+
+
+def test_smallest_nonzero_12_bit_fraction_and_fixed_bracket_bound():
+    assert_exact_peak(1, 4096, (49, 50), 50)
+    # Enormous caller caps cannot increase bounded scalar work or row count.
+    out = ideal.ideal_iteration_ledger(
+        1, 4096, max_rows=10**100, max_iterations=10**100
+    )
+    assert out.first_peak_iteration == 50
+    assert len(out.rows) == 52
+
+
+def test_fixed_degree_and_count_caps_include_their_endpoints():
+    out = ideal.ideal_iteration_ledger(1, 26700, max_rows=130, max_iterations=129)
+    assert out.first_peak_candidates == (127, 128)
+    assert out.first_peak_iteration == 128
+    assert len(out.rows) == 130
+    exact = exact_reflections(1, 26700, 129)
+    assert all(exact[j][1] > 0 for j in range(128))
+    assert exact[128][1] < 0
+    assert exact[128][0] > exact[127][0]
+    assert exact[128][0] > exact[129][0]
+    out = ledger(0, 2**64 - 1)
+    assert out.first_peak_iteration == 0
+    assert [r.analytical_success_probability for r in out.rows] == [0, 0]
+
+
 @pytest.mark.parametrize("n", range(1, 33))
 def test_independent_signed_good_bad_reflections(n):
     for m in range(n + 1):

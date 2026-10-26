@@ -8,6 +8,7 @@ formulae certify neither approximate preparation amplitudes nor saved QPY.
 """
 
 from dataclasses import dataclass
+from fractions import Fraction
 from itertools import product
 import math
 from typing import TYPE_CHECKING
@@ -58,6 +59,39 @@ def _fraction(marked: int, support: int) -> float:
     if 0 < marked < support and not 0 < p < 1:
         raise ValueError("solution fraction rounds to a float boundary")
     return p
+
+
+def _exact_first_peak(
+    marked: int, support: int, max_iterations: int
+) -> tuple[tuple[int, int], int]:
+    """Bracket x using exact polynomial signs, with at most 128 scalar steps.
+
+    Write theta=asin(sqrt(M/N)), t=cos(2theta)=1-2M/N. The recurrences
+    v_0=1, v_1=2t-1 and v_j=2t*v_(j-1)-v_(j-2) give
+    v_j=cos((2j+1)theta)/cos(theta). Stop at the FIRST nonpositive v_j.
+    All preceding odd angles are below pi/2; the crossing angle is below
+    3pi/2 since 0<2theta<pi. Thus zero means x=j exactly, otherwise
+    j-1<x<j. No later oscillation can masquerade as the first crossing.
+
+    Also c_j=T_j(t)=cos(2j*theta). In this bracket 2j*theta lies strictly
+    between 0 and pi, so c_j's sign decides x versus j-1/2: positive
+    chooses j, negative chooses j-1, and exact zero chooses j-1 (tie).
+    Fraction signs resolve every boundary, including irrational roots in p;
+    there is no floating-point uncertainty or probability tolerance here.
+    The count cap imposed by the caller and degree cap bound integer sizes.
+    """
+    t = 1 - 2 * Fraction(marked, support)
+    previous_v, v = Fraction(1), 2 * t - 1
+    previous_c, c = Fraction(1), t
+    for j in range(1, min(128, max_iterations) + 1):
+        if j > 1:
+            previous_v, v = v, 2 * t * v - previous_v
+            previous_c, c = c, 2 * t * c - previous_c
+        if v <= 0:
+            if v == 0:
+                return (j, j), j
+            return (j - 1, j), j if c > 0 else j - 1
+    raise ValueError("First-peak bracket unresolved within 128-step/iteration cap")
 
 
 @dataclass(frozen=True)
@@ -149,16 +183,30 @@ def ideal_iteration_ledger(
 
     For 0<p<1 let x=pi/(4 asin(sqrt(p)))-1/2. The first-peak candidates
     are floor(x), ceil(x), clamped at zero. Choose the nearest integer to x;
-    exact half-integer ties choose fewer iterations (p=1/2 handled exactly).
+    exact half-integer ties choose fewer iterations. Categorical decisions
+    use exact rational polynomial signs of M/N, never rounded p or theta.
     This is the first lobe, not a global optimization over later oscillations.
     M=0 or M=N uses peak=0 and rows j=0,1 with exact probabilities 0 or 1.
     Caps are mandatory finite integers and checked before allocating any rows.
     Unknown M rejects; it is never replaced by one or an estimated fraction.
+
+    Bounded input contract: N.bit_length()<=64, representable interior float
+    fraction, and ceil(x)<=128. Larger counts or an unresolved first bracket
+    reject BEFORE row allocation, even with larger caller caps. This covers
+    every known count on <=12-bit graph support (x<50). At most 128 exact
+    degree-128 recurrence steps use O(128*64)-bit integers, independent of caps.
+    Probabilities/costs remain approximate binary64 analytical values; they
+    do not decide ties, candidates, extent or admission. No interval or ideal
+    preparation-amplitude certificate is supplied.
     """
     _integer(max_rows, "max_rows", 1)
     _integer(max_iterations, "max_iterations")
     if costs is not None and not isinstance(costs, InvocationCosts):
         raise ValueError("costs must be InvocationCosts or None")
+    _integer(support, "support", 1)
+    _integer(marked, "marked")
+    if support.bit_length() > 64:
+        raise ValueError("Count cap requires support.bit_length() <= 64")
     p = _fraction(marked, support)
     if marked in (0, support):
         candidates = (0, 0)
@@ -166,22 +214,8 @@ def ideal_iteration_ledger(
         convention = "constant_probability; peak=0; include_j=1"
         theta = 0.0
     else:
+        candidates, peak = _exact_first_peak(marked, support, max_iterations)
         theta = math.asin(math.sqrt(p))
-        x = math.pi / (4 * theta) - 0.5
-        # Preserve exact floor/ceiling candidates at rational-angle boundaries.
-        if 4 * marked == support:
-            x = 1.0
-        elif 2 * marked == support:
-            x = 0.5
-        elif 4 * marked == 3 * support:
-            x = 0.25
-        if not math.isfinite(x) or x > max_iterations:
-            raise ValueError("First-peak sweep exceeds iteration cap")
-        lower, upper = max(0, math.floor(x)), max(0, math.ceil(x))
-        candidates = (lower, upper)
-        peak = lower if x - lower <= upper - x else upper
-        if 2 * marked == support:
-            peak = 0
         convention = "nearest_first_lobe_peak; exact_ties_choose_fewer"
     last = peak + 1
     if last > max_iterations or last + 1 > max_rows:

@@ -479,6 +479,14 @@ def _restoring_mcx_block(circuit: QuantumCircuit) -> tuple[QuantumCircuit, dict]
         raise ValueError("Restoring MCX subset is limited to 20 controls")
     lowered, info = decompose_mcx(flat, "clean_tree", clean_wires=())
     lowered, emitted = _resolved_qpy_circuit(lowered, expand_wide=True)
+    # QPY 2.1.1 can index mixed Qubit/AncillaQubit registers incorrectly when
+    # reading an appended AncillaRegister. Canonicalize the ordered embedding;
+    # fresh scratch ownership is explicit metadata, not a Qiskit bit subtype.
+    from qiskit import QuantumCircuit
+
+    lowered = QuantumCircuit(lowered.num_qubits, name=lowered.name).compose(
+        lowered, range(lowered.num_qubits)
+    )
     if any(
         is_mcx(item.operation, 3) or item.operation.num_qubits > 3
         for item in lowered.data

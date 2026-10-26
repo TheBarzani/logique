@@ -1413,3 +1413,28 @@ def test_restoring_other_baseline_prefix_inverses(method, regime):
             expected, phase = _restoring_scalar_column(source.raw, bits)
             actual, lowered_phase = _restoring_scalar_column(lowered.raw, bits)
             assert actual == expected and abs(phase - lowered_phase) < 2e-12
+
+
+@pytest.mark.parametrize("method", ("klut_bennett", "best_fit"))
+@pytest.mark.parametrize("regime", study.REGIMES)
+def test_restoring_native_k5_scratch_qpy_readback(method, regime):
+    import io
+
+    if BRIDGE is None:
+        pytest.skip("admitted private native bridge unavailable")
+    case = study.assemble_case(
+        ColoringProblem((42,), (), 5),
+        method,
+        regime,
+        executable=BRIDGE,
+        mcx_decomposition="clean_tree",
+        mcx_workspace="fresh_zero",
+    )
+    for original in case.circuits.values():
+        stream = io.BytesIO()
+        qpy.dump(original, stream)
+        stream.seek(0)
+        saved = qpy.load(stream)[0]
+        assert study._qpy_semantic_signature(saved) == study._qpy_semantic_signature(
+            original
+        )

@@ -1443,3 +1443,198 @@ def test_restoring_native_k5_scratch_qpy_readback(method, regime):
         assert study._qpy_semantic_signature(saved) == study._qpy_semantic_signature(
             original
         )
+
+
+@pytest.mark.parametrize(
+    "cap", [None, True, False, 0, -1, 1.0, 2.5, "4", "bad", [], {}, float("inf")]
+)
+def test_component_width_rejects_before_input_or_artifact_work(monkeypatch, cap):
+    def forbidden(*args, **kwargs):
+        raise AssertionError("work before configuration rejection")
+
+    monkeypatch.setattr(study, "read_dimacs", forbidden)
+    monkeypatch.setattr(study, "assemble_case", forbidden)
+    from logique.benchmarks import runner
+
+    monkeypatch.setattr(runner, "new_run_directory", forbidden)
+    with pytest.raises(ValueError, match="max_component_qubits.*positive integer"):
+        study.run_coloring_study(
+            {"inputs": ["missing.col"], "max_component_qubits": cap}
+        )
+
+
+def _width_config(tmp_path, **controls):
+    from datetime import datetime
+
+    source = tmp_path / "tiny.col"
+    source.write_text("p edge 1 0\nx colors 2\n")
+    return {
+        "inputs": [str(source)],
+        "methods": ["sb_balanced"],
+        "regimes": ["R2"],
+        "iterations": [0],
+        "seeds": [7],
+        "output": str(tmp_path / f"{datetime.now():%m%d%H%M%S}-width"),
+        **controls,
+    }
+
+
+@pytest.mark.parametrize(
+    "over", ["raw", "preparation", "oracle", "diffusion", "search", "all"]
+)
+def test_component_width_gates_all_artifact_work(tmp_path, monkeypatch, over):
+    from types import SimpleNamespace
+    from logique.benchmarks import metrics
+
+    # Width-only stand-ins: no oversized quantum object is allocated. Metadata
+    # deliberately understates width to require checking actual components.
+    names = ("raw", "preparation", "oracle", "diffusion", "search")
+    widths = {name: 8 if over in (name, "all") else 4 for name in names}
+    assembled = study.ColoringStudyCase(
+        *(SimpleNamespace(num_qubits=widths[name]) for name in names),
+        metadata={"component_workspace": {"stale": {"peak_reserved_qubits": 1}}},
+    )
+    monkeypatch.setattr(study, "assemble_case", lambda *a, **kw: assembled)
+
+    def forbidden(*args, **kwargs):
+        raise AssertionError("over-budget case entered artifact/metric work")
+
+    monkeypatch.setattr(study, "_resolved_qpy_circuit", forbidden)
+    monkeypatch.setattr(metrics, "lower_circuit", forbidden)
+    monkeypatch.setattr(metrics, "circuit_metrics", forbidden)
+    monkeypatch.setattr(qpy, "dump", forbidden)
+    output = study.run_coloring_study(
+        _width_config(tmp_path, max_component_qubits=4, common_basis=True)
+    )
+    manifest = json.loads((output / "run.json").read_text())
+    case = manifest["cases"][0]
+    assert case["status"] == "excluded"
+    check = case["component_width_check"]
+    assert check["allocated_qubits"] == widths
+    assert check["max_component_qubits"] == 4
+    assert check["over_budget_components"] == [n for n in names if widths[n] > 4]
+    assert check["status"] == "excluded"
+    assert "max_component_qubits=4" in case["reason"]
+    for name in check["over_budget_components"]:
+        assert f"{name}=8" in case["reason"]
+    assert json.loads((output / f'{case["name"]}.json').read_text()) == case
+    assert not list(output.glob("*.qpy"))
+    assert not (output / "summary.csv").exists()
+    assert not case.get("artifacts")
+
+
+@pytest.mark.parametrize("restoring", [False, True])
+def test_component_width_equality_mixed_success_and_omission(
+    tmp_path, monkeypatch, restoring
+):
+    import copy
+    import pandas as pd
+    from types import SimpleNamespace
+
+    controls = (
+        {"mcx_decomposition": "clean_tree", "mcx_workspace": "fresh_zero"}
+        if restoring
+        else {}
+    )
+    original = study.assemble_case
+    tiny = ColoringProblem((1,), (), 2)
+    assembled = original(tiny, "sb_balanced", "R2", iterations=0, **controls)
+    cap = max(q.num_qubits for q in assembled.circuits.values())
+    assert cap <= 5
+    # Scalar raw predicate and ordered search composition; no dense simulation.
+    target = assembled.metadata["backend_metadata"]["output_qubits"][0]
+    for x in (0, 1):
+        for t in (0, 1):
+            out, phase = _restoring_scalar_column(assembled.raw, x | (t << target))
+            assert out == (x | (t << target)) ^ (1 << target)
+            assert abs(phase - 1) < 2e-12
+    expected = assembled.search.copy_empty_like()
+    expected.compose(
+        assembled.preparation, assembled.metadata["data_qubits"], inplace=True
+    )
+    assert study._qpy_semantic_signature(
+        study._resolved_qpy_circuit(expected)[0]
+    ) == study._qpy_semantic_signature(study._resolved_qpy_circuit(assembled.search)[0])
+
+    def fake(problem, *args, seed, **kwargs):
+        case = copy.deepcopy(assembled)
+        if seed == 7:
+            case.search = SimpleNamespace(num_qubits=cap + 1)
+        return case
+
+    monkeypatch.setattr(study, "assemble_case", fake)
+    config = _width_config(tmp_path, seeds=[7, 9], max_component_qubits=cap, **controls)
+    output = study.run_coloring_study(config)
+    manifest = json.loads((output / "run.json").read_text())
+    assert [c["status"] for c in manifest["cases"]] == ["excluded", "complete"]
+    rejected, accepted = manifest["cases"]
+    assert accepted["component_width_check"]["status"] == "accepted"
+    assert max(accepted["component_width_check"]["allocated_qubits"].values()) == cap
+    rows = pd.read_csv(output / "summary.csv")
+    assert len(rows) == 5
+    assert set(rows.seed) == {9}
+    assert not list(output.glob(f'{rejected["name"]}*.qpy'))
+
+    # Omission adds neither a config default nor case field and preserves saved
+    # QPY bytes and metric values (timing/provenance fields naturally differ).
+    monkeypatch.setattr(
+        study, "assemble_case", lambda *a, **kw: copy.deepcopy(assembled)
+    )
+    omitted = dict(config, seeds=[9], output=str(tmp_path / "1026123456-omitted"))
+    del omitted["max_component_qubits"]
+    before = study.run_coloring_study(omitted)
+    old = json.loads((before / "run.json").read_text())
+    assert "max_component_qubits" not in old["config"]
+    assert "component_width_check" not in old["cases"][0]
+    old_rows = pd.read_csv(before / "summary.csv")
+    for key in ("qubits", "gates", "depth", "gate_types", "metric_level", "component"):
+        assert list(rows[key]) == list(old_rows[key])
+    for name in accepted["artifacts"].values():
+        assert (output / name).read_bytes() == (before / name).read_bytes()
+
+
+def test_component_width_counts_real_j0_reserved_mcx_pools(tmp_path, monkeypatch):
+    from qiskit import QuantumCircuit
+    from logique.benchmarks import metrics
+
+    # Four data wires need one S0 scratch wire. It remains reserved at j0,
+    # although search executes only A and its MCX live-capacity field is zero.
+    case = study.assemble_case(
+        ColoringProblem((1, 2), ((1, 2),), 3),
+        "sb_balanced",
+        "R2",
+        iterations=0,
+        mcx_decomposition="clean_tree",
+        mcx_workspace="fresh_zero",
+    )
+    owners = case.metadata["mcx_lowering"]["search_scratch_ownership"]
+    assert owners["zero_reflection"]
+    assert (
+        case.metadata["component_workspace"]["search"]["mcx_live_peak_upper_bound"] == 0
+    )
+    expected = QuantumCircuit(case.search.num_qubits)
+    expected.compose(
+        case.preparation,
+        case.metadata["mcx_lowering"]["search_embeddings"]["preparation"],
+        inplace=True,
+    )
+    assert study._qpy_semantic_signature(expected) == study._qpy_semantic_signature(
+        case.search
+    )
+    cap = case.search.num_qubits - 1
+    monkeypatch.setattr(study, "assemble_case", lambda *a, **kw: case)
+
+    def forbidden(*args, **kwargs):
+        raise AssertionError("reserved j0 width escaped artifact gate")
+
+    monkeypatch.setattr(qpy, "dump", forbidden)
+    monkeypatch.setattr(metrics, "circuit_metrics", forbidden)
+    output = study.run_coloring_study(_width_config(tmp_path, max_component_qubits=cap))
+    saved = json.loads((output / "run.json").read_text())["cases"][0]
+    assert saved["status"] == "excluded"
+    assert saved["component_width_check"]["allocated_qubits"] == {
+        name: q.num_qubits for name, q in case.circuits.items()
+    }
+    assert "search" in saved["component_width_check"]["over_budget_components"]
+    assert not list(output.glob("*.qpy"))
+    assert not (output / "summary.csv").exists()

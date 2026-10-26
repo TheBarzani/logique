@@ -44,6 +44,7 @@ CONFIG_FIELDS = {
     "output",
     "mcx_decomposition",
     "mcx_workspace",
+    "max_component_qubits",
 }
 
 RESTORING_MCX_POLICIES = ("clean_tree",)
@@ -326,6 +327,11 @@ def validate_study_config(config: dict) -> dict:
     unknown = set(config) - CONFIG_FIELDS
     if unknown:
         raise ValueError(f"Unsupported coloring-study controls: {sorted(unknown)}")
+    if "max_component_qubits" in config and (
+        type(config["max_component_qubits"]) is not int
+        or config["max_component_qubits"] < 1
+    ):
+        raise ValueError("max_component_qubits must be a positive integer")
     if {"mcx_decomposition", "mcx_workspace"} & set(config):
         if config.get("mcx_decomposition") not in RESTORING_MCX_POLICIES:
             raise ValueError("mcx_decomposition supports only restoring clean_tree")
@@ -954,6 +960,8 @@ def run_coloring_study(config: dict, *, executable=None) -> Path:
     All controls and input-specific assignments are checked before numerical work.
     QPY artifacts are the source for every metric row; common-basis artifacts are
     saved too. No routing, FT precision, memory/timeout controls or profiles exist.
+    Optional max_component_qubits accepts allocated widths only after assembly;
+    it neither prevents assembly/native allocation nor bounds memory or liveness.
     """
     config = validate_study_config(config)
     primary_level = "restoring_mcx" if "mcx_decomposition" in config else "logical"
@@ -1082,6 +1090,35 @@ def run_coloring_study(config: dict, *, executable=None) -> Path:
                                     executable=executable,
                                 )
                                 case.update(assembled.metadata)
+                                if "max_component_qubits" in config:
+                                    cap = config["max_component_qubits"]
+                                    widths = {
+                                        name: circuit.num_qubits
+                                        for name, circuit in assembled.circuits.items()
+                                    }
+                                    exceeded = [
+                                        name
+                                        for name, width in widths.items()
+                                        if width > cap
+                                    ]
+                                    case["component_width_check"] = {
+                                        "max_component_qubits": cap,
+                                        "allocated_qubits": widths,
+                                        "over_budget_components": exceeded,
+                                        "status": (
+                                            "excluded" if exceeded else "accepted"
+                                        ),
+                                        "scope": "post-assembly allocated component widths, including unused/reserved pools; not live workspace or process-memory enforcement; does not prevent assembly/native allocation",
+                                    }
+                                    if exceeded:
+                                        raise ExcludedCase(
+                                            f"max_component_qubits={cap} exceeded by "
+                                            + ", ".join(
+                                                f"{name}={widths[name]}"
+                                                for name in exceeded
+                                            )
+                                            + "; post-assembly allocated-width acceptance"
+                                        )
                                 artifacts = {}
                                 case["artifacts"] = artifacts
                                 case["artifact_statistics"] = {}

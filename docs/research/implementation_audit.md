@@ -711,3 +711,68 @@ offline notebooks/isolated historical replay; traced manuscript numbers,
 reviewer responses, evidence gate and independent final reviews remain open.
 No interval certificate, ideal-amplitude guarantee or blanket RUS/paper approval.
 Full paper unfinished.
+
+## Restoring MCX: bounded coordinator integration
+
+Both restoring-mcx-1025125442 and restoring-mcx-review-1025125442 completed.
+No prior own coordinator handoff existed. Only exact reviewed owned correctness
+commits ea3f4e8/e3a295e entered integration 93bba09/b4ed5fa; source/test portions
+of representation commit 0eacb13 entered separate metric commit 7e8615c.
+No worker checkpoint-only, build, dependency or historical table change entered.
+The byte-preserved [independent review](restoring_mcx_review.md),
+[coordinator admission](restoring_mcx_admission.md) and separate
+[representation ledger](restoring_mcx_representation_changes.md) record exact
+hashes, proof, scope and exclusions. Admission is ONLY clean_tree/fresh_zero:
+actual lowered prefix inverse, scalar phases/ordered wires, fresh disjoint
+raw/A/S0 scratch and signed matching diffusion. Raw backend workspace retains
+its original contract. Dirty scratch and other policies remain unsupported.
+
+Candidate/integrated independent replays each pass 117 semantic cases, 11747
+scalar columns, 1112 compositions, 1113 bounded operator calls, 90 statevectors,
+2100 saved rows and 480 byte-identical default artifacts. Integrated additional
+replay checks all 210 complete cases /1050 saved primary components, 15 forced
+conservative native wrappers, nested open-MCX A and disjoint scratch, with 360
+columns, 1186 compositions, 866 local operator calls and 32 statevectors.
+Integrated focused suite: 164 passed, 31 retained wider dense exclusions, no
+skips. Relevant Black/Ruff and whitespace pass. Operators<=4, statevectors<=5;
+wider clean-subspace identity uses independently assessed local/scalar and
+ordered composition. Maximum measured child RSS 221544448 bytes, sequential
+existing Python, explicit checkout src/cache/private foundation executable,
+single threads, <=120s each/300s cumulative. No full suite/mypy/build/notebook/
+historical/routing/FT run is claimed; no enforced aggregate memory guarantee.
+
+Explicit rejected fixtures and earlier failures remain: dirty-scratch witness,
+other policies, opaque/unbound/classical/too-wide and corrupted QPY scalar;
+worker harness failures and 18 genuine mixed-register QPY IndexErrors retain
+partial artifacts/zero failed rows. Fresh checks pass. Exploratory missing
+intake.json read and initial Git sequencer denial are retained; scoped Git
+escalation succeeded without automatic approval rejection. All 461 worker
+protected / 6599 evidence, 250 reviewer protected and 7300 coordinator intake
+identities are verified; README, archives, prototypes, nested histories and pins
+stay untouched. Wider original-to-transpiler equivalence, live-workspace and
+memory measurements remain excluded; count changes are not improvements.
+
+Checkpoint: `dump/1026071418-restoring-mcx-coordinator-triage/batch.json`.
+Append only component-width-1026071418, component-width-review-1026071418 and
+coordinate-component-width-1026071418: ONE optional component reserved-width
+acceptance control after assembly/before artifacts, not memory/timeout enforcement.
+Immutable prior 39-job header/definitions/prompts; two isolated codex/coloring-
+worktrees, finished-predecessor review/coordinator. No native/structure/FT scope
+duplication; unrelated blocked native statuses preserved. Dispatcher alone
+launches/pushes integration HEAD. This bounded handoff is complete when batch
+says bounded_batch_complete; repeats verify/release without new tests/jobs.
+
+Remaining full scope: other decomposition policies and 3..20-control study/
+infeasibility, full workspace/stage/routing/precision/limits controls and
+post-pilot freeze; affected old QPY/pilot evidence review; nine-graph R1/R2/R3
+multilevel saved-circuit strongest-baseline/ablation/five-seed studies; native
+mappings, MC reduction/balancing profiles/SAT and structure common-lowering
+comparisons; meaningful static graph FT under unchanged exact-hash numerical
+rotation/caller contract, separate dynamic RUS/preparation break-even;
+iteration/noise/leakage/confidence/random-sampling/cost-per-success;
+five-repeat scaling/DIMACS with positive/negative witnesses/resources/timeouts;
+full acceptance/build/provenance/offline notebooks/isolated 135-metric replay;
+traced manuscript numbers, reviewer responses, evidence gate and independent
+final quantum-correctness/claim/reproducibility reviews. No interval certificate,
+ideal-amplitude guarantee, new RUS/static FT or blanket paper admission.
+Bounded completion and scientific admission differ. Full paper unfinished.

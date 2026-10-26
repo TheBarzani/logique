@@ -823,3 +823,61 @@ dynamic RUS/achieved break-even, five-repeat scaling/DIMACS witnesses/resources,
 full acceptance and evidence-gated traced manuscript/final reviews remain open.
 Existing specialty ownership stays separate. No interval certificate,
 ideal-amplitude guarantee, new FT/RUS or paper approval. Full paper unfinished.
+
+## Preparation break-even accounting: bounded coordinator admission
+
+Both preparation-breakeven-1025175909 and its independent review completed,
+neither blocked; THIS coordinator had no prior completed own handoff. Exact
+reviewed source/test bytes from 16d1077 entered correctness commit 25d5452 only.
+Worker checkpoint-only commits were not integrated. The byte-preserved
+[independent review](preparation_breakeven_review.md) and
+[coordinator admission](preparation_breakeven_admission.md) record exact hashes,
+proof assumptions, supplied-input meaning, failures and scope. Admission covers
+analytical unoptimized C=(1+2j)A+j(O+S0), raw-charge threshold, optional explicit
+comparable-event C/p and renewal using unconditional aborted-run costs. It
+infers no graph costs, j, solution count, probability, domain equivalence or
+advantage. RUS results remain separate ideal-instrument accounting only; no
+execution, retry runtime, quantum control, static substitution or FT/RUS extension.
+
+Candidate/integrated focused suites each passed 148 tests, no exclusions/skips.
+Independent review replay passed 11157 checks, 88 rejections, 1776 threshold cases
+and 36 finite distributions. New coordinator probes passed 2053 exact assertions
+across 512 component words plus high-bit/unknown/j-limit boundaries. Relevant
+Black/Ruff, one-file mypy and whitespace checks pass. Sequential existing Python,
+explicit cwd src/cache/private native, single threads, each timeout60s and
+numerical total0.697964s; max measured child RSS97452032 bytes, not an enforced
+aggregate cap. No quantum arrays, native/build/static FT tests/full suite or
+graph/notebook/routing/noise/historical replay; dense<=4/statevector<=5 unchanged.
+
+Failures retained: broad discovery/read truncation, absent .codex/.agents,
+state-key KeyError corrected without writes, initial Git index.lock denial
+followed by successful scoped escalation. No test/static failure, timeout,
+scientific counterexample or automatic approval rejection. All 2088 protected
+intake identities and external gitlinks must match; README, archives, prototypes,
+nested histories, pins, both binaries and original evidence remain untouched.
+
+Checkpoint: `dump/1026123642-preparation-coordinator-triage/batch.json`.
+Entire 45-job queue inspected. Append only preparation-success-1026123642,
+preparation-success-review-1026123642 and coordinate-preparation-success-1026123642:
+one ADDITIVE analytical STATIC C/p threshold at supplied positive comparable
+probabilities, independent j/domain/costs, explicit zero/unknown and renewal
+assumptions. Existing admitted preparation/RUS/static FT source/tests remain
+read-only. Two isolated codex/coloring- worktrees, approved costs/critical_review/
+coordinator profiles and finished review/coordinator dependencies; immutable
+prior header/definitions/prompts. Native, QPY/controls/component-width, structure
+and ideal-boundary ownership retained, including blocked native statuses.
+Dispatcher alone launches and pushes committed integration HEAD. On completed
+resumption verify/release outcome=complete; no tests/integration/jobs repeated.
+
+Full remaining scope: further controls/workspace/stage/routing/precision/limits,
+post-pilot freeze and affected old QPY evidence; native mappings/MC reduction/
+balancing/SAT; structure common-lowering comparisons; nine-graph R1/R2/R3
+multilevel strongest-baseline/ablation/five-seed studies; meaningful graph static
+FT under unchanged exact-hash numerical/caller contract; achieved break-even
+and separate dynamic RUS admission; ideal-boundary correction and executed
+ideal/noisy/leakage/confidence/random-sampling/cost-per-success studies;
+five-repeat scaling/DIMACS witnesses/resources/timeouts; acceptance/build/
+provenance/offline notebooks/isolated 135-metric replay; traced manuscript,
+reviewer responses, evidence gate and independent final correctness/claim/
+reproducibility reviews. No interval certificate, ideal-amplitude guarantee,
+new FT/RUS or paper admission. Full paper unfinished.

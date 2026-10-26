@@ -881,3 +881,65 @@ provenance/offline notebooks/isolated 135-metric replay; traced manuscript,
 reviewer responses, evidence gate and independent final correctness/claim/
 reproducibility reviews. No interval certificate, ideal-amplitude guarantee,
 new FT/RUS or paper admission. Full paper unfinished.
+
+## Component-width acceptance: bounded coordinator integration
+
+Both component-width-1026071418 and component-width-review-1026071418 completed;
+THIS coordinator had no completed own handoff. Only exact reviewed owned source/
+tests from ef0c372 entered correctness commit 7421a24. Checkpoint-only, build,
+dependency and research-metric changes are not mixed in. The byte-preserved
+[independent review](component_width_review.md) and
+[coordinator admission](component_width_admission.md) record exact hashes,
+reasoning, actual evidence, failures, bounds and exclusions. Admission is ONLY
+optional max_component_qubits after assembly and before artifact-stage work:
+all five actual allocated widths, including unused reserved pools, equality
+accepted, explicit over-cap exclusion, zero excluded QPY/rows and continuation.
+It is no prevention of assembly/native allocations or memory/timeout/liveness
+guarantee. Existing restoring-MCX/QPY contracts and all 14 other definitions
+remain byte-identical; omission adds no control field or semantic change.
+
+Integrated suite: 185 passed, 31 retained wider dense exclusions, zero skips.
+Reviewer-written independent replay: 17 invalid rejections, six forbidden-export
+width gates, 16 genuine tiny assemblies, 160 byte-identical baseline/omitted/
+equality artifact triples, 352 local/bounded operator calls, 16 statevectors,
+102 ordered compositions and 80 original worker-row recounts. Real edge-k3 j0
+has width10 despite zero MCX live capacity: cap9 excludes/cap10 accepts. Wider
+identity uses ordered scalar-phase composition, not wide dense arrays. Mixed
+failed/excluded/complete retains zero first-two rows/QPY and ten successful rows.
+Relevant Black/Ruff/whitespace pass. Operators<=4, statevectors<=5; sequential
+existing research Python, explicit integration src/cache/private native, threads1,
+<=120s each/300s cumulative; numerical37.694621s including failed harness replay,
+max measured child RSS224034816 bytes, not enforced aggregate cap/OS visibility.
+No full suite/mypy/compiler/notebook/replay/routing/FT/full study is claimed.
+
+Failures retained: denied ps/optional .codex discovery and initial Git index.lock
+(scoped escalation succeeded); truncated broad reads followed by targeted intake;
+initial relocated-baseline replay lacked adjacent runner.py provenance, corrected
+by exact baseline-source copies without production change. Original failure log/
+outputs and all worker/reviewer earlier harness failures remain. No final
+production numerical failure, timeout/OOM or automatic approval rejection.
+All 8192 reviewer protected identities/12 evidence hashes and 2915 intake identities
+are checked, with only owned audit allowed to change. README, archives, prototypes,
+nested histories, dependency pins, both binaries and original evidence untouched.
+
+Checkpoint: `dump/1026172157-component-width-coordinator-triage/batch.json`.
+Entire 48-job queue/all 42 state records inspected; unrelated native blocked records
+retained, completed stage-controls/QPY/restoring coordinators not redispatched.
+Append only component-instructions-1026172157, its independent review and
+coordinator: ONE unexpanded len(circuit.data) acceptance control after assembly/
+width gate, before artifacts; explicit mixed granularity, no elementary-gate or
+memory/timeout promise. Isolated worktrees/finished review-coordinator dependencies;
+prior header/definitions/prompts immutable. Dispatcher alone launches/pushes.
+Repeat verifies/releases bounded complete without tests/integration/jobs.
+
+Full decomposition/workspace/stage/routing/precision/limits and post-pilot freeze;
+affected old QPY review; nine-graph R1/R2/R3 multilevel strongest-baseline/ablation/
+five-seed studies; native/profile/SAT and structure comparison; meaningful static
+graph FT under unchanged exact-hash numerical/caller admission; separate dynamic
+RUS/achieved break-even; ideal-boundary correction and executed iteration/noise/
+leakage/confidence/random-trial/cost-per-success; five-repeat scaling/DIMACS with
+witnesses/resources/timeouts; full acceptance/build/provenance/offline notebooks/
+isolated 135-metric replay; traced manuscript/reviewer responses/evidence gate and
+independent final correctness/claim/reproducibility reviews remain open. No
+interval certificate, ideal-amplitude guarantee, new RUS or paper admission.
+Bounded completion is distinct from scientific admission. Full paper unfinished.

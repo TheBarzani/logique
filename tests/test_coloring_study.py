@@ -958,3 +958,458 @@ def test_qpy_retains_logical_mcx_and_open_control_state(controls):
     assert len(resolved.data) == 1 + 2 * (controls - state.bit_count())
     saved = qpy_roundtrip(resolved)
     assert_resolved_semantics(circuit, saved)
+
+
+# Restoring MCX evidence uses only <=3-wire local matrices and integer/scalar
+# columns for wider monomial blocks. No wide dense vector/operator is allocated.
+def _restoring_scalar_column(circuit, bits):
+    from qiskit import QuantumCircuit
+    from qiskit.circuit.library import MCXGate
+    from qiskit.quantum_info import Operator
+
+    phase = np.exp(1j * float(circuit.global_phase))
+    cursor = 0
+    while cursor < len(circuit.data):
+        item = circuit.data[cursor]
+        op = item.operation
+        wires = [circuit.find_bit(q).index for q in item.qubits]
+        if isinstance(op, MCXGate):
+            value = sum(((bits >> q) & 1) << j for j, q in enumerate(wires))
+            mask = (1 << op.num_ctrl_qubits) - 1
+            output = (
+                value ^ (1 << op.num_ctrl_qubits)
+                if value & mask == op.ctrl_state
+                else value
+            )
+            cursor += 1
+        else:
+            # An emitted inverse-RCCX definition contains H/T/CX leaves.
+            # Contract contiguous local leaves to a <=3-wire monomial matrix;
+            # this proves their joint action without a wide quantum state.
+            group = []
+            for end in range(cursor, min(cursor + 32, len(circuit.data))):
+                leaf = circuit.data[end]
+                leaf_wires = [circuit.find_bit(q).index for q in leaf.qubits]
+                wires = list(dict.fromkeys([*wires, *leaf_wires]))
+                assert len(wires) <= 3, (op.name, wires)
+                group.append((leaf.operation, leaf_wires))
+                local = QuantumCircuit(len(wires))
+                for operation, mapping in group:
+                    local.append(operation, [wires.index(q) for q in mapping])
+                matrix = Operator(local).data
+                if np.all(np.sum(abs(matrix) > 1e-12, axis=0) == 1):
+                    break
+            else:
+                raise AssertionError("No bounded local monomial contraction")
+            value = sum(((bits >> q) & 1) << j for j, q in enumerate(wires))
+            column = matrix[:, value]
+            output = int(np.flatnonzero(abs(column) > 1e-12)[0])
+            phase *= column[output]
+            cursor = end + 1
+        for j, q in enumerate(wires):
+            bits = (bits & ~(1 << q)) | (((output >> j) & 1) << q)
+    return bits, phase
+
+
+@pytest.mark.parametrize("controls", (3, 4, 5, 20))
+def test_restoring_mcx_scalar_template_and_fresh_reuse(controls):
+    from qiskit import QuantumCircuit
+    from qiskit.circuit.library import MCXGate
+
+    source = QuantumCircuit(controls + 3, global_phase=0.317)
+    # Existing spare wires deliberately start nonzero and must never be borrowed.
+    source.append(MCXGate(controls), range(controls + 1))
+    source.append(MCXGate(controls, ctrl_state=1), list(reversed(range(controls + 1))))
+    lowered, info = study._restoring_mcx_block(source)
+    assert info["appended_ancillas"] == controls - 2
+    assert info["clean_wires_used"] == info["borrowed_dirty_wires"] == 0
+    assert info["emitted_max_controls"] <= 2
+    columns = (
+        range(1 << (controls + 1))
+        if controls <= 5
+        else (0, 1, (1 << controls) - 1, (1 << (controls + 1)) - 1)
+    )
+    for x in columns:
+        initial = x | (3 << (controls + 1))
+        actual, phase = _restoring_scalar_column(lowered, initial)
+        expected, reference = _restoring_scalar_column(source, initial)
+        assert actual == expected  # all fresh high scratch bits are zero
+        assert abs(phase - reference) < 2e-12
+
+
+@pytest.mark.parametrize("state", range(8))
+def test_restoring_open_mcx_superposition_and_actual_inverse(state):
+    from qiskit import QuantumCircuit
+    from qiskit.circuit.library import MCXGate
+
+    nested = QuantumCircuit(4, global_phase=0.237)
+    nested.append(MCXGate(3, ctrl_state=state), [2, 0, 3, 1])
+    source = QuantumCircuit(4, global_phase=0.411)
+    source.append(nested.to_gate().inverse(), [3, 1, 0, 2])
+    lowered, _ = study._restoring_mcx_block(source)
+    assert lowered.num_qubits == 5
+    rng = np.random.default_rng(814)
+    data = rng.normal(size=16) + 1j * rng.normal(size=16)
+    data /= np.linalg.norm(data)
+    before = np.r_[data, np.zeros(16)]
+    actual = Statevector(before.copy()).evolve(lowered).data
+    expected = Statevector(data.copy()).evolve(source).data
+    np.testing.assert_allclose(actual, np.r_[expected, np.zeros(16)], atol=2e-12)
+    np.testing.assert_allclose(
+        Statevector(actual.copy()).evolve(lowered.inverse()).data, before, atol=2e-12
+    )
+
+
+@pytest.mark.parametrize(
+    "controls",
+    (
+        {"mcx_decomposition": "gray_code", "mcx_workspace": "fresh_zero"},
+        {"mcx_decomposition": "throwaway_tree", "mcx_workspace": "fresh_zero"},
+        {"mcx_decomposition": "n_dirty_i15", "mcx_workspace": "fresh_zero"},
+        {"mcx_decomposition": "clean_tree"},
+        {"mcx_workspace": "fresh_zero"},
+        {"mcx_decomposition": "clean_tree", "mcx_workspace": "borrow_clean"},
+        {"mcx_decomposition": None, "mcx_workspace": None},
+    ),
+)
+def test_restoring_controls_reject_before_artifacts(tmp_path, monkeypatch, controls):
+    def forbidden(*args, **kwargs):
+        pytest.fail("numerical/artifact work before preflight")
+
+    monkeypatch.setattr(study, "assemble_case", forbidden)
+    output = tmp_path / "1026000000-invalid-policy"
+    with pytest.raises(ValueError, match="mcx_"):
+        study.run_coloring_study(
+            dict(inputs=["missing.col"], output=str(output), **controls)
+        )
+    assert not output.exists()
+
+
+def test_restoring_fixed_bounds_preflight_and_unhandled_gate():
+    from qiskit import QuantumCircuit
+    from qiskit.circuit import Gate
+
+    for problem in (
+        ColoringProblem((1,), (), 9),
+        ColoringProblem(tuple(range(22)), (), 2),
+    ):
+        with pytest.raises(ValueError, match="k<=8"):
+            study.assemble_case(
+                problem,
+                "sb_balanced",
+                "R2",
+                mcx_decomposition="clean_tree",
+                mcx_workspace="fresh_zero",
+            )
+    with pytest.raises(ValueError, match="iterations 0..2"):
+        study.validate_study_config(
+            dict(
+                inputs=["missing.col"],
+                iterations=[3],
+                mcx_decomposition="clean_tree",
+                mcx_workspace="fresh_zero",
+            )
+        )
+    wide = QuantumCircuit(22)
+    wide.mcx(list(range(21)), 21)
+    with pytest.raises(ValueError, match="20 controls"):
+        study._restoring_mcx_block(wide)
+    opaque = QuantumCircuit(4)
+    opaque.append(Gate("hidden_mcx", 4, []), range(4))
+    with pytest.raises(ValueError, match="opaque"):
+        study._restoring_mcx_block(opaque)
+
+
+@pytest.mark.parametrize("regime", study.REGIMES)
+@pytest.mark.parametrize("iterations", (0, 1))
+@pytest.mark.parametrize(
+    "problem",
+    (
+        ColoringProblem((-7, 20), ((-7, 20),), 3),
+        ColoringProblem((42,), (), 5),
+        ColoringProblem((2, 8, 90), ((2, 8), (8, 90), (2, 90)), 2),
+    ),
+)
+def test_restoring_independent_predicate_and_disjoint_search(
+    problem, regime, iterations
+):
+    from qiskit import QuantumCircuit
+
+    original = study.assemble_case(
+        problem, "sb_balanced", regime, iterations=iterations
+    )
+    case = study.assemble_case(
+        problem,
+        "sb_balanced",
+        regime,
+        iterations=iterations,
+        mcx_decomposition="clean_tree",
+        mcx_workspace="fresh_zero",
+    )
+    md = case.metadata
+    data = md["data_qubits"]
+    n = len(data)
+    bits = (problem.colors - 1).bit_length()
+    target = md["backend_metadata"]["output_qubits"][0]
+    for x in range(1 << n):
+        colors = {
+            v: (x >> (i * bits)) & ((1 << bits) - 1)
+            for i, v in enumerate(problem.vertices)
+        }
+        predicate = all(colors[a] != colors[b] for a, b in problem.edges) and (
+            regime == "R3" or all(c < problem.colors for c in colors.values())
+        )
+        for t in (0, 1):
+            initial = sum(((x >> i) & 1) << q for i, q in enumerate(data)) | (
+                t << target
+            )
+            out, phase = _restoring_scalar_column(case.raw, initial)
+            assert out == initial ^ (int(predicate) << target)
+            assert abs(phase - 1) < 2e-12
+            old, old_phase = _restoring_scalar_column(original.raw, initial)
+            assert old == out and abs(old_phase - phase) < 2e-12
+    owners = md["mcx_lowering"]["search_scratch_ownership"]
+    all_scratch = [q for group in owners.values() for q in group]
+    assert len(set(all_scratch)) == len(all_scratch)
+    assert not set(all_scratch) & set(range(original.raw.num_qubits))
+    expected = QuantumCircuit(case.search.num_qubits)
+    maps = md["mcx_lowering"]["search_embeddings"]
+    expected.compose(case.preparation, maps["preparation"], inplace=True)
+    for _ in range(iterations):
+        expected.compose(case.oracle, maps["oracle"], inplace=True)
+        expected.compose(case.diffusion, maps["diffusion"], inplace=True)
+    assert study._qpy_semantic_signature(expected) == study._qpy_semantic_signature(
+        case.search
+    )
+    for name, q in case.circuits.items():
+        assert md["mcx_lowering"]["emitted_max_controls"][name] <= 2
+        workspace = md["component_workspace"][name]
+        assert sorted(
+            q for group in workspace["roles"].values() for q in group
+        ) == list(range(q.num_qubits))
+        assert workspace["peak_live_workspace_qubits"] is None
+    # A small complete physical register permits an independent amplification
+    # reference and tests all scratch amplitudes, without dropping idle wires.
+    if case.search.num_qubits <= 5:
+        assert case.preparation.num_qubits <= 5
+        initial = Statevector.from_instruction(case.preparation).data[: 1 << n]
+        ideal = initial.copy()
+        for _ in range(iterations):
+            for x in range(1 << n):
+                colors = [
+                    (x >> (i * bits)) & ((1 << bits) - 1)
+                    for i in range(len(problem.vertices))
+                ]
+                good = (
+                    regime == "R3" or all(c < problem.colors for c in colors)
+                ) and all(
+                    colors[problem.vertices.index(a)]
+                    != colors[problem.vertices.index(b)]
+                    for a, b in problem.edges
+                )
+                if good:
+                    ideal[x] *= -1
+            ideal = 2 * initial * np.vdot(initial, ideal) - ideal
+        expected_vector = np.zeros(1 << case.search.num_qubits, dtype=complex)
+        for x, amplitude in enumerate(ideal):
+            expected_vector[sum(((x >> i) & 1) << q for i, q in enumerate(data))] = (
+                amplitude
+            )
+        np.testing.assert_allclose(
+            Statevector.from_instruction(case.search).data, expected_vector, atol=2e-11
+        )
+
+
+@pytest.mark.parametrize("method", study.METHODS)
+@pytest.mark.parametrize("regime", study.REGIMES)
+def test_restoring_native_emitted_blocks_and_fallback(method, regime, monkeypatch):
+    from qiskit import QuantumCircuit
+    from qiskit.quantum_info import Operator
+    import logique.verification as verification
+
+    if BRIDGE is None:
+        pytest.skip("admitted private native bridge unavailable")
+    problem = ColoringProblem((-7, 20), ((-7, 20),), 3)
+    original = study.assemble_case(problem, method, regime, executable=BRIDGE)
+    lowered = study.assemble_case(
+        problem,
+        method,
+        regime,
+        executable=BRIDGE,
+        mcx_decomposition="clean_tree",
+        mcx_workspace="fresh_zero",
+    )
+    assert max(lowered.metadata["mcx_lowering"]["emitted_max_controls"].values()) <= 2
+    if lowered.raw.num_qubits == original.raw.num_qubits:
+        expected = study._resolved_qpy_circuit(original.raw, expand_wide=True)[0]
+        assert study._qpy_semantic_signature(expected) == study._qpy_semantic_signature(
+            lowered.raw
+        )
+
+    # Explicit branch coverage, not a naturally failing backend fixture.
+    def conservative(*args, **kwargs):
+        raise AssertionError("forced conservative branch")
+
+    monkeypatch.setattr(verification, "verify_kickback_oracle", conservative)
+    fallback = study.assemble_case(
+        ColoringProblem((42,), (), 3),
+        method,
+        regime,
+        executable=BRIDGE,
+        mcx_decomposition="clean_tree",
+        mcx_workspace="fresh_zero",
+    )
+    assert fallback.metadata["oracle_construction"] == "compute_Z_inverse_compute"
+    expected = fallback.raw.copy()
+    expected.z(fallback.metadata["backend_metadata"]["output_qubits"][0])
+    expected.compose(
+        study._resolved_qpy_circuit(fallback.raw.inverse())[0], inplace=True
+    )
+    assert study._qpy_semantic_signature(expected) == study._qpy_semantic_signature(
+        fallback.oracle
+    )
+    if fallback.oracle.num_qubits <= 4:
+        matrix = Operator(fallback.oracle).data
+        raw = Operator(fallback.raw).data
+        mark = QuantumCircuit(fallback.oracle.num_qubits)
+        mark.z(fallback.metadata["backend_metadata"]["output_qubits"][0])
+        np.testing.assert_allclose(
+            matrix, raw.conj().T @ Operator(mark).data @ raw, atol=2e-11
+        )
+
+
+def test_restoring_preparation_contained_mcx_and_disjoint_inverse(monkeypatch):
+    from qiskit import QuantumCircuit
+    from qiskit.circuit.library import MCXGate
+    import logique.circuits.grover as grover
+
+    original_preparation = grover.coloring_preparation
+
+    def preparation(encoding):
+        block = original_preparation(encoding)
+        nested = QuantumCircuit(4, global_phase=0.319)
+        nested.append(MCXGate(3, ctrl_state=2), [2, 0, 3, 1])
+        block.append(nested.to_gate(), [3, 1, 0, 2])
+        return block
+
+    monkeypatch.setattr(grover, "coloring_preparation", preparation)
+    case = study.assemble_case(
+        ColoringProblem((-7, 20), ((-7, 20),), 3),
+        "sb_balanced",
+        "R2",
+        mcx_decomposition="clean_tree",
+        mcx_workspace="fresh_zero",
+    )
+    md = case.metadata["mcx_lowering"]
+    assert len(md["search_scratch_ownership"]["preparation"]) == 1
+    assert len(md["search_scratch_ownership"]["zero_reflection"]) == 1
+    assert len(md["search_scratch_ownership"]["raw"]) > 0
+    inverse = study._resolved_qpy_circuit(case.preparation.inverse())[0]
+    assert (
+        study._qpy_semantic_signature(inverse)["operations"]
+        == study._qpy_semantic_signature(case.diffusion)["operations"][
+            : len(inverse.data)
+        ]
+    )
+    assert abs(np.exp(1j * float(case.diffusion.global_phase)) + 1) < 2e-12
+    assert md["blocks"]["preparation"]["mcx_gates"] == 1
+
+
+@pytest.mark.parametrize("fault", ("none", "opaque", "readback_phase"))
+def test_restoring_saved_qpy_and_partial_failure(tmp_path, monkeypatch, fault):
+    from qiskit.circuit import Gate
+    import pandas as pd
+
+    fixture = tmp_path / "edge.col"
+    fixture.write_text("p edge 2 1\nx colors 3\ne 1 2\n")
+    output = tmp_path / ("1026000000-" + fault)
+    original_assemble = study.assemble_case
+    original_load = qpy.load
+    calls = [0]
+
+    def assemble(*args, **kwargs):
+        case = original_assemble(*args, **kwargs)
+        if fault == "opaque" and kwargs["iterations"] == 1:
+            case.preparation.append(Gate("unknown_inverse", 1, []), [0])
+        return case
+
+    def load(*args, **kwargs):
+        circuits = original_load(*args, **kwargs)
+        calls[0] += 1
+        if fault == "readback_phase" and calls[0] == 12:
+            circuits[0].global_phase += 0.125
+        return circuits
+
+    monkeypatch.setattr(study, "assemble_case", assemble)
+    monkeypatch.setattr(qpy, "load", load)
+    study.run_coloring_study(
+        dict(
+            inputs=[str(fixture)],
+            methods=["sb_balanced"],
+            regimes=["R2"],
+            iterations=[0, 1],
+            common_basis=True,
+            optimization_level=0,
+            output=str(output),
+            mcx_decomposition="clean_tree",
+            mcx_workspace="fresh_zero",
+        )
+    )
+    manifest = json.loads((output / "run.json").read_text())
+    rows = pd.read_csv(output / "summary.csv")
+    assert [c["status"] for c in manifest["cases"]] == [
+        "complete",
+        "complete" if fault == "none" else "failed",
+    ]
+    assert len(rows) == (20 if fault == "none" else 10)
+    for case in manifest["cases"]:
+        if case["status"] == "failed":
+            assert case["artifacts"]
+            assert set(rows.iteration) == {0}
+            continue
+        reference = original_assemble(
+            ColoringProblem((1, 2), ((1, 2),), 3),
+            "sb_balanced",
+            "R2",
+            iterations=case["iteration"],
+            mcx_decomposition="clean_tree",
+            mcx_workspace="fresh_zero",
+        )
+        for key, filename in case["artifacts"].items():
+            with (output / filename).open("rb") as stream:
+                saved = original_load(stream)[0]
+            record = case["artifact_statistics"][filename]
+            assert record["status"] == "verified"
+            assert (
+                record["readback_signatures"]["expected"]
+                == record["readback_signatures"]["actual"]
+            )
+            assert {
+                k: v for k, v in circuit_metrics(saved).items() if k != "metric_level"
+            } == {k: v for k, v in record["metrics"].items() if k != "metric_level"}
+            if key.endswith("_logical") or key.endswith("_restoring_mcx"):
+                component = key.removesuffix("_logical").removesuffix("_restoring_mcx")
+                assert study._qpy_semantic_signature(
+                    saved
+                ) == study._qpy_semantic_signature(reference.circuits[component])
+
+
+@pytest.mark.parametrize("method", ("sb_original", "sb_simple", "sb_minimal"))
+@pytest.mark.parametrize("regime", study.REGIMES)
+def test_restoring_other_baseline_prefix_inverses(method, regime):
+    problem = ColoringProblem((-7, 20), ((-7, 20),), 3)
+    source = study.assemble_case(problem, method, regime)
+    lowered = study.assemble_case(
+        problem,
+        method,
+        regime,
+        mcx_decomposition="clean_tree",
+        mcx_workspace="fresh_zero",
+    )
+    target = source.metadata["backend_metadata"]["output_qubits"][0]
+    for x in range(16):
+        for t in (0, 1):
+            bits = x | (t << target)
+            expected, phase = _restoring_scalar_column(source.raw, bits)
+            actual, lowered_phase = _restoring_scalar_column(lowered.raw, bits)
+            assert actual == expected and abs(phase - lowered_phase) < 2e-12

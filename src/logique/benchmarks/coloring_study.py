@@ -41,7 +41,11 @@ CONFIG_FIELDS = {
     "basis_gates",
     "optimization_level",
     "output",
+    "mcx_decomposition",
+    "mcx_workspace",
 }
+
+RESTORING_MCX_POLICIES = ("clean_tree",)
 
 
 def _qpy_standard_gate_classes() -> set[type]:
@@ -56,7 +60,9 @@ def _qpy_standard_gate_classes() -> set[type]:
     }
 
 
-def _resolved_qpy_circuit(circuit: QuantumCircuit) -> tuple[QuantumCircuit, dict]:
+def _resolved_qpy_circuit(
+    circuit: QuantumCircuit, *, expand_wide: bool = False
+) -> tuple[QuantumCircuit, dict]:
     """Resolve emitted definitions to standard gates, preserving order and phase.
 
     Qiskit 2.1.1 QPY reconstructs inverse StatePreparation as forward. Never
@@ -94,7 +100,19 @@ def _resolved_qpy_circuit(circuit: QuantumCircuit) -> tuple[QuantumCircuit, dict
             # QPY 2.1.1 also loses generic MCX open-control state. Its emitted
             # definition is X conjugation around a closed-control instance.
             # Resolve open controls consistently, without lowering closed MCX.
-            if operation.base_class in standard and closed_controls:
+            mcx = (
+                controls >= 3
+                and getattr(getattr(operation, "base_gate", None), "name", None) == "x"
+            )
+            if expand_wide and mcx and controls > 20:
+                raise ValueError("Restoring MCX subset is limited to 20 controls")
+            if expand_wide and operation.num_qubits > 21:
+                raise ValueError("Restoring definition operation exceeds 21 wires")
+            if (
+                operation.base_class in standard
+                and closed_controls
+                and (not expand_wide or operation.num_qubits <= 3 or mcx)
+            ):
                 # Standard gates have numeric parameters; reject nonfinite ones
                 # before QPY, including hidden NaN/Inf in a nested definition.
                 for param in operation.params:
@@ -173,6 +191,7 @@ def _stage_timings(timings: dict, backend: dict) -> dict:
         "oracle_wrapper": "initial phase wrapper; selected kickback wrapper may be built during validation",
         "validation": "predicate/phase/restoration checks and selection/construction of final oracle wrapper",
         "preparation_diffusion_search": "combined preparation, diffusion and search assembly; no split measurements",
+        "mcx_decomposition": "resolve and lower source blocks once; assemble actual inverses and explicit disjoint scratch embeddings",
     }
     for name, stage in stages.items():
         stage["scope"] = scopes[name]
@@ -306,6 +325,11 @@ def validate_study_config(config: dict) -> dict:
     unknown = set(config) - CONFIG_FIELDS
     if unknown:
         raise ValueError(f"Unsupported coloring-study controls: {sorted(unknown)}")
+    if {"mcx_decomposition", "mcx_workspace"} & set(config):
+        if config.get("mcx_decomposition") not in RESTORING_MCX_POLICIES:
+            raise ValueError("mcx_decomposition supports only restoring clean_tree")
+        if config.get("mcx_workspace") != "fresh_zero":
+            raise ValueError("mcx_workspace must explicitly be fresh_zero")
     result = {
         "kind": "coloring_study",
         "methods": list(STUDY_METHODS),
@@ -340,6 +364,8 @@ def validate_study_config(config: dict) -> dict:
         ):
             raise ValueError(f"{key} must be distinct selections from {known}")
     _integers(result["iterations"], "iterations")
+    if "mcx_decomposition" in config and max(result["iterations"]) > 2:
+        raise ValueError("Restoring MCX subset supports iterations 0..2")
     _integers(result["seeds"], "seeds")
     if any(seed >= 1 << 32 for seed in result["seeds"]):
         raise ValueError("seeds must be smaller than 2**32")
@@ -384,6 +410,15 @@ def validate_study_config(config: dict) -> dict:
     return result
 
 
+def _validate_restoring_problem(problem: ColoringProblem) -> None:
+    """Bound this initial runner slice before preparation or artifact allocation."""
+    if (
+        problem.colors > 8
+        or len(problem.vertices) * (problem.colors - 1).bit_length() > 21
+    ):
+        raise ValueError("Restoring MCX subset requires k<=8 and <=21 data wires")
+
+
 def _problem_without_precolors(problem: ColoringProblem, remove: bool):
     if type(remove) is not bool:
         raise ValueError("remove_precolors must be boolean")
@@ -425,6 +460,230 @@ class ColoringStudyCase:
         }
 
 
+def _restoring_mcx_block(circuit: QuantumCircuit) -> tuple[QuantumCircuit, dict]:
+    """Lower bound emitted definitions with fresh zero scratch, never borrowing.
+
+    The declared subset is clean_tree, 3..20 controls. Its internal RCCX prefix
+    computes conjunction bits with phases; the exact final CCX changes only the
+    external target, so the prefix inverse cancels every phase and cleans every
+    internal bit. This clean-subspace identity extends to superpositions and an
+    external reference by linearity. It does not admit dirty initial scratch.
+    """
+    from .costs import decompose_mcx, is_mcx
+
+    flat, resolution = _resolved_qpy_circuit(circuit, expand_wide=True)
+    if any(
+        is_mcx(item.operation, 3) and item.operation.num_ctrl_qubits > 20
+        for item in flat.data
+    ):
+        raise ValueError("Restoring MCX subset is limited to 20 controls")
+    lowered, info = decompose_mcx(flat, "clean_tree", clean_wires=())
+    lowered, emitted = _resolved_qpy_circuit(lowered, expand_wide=True)
+    if any(
+        is_mcx(item.operation, 3) or item.operation.num_qubits > 3
+        for item in lowered.data
+    ):
+        raise ValueError("Restoring MCX lowering left an unsupported wide gate")
+    return lowered, {
+        **info,
+        "source_width": circuit.num_qubits,
+        "source_resolution": resolution,
+        "emitted_resolution": emitted,
+        "emitted_max_controls": max(
+            (getattr(i.operation, "num_ctrl_qubits", 0) for i in lowered.data),
+            default=0,
+        ),
+        "scratch_qubits": list(range(circuit.num_qubits, lowered.num_qubits)),
+        "restoration": "clean-subspace prefix/exact-target/prefix-inverse identity; coherent by linearity",
+    }
+
+
+def _apply_restoring_mcx(case: ColoringStudyCase, result) -> ColoringStudyCase:
+    """Assemble saved blocks once, with dedicated disjoint scratch per role."""
+    from qiskit import QuantumCircuit
+    from .costs import MCX_DECOMPOSITIONS
+
+    started = time.perf_counter()
+    md = case.metadata
+    data = md["data_qubits"]
+    n = len(data)
+    physical = result.circuit.num_qubits
+    target = result.metadata["output_qubits"][0]
+    blocks = {}
+    if md["method"].startswith("sb_"):
+        # The adapter's package uncompute is not re-lowered independently.
+        # Lower the actual initializer/compute prefix once and invert that block.
+        prefix, blocks["baseline_prefix"] = _restoring_mcx_block(
+            result.initializer.compose(result.compute)
+        )
+        mark = QuantumCircuit(physical)
+        constraints = result.metadata["constraint_qubits"]
+        # Constant predicates have no constraints; retain the adapter's exact
+        # raw action rather than inferring a truth value from an empty list.
+        if not constraints:
+            raw, blocks["raw"] = _restoring_mcx_block(result.circuit)
+        else:
+            mark.mcx(constraints, target)
+            mark, blocks["baseline_mark"] = _restoring_mcx_block(mark)
+            prefix_scratch = list(range(physical, prefix.num_qubits))
+            mark_scratch = list(
+                range(prefix.num_qubits, prefix.num_qubits + mark.num_qubits - physical)
+            )
+            raw = QuantumCircuit(prefix.num_qubits + len(mark_scratch))
+            raw.compose(prefix, [*range(physical), *prefix_scratch], inplace=True)
+            raw.compose(mark, [*range(physical), *mark_scratch], inplace=True)
+            raw.compose(
+                _resolved_qpy_circuit(prefix.inverse())[0],
+                [*range(physical), *prefix_scratch],
+                inplace=True,
+            )
+            blocks["baseline_prefix"]["scratch_qubits"] = prefix_scratch
+            blocks["baseline_mark"]["scratch_qubits"] = mark_scratch
+    else:
+        raw, blocks["raw"] = _restoring_mcx_block(result.circuit)
+
+    oracle = QuantumCircuit(raw.num_qubits)
+    if "kickback" in md["oracle_construction"]:
+        oracle.x(target)
+        oracle.h(target)
+        oracle.compose(raw, inplace=True)
+        oracle.h(target)
+        oracle.x(target)
+    else:
+        oracle.compose(raw, inplace=True)
+        oracle.z(target)
+        oracle.compose(_resolved_qpy_circuit(raw.inverse())[0], inplace=True)
+
+    preparation, blocks["preparation"] = _restoring_mcx_block(case.preparation)
+    zero = QuantumCircuit(n, global_phase=math.pi)
+    zero.x(range(n))
+    if n == 1:
+        zero.z(0)
+    else:
+        zero.h(n - 1)
+        zero.mcx(list(range(n - 1)), n - 1)
+        zero.h(n - 1)
+    zero.x(range(n))
+    zero, blocks["zero_reflection"] = _restoring_mcx_block(zero)
+    a_scratch = list(range(n, preparation.num_qubits))
+    z_scratch = list(
+        range(preparation.num_qubits, preparation.num_qubits + zero.num_qubits - n)
+    )
+    diffusion = QuantumCircuit(preparation.num_qubits + len(z_scratch))
+    diffusion.compose(
+        _resolved_qpy_circuit(preparation.inverse())[0],
+        [*range(n), *a_scratch],
+        inplace=True,
+    )
+    diffusion.compose(zero, [*range(n), *z_scratch], inplace=True)
+    diffusion.compose(preparation, [*range(n), *a_scratch], inplace=True)
+
+    # These are MCX-owned allocations, never data, flags, outputs, kickback or
+    # unknown backend wires. The raw, A and S0 pools are pairwise disjoint.
+    raw_scratch = list(range(physical, raw.num_qubits))
+    search_a = list(range(raw.num_qubits, raw.num_qubits + len(a_scratch)))
+    search_z = list(
+        range(
+            raw.num_qubits + len(a_scratch),
+            raw.num_qubits + len(a_scratch) + len(z_scratch),
+        )
+    )
+    search = QuantumCircuit(raw.num_qubits + len(search_a) + len(search_z))
+    search.compose(preparation, [*data, *search_a], inplace=True)
+    for _ in range(md["iteration"]):
+        search.compose(oracle, range(oracle.num_qubits), inplace=True)
+        search.compose(diffusion, [*data, *search_a, *search_z], inplace=True)
+    case.raw, case.preparation, case.oracle = raw, preparation, oracle
+    case.diffusion, case.search = diffusion, search
+
+    scratch = {
+        "raw": raw_scratch,
+        "oracle": raw_scratch,
+        "preparation": a_scratch,
+        "diffusion": [*a_scratch, *z_scratch],
+        "search": [*raw_scratch, *search_a, *search_z],
+    }
+    raw_peak = max(
+        (
+            b["appended_ancillas"]
+            for k, b in blocks.items()
+            if k not in ("preparation", "zero_reflection")
+        ),
+        default=0,
+    )
+    a_peak = len(a_scratch)
+    z_peak = len(z_scratch)
+    peaks = {
+        "raw": raw_peak,
+        "oracle": raw_peak,
+        "preparation": a_peak,
+        "diffusion": max(a_peak, z_peak),
+        "search": max(a_peak, raw_peak, z_peak) if md["iteration"] else a_peak,
+    }
+    for component, circuit in case.circuits.items():
+        workspace = md["component_workspace"][component]
+        roles = workspace["roles"]
+        # Preserve backend unknowns; add only newly allocated MCX wires.
+        roles["mcx_ancilla"] = scratch[component]
+        assigned = [q for group in roles.values() for q in group]
+        if sorted(assigned) != list(range(circuit.num_qubits)):
+            raise AssertionError("Restoring workspace roles overlap or omit wires")
+        workspace.update(
+            role_counts={r: len(q) for r, q in roles.items()},
+            policy="fresh_zero_restoring_mcx; dedicated_role_pools; no borrowing",
+            mcx_scope="all recursive emitted MCX with >=3 controls lowered; CCX retained",
+            peak_reserved_qubits=circuit.num_qubits,
+            peak_reserved_nondata_qubits=circuit.num_qubits - n,
+            mcx_reserved_qubits=len(scratch[component]),
+            mcx_live_peak_upper_bound=peaks[component],
+            mcx_live_peak_source="construction capacity and sequential composition proof; not measured liveness",
+        )
+        workspace["role_sources"][
+            "mcx_ancilla"
+        ] = "explicit fresh zero allocation, disjoint from every backend wire"
+    md["qubit_roles"]["mcx_ancilla"] = raw_scratch
+    md["role_counts"] = {r: len(q) for r, q in md["qubit_roles"].items()}
+    md["role_notes"] = (
+        "Explicit fresh restoring MCX scratch; backend residual roles unchanged; no cross-role borrowing"
+    )
+    md["component_registers"].update(
+        preparation="ordered_data_then_A_scratch",
+        diffusion="ordered_data_then_A_scratch_then_S0_scratch",
+        search="physical_then_raw_scratch_then_A_scratch_then_S0_scratch",
+    )
+    md["mcx_lowering"] = {
+        "selected_policy": "clean_tree",
+        "workspace_policy": "fresh_zero",
+        "supported_policies": list(RESTORING_MCX_POLICIES),
+        "unsupported_policies": sorted(
+            set(MCX_DECOMPOSITIONS) - set(RESTORING_MCX_POLICIES)
+        ),
+        "controls_range": [3, 20],
+        "blocks": blocks,
+        "search_scratch_ownership": {
+            "raw": raw_scratch,
+            "preparation": search_a,
+            "zero_reflection": search_z,
+        },
+        "search_embeddings": {
+            "oracle": list(range(oracle.num_qubits)),
+            "preparation": [*data, *search_a],
+            "diffusion": [*data, *search_a, *search_z],
+        },
+        "restoration_scope": "scratch initially zero; every lowered gate restores its scratch for arbitrary data/reference; each saved block boundary and complete search restore MCX scratch; raw backend workspace retains its original contract",
+        "representation": "restoring_mcx_resolved_standard_gates",
+        "emitted_max_controls": {
+            name: max(
+                (getattr(i.operation, "num_ctrl_qubits", 0) for i in q.data), default=0
+            )
+            for name, q in case.circuits.items()
+        },
+    }
+    md["timings"]["mcx_decomposition_seconds"] = time.perf_counter() - started
+    md["stage_timings"] = _stage_timings(md["timings"], result.metadata)
+    return case
+
+
 def assemble_case(
     problem: ColoringProblem,
     method: str,
@@ -436,6 +695,8 @@ def assemble_case(
     samples: int = 256,
     verification_assignments: list[int] | None = None,
     remove_precolors: bool = False,
+    mcx_decomposition: str | None = None,
+    mcx_workspace: str | None = None,
     executable=None,
 ) -> ColoringStudyCase:
     """Assemble and validate one controlled case without saving or simulating it.
@@ -456,11 +717,18 @@ def assemble_case(
             "validation": validation,
             "samples": samples,
             "remove_precolors": remove_precolors,
+            **(
+                {"mcx_decomposition": mcx_decomposition, "mcx_workspace": mcx_workspace}
+                if mcx_decomposition is not None or mcx_workspace is not None
+                else {}
+            ),
         }
     )
     problem, transformations = _problem_without_precolors(problem, remove_precolors)
     if not problem.vertices or problem.colors < 2:
         raise ValueError("Study cases require vertices and at least two colors")
+    if mcx_decomposition:
+        _validate_restoring_problem(problem)
     start = time.perf_counter()
     encoding = encode_coloring(problem)
     timings = {"encoding_seconds": time.perf_counter() - start}
@@ -662,9 +930,10 @@ def assemble_case(
             for name in ("raw", "preparation", "oracle", "diffusion", "search")
         },
     }
-    return ColoringStudyCase(
+    case = ColoringStudyCase(
         result.circuit, preparation, oracle, diffusion, search, metadata
     )
+    return _apply_restoring_mcx(case, result) if mcx_decomposition else case
 
 
 def run_coloring_study(config: dict, *, executable=None) -> Path:
@@ -680,6 +949,8 @@ def run_coloring_study(config: dict, *, executable=None) -> Path:
         path = Path(filename)
         problem = read_dimacs(path, colors=config.get("colors"))
         clean, _ = _problem_without_precolors(problem, config["remove_precolors"])
+        if "mcx_decomposition" in config:
+            _validate_restoring_problem(clean)
         n = encode_coloring(clean).input_count
         if not clean.vertices or clean.colors < 2:
             raise ValueError("Study inputs require vertices and at least two colors")
@@ -776,6 +1047,17 @@ def run_coloring_study(config: dict, *, executable=None) -> Path:
                                         "verification_assignments", {}
                                     ).get(str(path)),
                                     remove_precolors=config["remove_precolors"],
+                                    **(
+                                        {
+                                            key: config[key]
+                                            for key in (
+                                                "mcx_decomposition",
+                                                "mcx_workspace",
+                                            )
+                                        }
+                                        if "mcx_decomposition" in config
+                                        else {}
+                                    ),
                                     executable=executable,
                                 )
                                 case.update(assembled.metadata)

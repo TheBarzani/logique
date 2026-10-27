@@ -1185,3 +1185,63 @@ DIMACS witnesses/resources/timeouts,full acceptance/build/provenance/offline
 notebooks/isolated historical replay,traced manuscript/reviewer responses/evidence
 gate/final independent correctness/claim/reproducibility reviews remain open.
 Bounded completion differs from scientific admission. Full paper unfinished.
+
+
+## Component-depth acceptance: bounded coordinator integration
+
+Both component-depth-1027081900 and independent review completed, neither blocked.
+No prior own completed handoff existed. Only owned source/tests0caf607 entered
+correctness7cefb9fd7b17d111a4b217466340a6357106afe6; checkpoint-only e6bb8d0 was excluded. The byte-preserved
+[review](component_depth_review.md) and [admission](component_depth_admission.md)
+record exact hashes,proof,commands,resources,failures and exclusions.
+Admission extends exactly ONE optional positive builtin-int max_component_depth
+slice after assembly,width THEN count,before artifacts:once-only all-five default
+Qiskit2.1.1 depths,all offenders,explicit case/run JSON status/scope,equality/empty
+accepted,zero excluded QPY/rows and continuation. Omission/earlier short-circuit/
+later partial failures remain. Unexpanded mixed granularity,nested/opaque one
+scheduled operation,disjoint parallel layers,directives synchronize without a
+layer; real barrier witness depth3. No decomposition/research metric column.
+No resolved/lowered/routed/FT depth,T-depth,duration,complexity,cost,memory/timeout/
+liveness guarantee; cannot prevent assembly/native allocation or bound traversal/
+definition/export itself. Existing dynamic/classical runner/QPY limits remain.
+
+Integrated regressions275 passed,31 retained dense exclusions,zero skips;
+independent-review replay20 invalid rejections,12 huge stand-in gates,16 genuine
+tiny assemblies,160 fixed-assembly byte-identical artifact/row triples,102 ordered
+compositions,496 scalar clean-tree columns,16 bounded statevectors,max error
+2.3845628045053887e-15 without phase alignment. Wider j0 widths9/4/9/5/10,
+depths21/3/21/17/3 retain reserved pools despite zero MCX live-capacity. Phase,
+ordered wires,actual inverse,signed diffusion and disjoint clean pools retained;
+no general wide-transpiler equality or archived-pilot repair. Direct audit of194
+worker manifests/236 cases verifies96 depth records,1110 saved rows and44 failed
+partial QPY. Relevant Black/Ruff pass. Numerical53.353004s,max measured child
+RSS228999168bytes;sequential existing Python,root src/cache/private native,threads1,
+<=120s each/300s cumulative,Operators<=4/full statevectors<=5,wider scalar/ordered
+composition,no compiler or aggregate memory-enforcement claim.
+
+All worker/reviewer/protected/evidence maps verified;README,archives,prototypes,
+histories,pins,binaries and prior failures preserved. Tooling failures:truncated/
+optional missing discovery,initial metadata state-key/evidence-filename errors
+with original scripts retained,Git index.lock denial/scoped escalation success;
+no automatic approval rejection,numerical/static failure,timeout/OOM. Original
+review interruption with unknown first-attempt RSS/time and worker/reviewer
+failures remain explicit. Unknown memory/live workspace remain null;native
+combined timing overlaps synthesis. Rotation numerical/caller limits unchanged.
+
+Checkpoint:dump/1027135211-component-depth-coordinator-triage/batch.json.
+Whole57-job queue/all57 states inspected;54 complete,two native blocked,this
+coordinator running. Queue/state untouched;no completed predecessor repeated.
+Dispatcher alone releases THIS completed depth coordinator and pushes committed integration HEAD. This admits exactly ONE assigned narrow depth-control slice; no new same-scope defect or additional contract is assigned, so no jobs are appended. Next research action is separately scope/review the remaining controls against the root audit; full controls/freeze/native/structure/FT/RUS work is not authorized by this handoff.
+THIS coordinate-component-depth-1027081900 bounded handoff is COMPLETE. On repeat verify exact correctness/admission commits, integrated/review/evidence/protected hashes, queue/state identities and append-only manifest history, then return outcome=complete WITHOUT new tests, numerical/compiler jobs, integration, queue append, model launch or push. Full paper remains unfinished.
+
+Full remaining controls/post-pilot freeze/old-QPY repair,native/profiles/SAT,
+structure common-lowering comparisons,nine-graph R1/R2/R3 multilevel strongest-
+baseline/ablation/five-seed studies,meaningful graph static FT under existing
+exact-hash numerical/caller contract,separate dynamic RUS/achieved break-even,
+executed ideal/noisy/leakage/confidence/random-sampling/cost-per-success,
+five-repeat scaling/DIMACS witnesses/resources/timeouts,full acceptance/build/
+provenance/offline notebooks/isolated135-metric replay,traced manuscript/reviewer
+responses/evidence gate/final independent reviews remain unfinished. Analytical
+exact-count ideal/static C/p/caller guide admissions retained;old blocked
+checkpoints historical. No interval/ideal-amplitude/FT/RUS/paper extension.
+Bounded completion differs from scientific admission. Full paper unfinished.

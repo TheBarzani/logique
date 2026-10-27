@@ -943,3 +943,60 @@ isolated 135-metric replay; traced manuscript/reviewer responses/evidence gate a
 independent final correctness/claim/reproducibility reviews remain open. No
 interval certificate, ideal-amplitude guarantee, new RUS or paper admission.
 Bounded completion is distinct from scientific admission. Full paper unfinished.
+
+## Ideal iteration exact-count correction: bounded coordinator admission
+
+Both ideal-boundary-fix-1026075259 and ideal-boundary-review-1026075259 completed.
+THIS coordinator had no previous own completion; the supplied predecessor batch
+was correctly distinguished. The full corrected source/tests, commits, exact
+hashes and independent analytical decision were inspected. Only original ed1001b
+plus correction a157c60 entered correctness commits 4a6dcba/a6d8387. Checkpoint-only,
+build and research-metric commits were excluded. Final integrated SHA-256 equals
+the new review: source7724b76624bc07cf3164abf2c76ddb677c21ccc6cdc86991f8cc09b659b53e40,
+tests756c2507cd522815ba155c18abb61c26101475ec69df7e87098475dd36fffa0e.
+The byte-preserved [independent review](ideal_iteration_corrected_review.md) and
+[coordinator admission](ideal_iteration_corrected_admission.md) record proof,
+exact identities, commands, bounds, failures, assumptions and exclusions.
+Historical blocked review/checkpoints and saved failures remain untouched.
+
+Admission is ONLY exact-count analytical first-lobe peak/candidates/extent within
+the enforced 64-bit count and 128-step bracket contract. Exact Fraction polynomial
+signs decide all categorical boundaries, with exact ties choosing fewer iterations;
+unresolved/out-of-range or insufficient caps reject before rows. Probabilities and
+supplied additive costs remain numerical, with no interval/amplitude guarantee.
+Caller exact uniform support/clean marking/signed diffusion/actual inverse/mapping/
+restoration assumptions remain; R3 coloring equivalence requires valid-code support.
+No executed circuit, noise, FT/RUS, graph advantage or paper admission follows.
+
+Integrated focused suite: 183 passed, no skips/deselections. Independent-review
+replay: 277950 assertions, 6442 accepted cases, 50146 exact rows, 1063 rejections,
+1167 graph/regime checks, 256 decision boundaries. New coordinator first-order
+rational probe: 630 cases/1819 rows/five rejections. Sequential existing Python,
+explicit root src/cache/private native, threads1, timeout180s each/300s cumulative;
+actual17.322679s, maximum child RSS44072960 bytes, no quantum arrays/compiler/native.
+Saved static checks inspected; no full-suite/build/notebook/noise/routing replay.
+All 33 evidence hashes and worker/reviewer protected maps matched. Intake protects
+1791 identities with only owned audit allowed to change. README, original evidence,
+archives, prototypes, nested histories, dependency pins and binaries stay untouched.
+Initial Git sequencer sandbox denial succeeded under scoped escalation; exploratory
+absent/truncated reads and temporary removed dump pointer are recorded. No numerical
+failure, timeout/OOM or automatic approval rejection occurred.
+
+Checkpoint: `dump/1026222142-ideal-boundary-coordinator-triage/batch.json`.
+Entire 51-job queue/45 task states inspected, including unrelated native blocked
+statuses. No queue append or state mutation: existing six preparation-success and
+component-instruction jobs retain unique ownership/review/coordinator handoffs.
+Dispatcher alone launches and pushes committed integration HEAD. On completed
+resumption verify/release complete without repeating tests/integration/jobs.
+
+Concrete next ideal work is a separately scoped executed matching-A iteration
+validation through peak+1, with pre-array resource exclusions and independent
+review; it is neither admitted nor launched here. All executed ideal/noisy/leakage/
+confidence/random-trial/cost-per-success studies remain. Full controls/post-pilot
+freeze/old-QPY review; native/profile/SAT; structure lowering/workspace/comparison;
+nine-graph R1/R2/R3 multilevel strongest-baseline/ablation/five-seed studies;
+meaningful graph static FT within unchanged exact-hash numerical/caller contract,
+separate dynamic RUS/achieved break-even; five-repeat scaling/DIMACS witnesses and
+resources; acceptance/build/provenance/offline notebooks/isolated historical replay;
+traced manuscript/reviewer responses/evidence gate/final independent reviews stay
+open. No new interval/ideal-amplitude/FT/RUS/paper approval. Full paper unfinished.

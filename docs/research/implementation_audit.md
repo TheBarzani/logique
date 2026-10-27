@@ -1000,3 +1000,63 @@ separate dynamic RUS/achieved break-even; five-repeat scaling/DIMACS witnesses a
 resources; acceptance/build/provenance/offline notebooks/isolated historical replay;
 traced manuscript/reviewer responses/evidence gate/final independent reviews stay
 open. No new interval/ideal-amplitude/FT/RUS/paper approval. Full paper unfinished.
+
+
+## Static preparation success threshold: bounded coordinator admission
+
+Both preparation-success-1026123642 and its independent review are complete;
+no prior own coordinator handoff existed. Exact source/test bytes from 8cfd7af
+entered correctness commit 85690a4 only; checkpoint-only f45d361 was excluded.
+The byte-preserved [review](preparation_success_threshold_review.md) and
+[admission](preparation_success_threshold_admission.md) record identities,
+proof, obligations, validation, failures and limits. Source SHA-256
+7b7382e1b1031fb639586cdc67ba992ada9bd19416fec45c50277c815d11b397,
+tests daf235c385ff56fe4b6ac03e68ecb4dcab42543d90ad453f85ec15c7d9117fef.
+
+Admission is ONLY exact supplied deterministic static charge at independently
+supplied j/domains/costs, common-event probabilities and stationary fresh-
+independent renewal assertions. For D=1+2j_V,E=j_V(O_V+S0_V),
+B=(p_V*C_H-p_H*E)/(p_H*D) and normalized difference=(D/p_V)(A_V-B).
+Zero probability is undefined, unknown reached terms remain unknown, unused
+terms vanish; equal probabilities recover raw threshold. Text does not certify
+support/equivalence/provenance. Supplied probabilities stay fixed in this
+algebraic variation; expected RUS costs are excluded. No graph break-even,
+probability/iteration inference, execution, FT/RUS extension or paper admission.
+
+Integrated validation:73 passed with no skips/deselections; exact review replay
+42656 assertions/105 rejections,2560 component words/512 unknown-zero cases,
+max derived28690 bits. Relevant Black/Ruff/one-file mypy pass. Sequential existing
+Python, explicit root src/cache/private native, threads1, timeout60s each,
+numerical total0.473051667s, max measured child RSS96272384 bytes; no quantum arrays/
+native/compiler. No full suite/admitted preparation/RUS/FT tests/build/notebook/
+noise/routing/historical replay. Input4096-bit/j<=1000000 and fixed rational
+operation bounds unchanged; derived outputs may exceed input ceilings.
+
+All2746 reviewer protected identities matched; intake union2765 protected paths,
+eight worker/reviewer command receipts and31 prior evidence hashes verified.
+README, prototypes, archives, histories,pins,binaries and admitted modules/tests/
+harness/artifacts remain unchanged. Truncated/absent exploratory reads, intentional
+read-only interruption and initial Git index.lock denial/successful scoped
+escalation recorded; no numerical/static failure/timeout/approval rejection.
+Static FT numerical contract/exact hashes/caller obligations remain unchanged;
+no interval/ideal-amplitude guarantee or broader research approval.
+
+Checkpoint: `dump/1027031556-preparation-success-coordinator-triage/batch.json`.
+Whole51-job queue/all48 state records inspected; retain native blocked statuses
+and pending component-instruction ownership. Append only ONE documentation-only
+caller-guide slice/review/coordinator (preparation-guide-1027031556):<=12
+hypothetical scalar examples, supplied-event/renewal/zero-unknown obligations,
+no source/test/API/experiment extension. Prior queue header/definitions/prompts
+immutable; isolated worktrees, finished dependencies. Dispatcher alone launches
+and pushes integration HEAD. Repeat after bounded completion verifies/releases
+complete without tests/integration/jobs.
+
+Full controls/post-pilot freeze/old-QPY review; native/profiles/SAT; structure
+common-lowering comparisons; nine-graph R1/R2/R3 multilevel strongest-baseline/
+ablations/five-seed studies; meaningful graph static FT within unchanged numerical
+contract; separate dynamic RUS/achieved preparation break-even; executed ideal/
+noisy/leakage/confidence/random-trial/cost-per-success; five-repeat scaling/DIMACS
+witnesses/resources/timeouts; acceptance/build/provenance/offline notebooks/
+isolated historical replay; traced manuscript/reviewer responses/evidence gate/
+independent final correctness/claim/reproducibility reviews remain open. Broader
+research is outside this bounded authorization. Full paper unfinished.

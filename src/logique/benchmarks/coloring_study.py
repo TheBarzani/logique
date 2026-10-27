@@ -46,6 +46,7 @@ CONFIG_FIELDS = {
     "mcx_workspace",
     "max_component_qubits",
     "max_component_instructions",
+    "max_component_depth",
 }
 
 RESTORING_MCX_POLICIES = ("clean_tree",)
@@ -338,6 +339,11 @@ def validate_study_config(config: dict) -> dict:
         or config["max_component_instructions"] < 1
     ):
         raise ValueError("max_component_instructions must be a positive integer")
+    if "max_component_depth" in config and (
+        type(config["max_component_depth"]) is not int
+        or config["max_component_depth"] < 1
+    ):
+        raise ValueError("max_component_depth must be a positive integer")
     if {"mcx_decomposition", "mcx_workspace"} & set(config):
         if config.get("mcx_decomposition") not in RESTORING_MCX_POLICIES:
             raise ValueError("mcx_decomposition supports only restoring clean_tree")
@@ -972,6 +978,14 @@ def run_coloring_study(config: dict, *, executable=None) -> Path:
     counts after assembly and width acceptance, before artifacts. Counts include
     barriers at current mixed granularity, not elementary gates or resource costs;
     the cap cannot bound later definition generation/export, memory or time.
+    Optional max_component_depth uses Qiskit depth() defaults after both gates,
+    before artifacts, at current unexpanded top-level mixed granularity. Nested
+    and opaque operations occupy one layer on their declared wires; disjoint
+    operations can share layers. Directives add no depth but synchronize wires.
+    This is not resolved/lowered/routed/FT depth, T-depth, duration, complexity,
+    cost or memory/timeout/liveness enforcement; it cannot prevent assembly/native
+    allocation or bound depth traversal, definition generation or export itself.
+    Existing runner/QPY restrictions on dynamic/classical circuits still apply.
     """
     config = validate_study_config(config)
     primary_level = "restoring_mcx" if "mcx_decomposition" in config else "logical"
@@ -1157,6 +1171,35 @@ def run_coloring_study(config: dict, *, executable=None) -> Path:
                                                 for name in exceeded
                                             )
                                             + "; post-assembly top-level instruction acceptance"
+                                        )
+                                if "max_component_depth" in config:
+                                    cap = config["max_component_depth"]
+                                    depths = {
+                                        name: circuit.depth()
+                                        for name, circuit in assembled.circuits.items()
+                                    }
+                                    exceeded = [
+                                        name
+                                        for name, depth in depths.items()
+                                        if depth > cap
+                                    ]
+                                    case["component_depth_check"] = {
+                                        "max_component_depth": cap,
+                                        "depths": depths,
+                                        "over_budget_components": exceeded,
+                                        "status": (
+                                            "excluded" if exceeded else "accepted"
+                                        ),
+                                        "scope": "post-assembly, post-width and post-instruction acceptance of unexpanded top-level emitted depth at current mixed granularity, using Qiskit depth() default semantics; nested/opaque instructions are single scheduled operations on declared wires, disjoint operations can share layers, directives add no depth but synchronize affected wire clocks; no recursive definition inspection/decomposition; not resolved/lowered/routed/FT depth, T-depth, duration, complexity, cost or memory/timeout/liveness enforcement; cannot prevent assembly/native allocation or bound depth traversal/definition generation/export itself; arbitrary dynamic/classical circuits remain outside the existing runner/QPY contract",
+                                    }
+                                    if exceeded:
+                                        raise ExcludedCase(
+                                            f"max_component_depth={cap} exceeded by "
+                                            + ", ".join(
+                                                f"{name}={depths[name]}"
+                                                for name in exceeded
+                                            )
+                                            + "; post-assembly top-level depth acceptance"
                                         )
                                 artifacts = {}
                                 case["artifacts"] = artifacts

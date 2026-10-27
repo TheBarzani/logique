@@ -1958,3 +1958,385 @@ def test_component_instructions_real_reserved_j0(tmp_path, monkeypatch):
     assert rec["component_instruction_check"]["top_level_instructions"] == counts
     assert "oracle" in rec["component_instruction_check"]["over_budget_components"]
     assert not list(output.glob("*.qpy"))
+
+
+@pytest.mark.parametrize(
+    "cap",
+    [
+        None,
+        True,
+        False,
+        0,
+        -1,
+        -(10**100),
+        1.0,
+        2.5,
+        float("nan"),
+        float("inf"),
+        "4",
+        "",
+        [],
+        {},
+        (),
+        {1},
+        complex(1),
+        _InstructionIntSubclass(4),
+        np.int64(4),
+    ],
+)
+def test_component_depth_rejects_before_input_or_run(monkeypatch, cap):
+    from logique.benchmarks import runner
+
+    def forbidden(*args, **kwargs):
+        raise AssertionError("work before depth config rejection")
+
+    monkeypatch.setattr(study, "read_dimacs", forbidden)
+    monkeypatch.setattr(study, "assemble_case", forbidden)
+    monkeypatch.setattr(runner, "new_run_directory", forbidden)
+    with pytest.raises(ValueError, match="max_component_depth.*positive integer"):
+        study.run_coloring_study(
+            {"inputs": ["missing.col"], "max_component_depth": cap}
+        )
+
+
+@pytest.mark.parametrize("cap", [1, 4, 10**100])
+def test_component_depth_positive_builtin_config(cap):
+    config = study.validate_study_config(
+        {"inputs": ["missing.col"], "max_component_depth": cap}
+    )
+    assert config["max_component_depth"] == cap
+    assert "max_component_depth" not in study.validate_study_config(
+        {"inputs": ["missing.col"]}
+    )
+
+
+@pytest.mark.parametrize(
+    "over", ["raw", "preparation", "oracle", "diffusion", "search", "all"]
+)
+@pytest.mark.parametrize("existing_caps", [False, True])
+def test_component_depth_all_offenders_once_before_artifacts(
+    tmp_path, monkeypatch, over, existing_caps
+):
+    from logique.benchmarks import metrics
+
+    names = ("raw", "preparation", "oracle", "diffusion", "search")
+    depths = {n: 10**100 if over in (n, "all") else 4 for n in names}
+    reads = []
+
+    class DepthOnly:
+        # Only existing caps may read width/count; depth never reads definitions.
+        def __init__(self, name):
+            self.name = name
+
+        @property
+        def num_qubits(self):
+            assert existing_caps
+            return 4
+
+        @property
+        def data(self):
+            assert existing_caps
+            return range(4)
+
+        @property
+        def definition(self):
+            raise AssertionError("depth gate traversed definitions")
+
+        def depth(self, *args, **kwargs):
+            assert not args and not kwargs
+            reads.append(self.name)
+            assert reads.count(self.name) == 1
+            return depths[self.name]
+
+    assembled = study.ColoringStudyCase(*(DepthOnly(n) for n in names), metadata={})
+    monkeypatch.setattr(study, "assemble_case", lambda *a, **kw: assembled)
+
+    def forbidden(*args, **kwargs):
+        raise AssertionError("depth exclusion entered downstream work")
+
+    monkeypatch.setattr(study, "_resolved_qpy_circuit", forbidden)
+    monkeypatch.setattr(metrics, "lower_circuit", forbidden)
+    monkeypatch.setattr(metrics, "circuit_metrics", forbidden)
+    monkeypatch.setattr(qpy, "dump", forbidden)
+    controls = (
+        {"max_component_qubits": 4, "max_component_instructions": 4}
+        if existing_caps
+        else {}
+    )
+    output = study.run_coloring_study(
+        _width_config(tmp_path, max_component_depth=4, common_basis=True, **controls)
+    )
+    rec = json.loads((output / "run.json").read_text())["cases"][0]
+    check = rec["component_depth_check"]
+    assert reads == list(names)
+    assert check["depths"] == depths
+    assert check["max_component_depth"] == 4
+    assert check["over_budget_components"] == [n for n in names if depths[n] > 4]
+    assert rec["status"] == check["status"] == "excluded"
+    assert "mixed granularity" in check["scope"]
+    for n in check["over_budget_components"]:
+        assert f"{n}={10**100}" in rec["reason"]
+    if existing_caps:
+        assert rec["component_width_check"]["status"] == "accepted"
+        assert rec["component_instruction_check"]["status"] == "accepted"
+    assert json.loads((output / f'{rec["name"]}.json').read_text()) == rec
+    assert "artifacts" not in rec and "artifact_statistics" not in rec
+    assert not list(output.glob("*.qpy"))
+    assert not (output / "summary.csv").exists()
+
+
+@pytest.mark.parametrize("first", ["width", "count"])
+def test_component_depth_existing_rejections_short_circuit(
+    tmp_path, monkeypatch, first
+):
+    class EarlierOnly:
+        num_qubits = 10**100 if first == "width" else 4
+
+        @property
+        def data(self):
+            assert first == "count"
+            return range(10**9)
+
+        def depth(self):
+            raise AssertionError("depth accessed after earlier rejection")
+
+    case = study.ColoringStudyCase(*(EarlierOnly() for _ in range(5)), metadata={})
+    monkeypatch.setattr(study, "assemble_case", lambda *a, **kw: case)
+    output = study.run_coloring_study(
+        _width_config(
+            tmp_path,
+            max_component_qubits=4,
+            max_component_instructions=4,
+            max_component_depth=1,
+        )
+    )
+    rec = json.loads((output / "run.json").read_text())["cases"][0]
+    assert rec["status"] == "excluded"
+    assert "component_depth_check" not in rec
+    if first == "width":
+        assert "component_instruction_check" not in rec
+    else:
+        assert rec["component_instruction_check"]["status"] == "excluded"
+    assert "artifacts" not in rec
+    assert not list(output.glob("*.qpy"))
+
+
+@pytest.mark.parametrize("restoring", [False, True])
+@pytest.mark.parametrize("iterations", [0, 1])
+def test_component_depth_genuine_equality_omission_and_continuation(
+    tmp_path, monkeypatch, restoring, iterations
+):
+    import copy
+    import csv
+    from types import SimpleNamespace
+
+    controls = (
+        {"mcx_decomposition": "clean_tree", "mcx_workspace": "fresh_zero"}
+        if restoring
+        else {}
+    )
+    assembled = study.assemble_case(
+        ColoringProblem((42,), (), 3),
+        "sb_balanced",
+        "R2",
+        iterations=iterations,
+        **controls,
+    )
+    depths = {n: q.depth() for n, q in assembled.circuits.items()}
+    cap = max(depths.values())
+    width = max(q.num_qubits for q in assembled.circuits.values())
+    count = max(len(q.data) for q in assembled.circuits.values())
+    assert width <= 5
+
+    def outcomes(*a, seed, **kw):
+        assert "max_component_depth" not in kw
+        if seed == 1:
+            raise RuntimeError("intentional assembly failure")
+        case = copy.deepcopy(assembled)
+        if seed == 2:
+            case.search = SimpleNamespace(
+                depth=lambda: cap + 1, num_qubits=width, data=range(count)
+            )
+        return case
+
+    monkeypatch.setattr(study, "assemble_case", outcomes)
+    config = _width_config(
+        tmp_path,
+        max_component_depth=cap,
+        max_component_qubits=width,
+        max_component_instructions=count,
+        seeds=[1, 2, 3],
+        iterations=[iterations],
+        common_basis=True,
+        optimization_level=0,
+        **controls,
+    )
+    output = study.run_coloring_study(config)
+    manifest = json.loads((output / "run.json").read_text())
+    assert manifest["status"] == "complete_with_failures"
+    assert [c["status"] for c in manifest["cases"]] == [
+        "failed",
+        "excluded",
+        "complete",
+    ]
+    failed, excluded, accepted = manifest["cases"]
+    assert "component_depth_check" not in failed
+    check = accepted["component_depth_check"]
+    assert check["depths"] == depths and max(depths.values()) == cap
+    assert check["status"] == "accepted" and not check["over_budget_components"]
+    for rec in (excluded, accepted):
+        assert rec["component_width_check"]["status"] == "accepted"
+        assert rec["component_instruction_check"]["status"] == "accepted"
+    for rec in (failed, excluded):
+        assert not list(output.glob(rec["name"] + "*.qpy"))
+    rows = list(csv.DictReader((output / "summary.csv").open()))
+    assert len(rows) == 10 and {r["seed"] for r in rows} == {"3"}
+    for name, original in assembled.circuits.items():
+        level = "restoring_mcx" if restoring else "logical"
+        with (output / accepted["artifacts"][name + "_" + level]).open("rb") as f:
+            assert_resolved_semantics(original, qpy.load(f)[0])
+
+    # Identical assembled objects avoid fresh autogenerated instruction-name noise.
+    def fixed(*a, **kw):
+        assert "max_component_depth" not in kw
+        return copy.deepcopy(assembled)
+
+    monkeypatch.setattr(study, "assemble_case", fixed)
+    omitted_config = dict(
+        config, seeds=[3], output=str(tmp_path / "1027090000-omitted")
+    )
+    del omitted_config["max_component_depth"]
+    omitted = study.run_coloring_study(omitted_config)
+    old = json.loads((omitted / "run.json").read_text())
+    assert "max_component_depth" not in old["config"]
+    assert "component_depth_check" not in old["cases"][0]
+    old_rows = list(csv.DictReader((omitted / "summary.csv").open()))
+    assert [{k: v for k, v in r.items() if k != "lowering_seconds"} for r in rows] == [
+        {k: v for k, v in r.items() if k != "lowering_seconds"} for r in old_rows
+    ]
+    for artifact in accepted["artifacts"].values():
+        assert (output / artifact).read_bytes() == (omitted / artifact).read_bytes()
+
+
+@pytest.mark.parametrize(
+    "witness",
+    ["empty", "parallel", "serial", "barrier_only", "barrier", "nested", "opaque"],
+)
+def test_component_depth_real_default_granularity_and_partial_exports(
+    tmp_path, monkeypatch, witness
+):
+    from qiskit import QuantumCircuit
+    from qiskit.circuit import Gate
+
+    case = study.assemble_case(
+        ColoringProblem((1,), (), 2), "sb_balanced", "R2", iterations=0
+    )
+    case.raw = QuantumCircuit(case.raw.num_qubits)
+    case.preparation = QuantumCircuit(1)
+    case.oracle = QuantumCircuit(case.oracle.num_qubits)
+    case.diffusion = QuantumCircuit(1)
+    case.search = QuantumCircuit(2)
+    expected_depth = 1
+    cap = 1
+    if witness == "empty":
+        expected_depth = 0
+    elif witness == "barrier_only":
+        case.search.barrier(0, 1)
+        expected_depth = 0
+    elif witness == "parallel":
+        case.search.x(0)
+        case.search.x(1)
+    elif witness == "serial":
+        case.search.x(0)
+        case.search.cx(0, 1)
+        expected_depth = 2
+    elif witness == "barrier":
+        case.search.x(0)
+        case.search.x(0)
+        case.search.barrier(0, 1)
+        case.search.x(1)
+        # Ignoring the barrier completely would give 2, counting it would give 4.
+        expected_depth = 3
+        cap = 3
+    elif witness == "nested":
+        body = QuantumCircuit(2, global_phase=0.417)
+        for _ in range(8):
+            body.x(0)
+            body.cx(0, 1)
+        case.search.global_phase = -0.19
+        case.search.append(body.to_gate().inverse(), [1, 0])
+    else:
+
+        class NoDefinition(Gate):
+            @property
+            def definition(self):
+                raise AssertionError("opaque definition was traversed")
+
+            @definition.setter
+            def definition(self, value):
+                pass
+
+        case.search.append(NoDefinition("opaque_depth_witness", 2, []), [1, 0])
+    assert case.search.depth() == expected_depth
+    monkeypatch.setattr(study, "assemble_case", lambda *a, **kw: case)
+    output = study.run_coloring_study(_width_config(tmp_path, max_component_depth=cap))
+    rec = json.loads((output / "run.json").read_text())["cases"][0]
+    check = rec["component_depth_check"]
+    assert check["depths"] == dict(
+        raw=0, preparation=0, oracle=0, diffusion=0, search=expected_depth
+    )
+    if witness == "serial":
+        assert rec["status"] == check["status"] == "excluded"
+        assert not list(output.glob("*.qpy"))
+    elif witness in ("barrier_only", "barrier", "opaque"):
+        assert check["status"] == "accepted" and rec["status"] == "failed"
+        assert rec["artifacts"] and len(list(output.glob("*.qpy"))) == 4
+        assert not (output / "summary.csv").exists()
+    else:
+        assert rec["status"] == "complete" and check["status"] == "accepted"
+        with (output / rec["artifacts"]["search_logical"]).open("rb") as f:
+            assert_resolved_semantics(case.search, qpy.load(f)[0])
+
+
+def test_component_depth_real_reserved_j0(tmp_path, monkeypatch):
+    from qiskit import QuantumCircuit
+
+    case = study.assemble_case(
+        ColoringProblem((-7, 20), ((-7, 20),), 3),
+        "sb_balanced",
+        "R2",
+        iterations=0,
+        mcx_decomposition="clean_tree",
+        mcx_workspace="fresh_zero",
+    )
+    owners = case.metadata["mcx_lowering"]["search_scratch_ownership"]
+    assert owners["zero_reflection"]
+    assert (
+        case.metadata["component_workspace"]["search"]["mcx_live_peak_upper_bound"] == 0
+    )
+    expected = QuantumCircuit(case.search.num_qubits)
+    expected.compose(
+        case.preparation,
+        case.metadata["mcx_lowering"]["search_embeddings"]["preparation"],
+        inplace=True,
+    )
+    # Exact ordered standard-gate composition, phase and idle pools; no wide array.
+    assert study._qpy_semantic_signature(expected) == study._qpy_semantic_signature(
+        case.search
+    )
+    depths = {n: q.depth() for n, q in case.circuits.items()}
+    assert depths["search"] < max(depths.values())
+    monkeypatch.setattr(study, "assemble_case", lambda *a, **kw: case)
+    output = study.run_coloring_study(
+        _width_config(
+            tmp_path,
+            max_component_depth=depths["search"],
+            mcx_decomposition="clean_tree",
+            mcx_workspace="fresh_zero",
+        )
+    )
+    rec = json.loads((output / "run.json").read_text())["cases"][0]
+    assert rec["status"] == "excluded"
+    assert rec["component_depth_check"]["depths"] == depths
+    assert "oracle" in rec["component_depth_check"]["over_budget_components"]
+    assert not list(output.glob("*.qpy"))

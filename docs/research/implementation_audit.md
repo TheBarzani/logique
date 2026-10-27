@@ -1133,3 +1133,55 @@ final independent correctness/claim/reproducibility reviews remain open. Current
 analytical exact-count ideal and static C/p admissions are retained; their old
 blocked checkpoints remain historical. No interval certificate,ideal-amplitude
 guarantee,new FT/RUS or paper approval. Full paper remains unfinished.
+
+
+## Preparation caller guide: bounded documentation admission
+
+Both preparation-guide-1027031556 and its independent reviewer completed;
+neither blocked. THIS coordinator had no prior own completion. Only guide commit
+5525bfa entered integration6c6484a; checkpoint-only7794a96 was excluded.
+The exact [guide](preparation_success_threshold_guide.md) is15273 bytes,SHA-256
+77b79314f4076c56037cc67e39207db73113952d9269b563e9766900882fdd54.
+The byte-preserved [independent review](preparation_success_threshold_guide_review.md)
+is20735 bytes,SHA-256c8cb08251f8e3c69d9e630e1e14109a354d67e04f5c034dc6191298bbe04776d,
+commitba77351. Separate [admission](preparation_success_threshold_guide_admission.md)
+records exact bytes,caller assumptions,resources,failures and exclusions.
+No source/test/build/metric/API/experiment/dataset change occurred.
+
+Admission is analytical documentation only: supplied exact deterministic static
+costs/probabilities/independent j/domains,comparable verified event,four renewal
+acknowledgements and stationarity; C=(1+2j)A+j(O+S0),B=(p_V C_H-p_H E)/(p_H D),
+Delta=(D/p_V)(A_V-B). All twelve hypothetical examples were inspected by hand;
+raw rank reversal,negative/zero boundaries,unknown/zero statuses and4096-bit
+input versus4097-bit legal output remain explicit. No scalar replay/tests or
+numerical/compiler child ran; numerical wall0,quantum arrays0. Metadata/AST/links/
+committed-byte/scope checks use existing Python only. No memory guarantee is claimed.
+
+All3442 reviewer identities and predecessor receipts matched; coordinator3569
+protected identities retain README,user edits,prototypes,archives,histories,pins,
+binaries,admitted modules/tests/compiler/harness/artifacts and prior evidence.
+Static FT exact hashes,numerical contract/caller obligations remain unchanged;
+no interval/ideal-amplitude/FT/RUS extension,graph break-even or paper admission.
+Initial missing-path discovery/truncated reads were corrected by focused reads;
+Git automatic identity notice retained,no config rewriting or approval rejection.
+
+Checkpoint:dump/1027085258-preparation-guide-coordinator-triage/batch.json.
+Whole57-job queue/all54 states inspected;51 complete,two native blocked,this
+coordinator running;three pending component-depth jobs retain ownership. Queue/
+state untouched,all definitions/prompts preserved;manifest append-only admission.
+No concrete same-scope defect exists,so no further job or feature is added.
+This closes the currently authorized analytical documentation handoff. Dispatcher
+alone launches/pushes committed integration HEAD. Completed repeats verify exact
+commits/hashes/protected paths/queue/manifest and release complete without tests/
+dispatch/integration. Initial outcome=continue reflects full unfinished plan.
+
+All broader graph/FT/execution work is outside this authorization. Remaining
+controls/post-pilot freeze/old-QPY review,native mappings/profiles/MC/balancing/SAT,
+structure common-lowering comparisons,nine-graph R1/R2/R3 multilevel strongest-
+baseline/ablation/five-seed studies,meaningful graph static FT under existing
+numerical/caller admission,separate dynamic RUS/achieved break-even,executed ideal/
+noisy/leakage/confidence/random-sampling/cost-per-success,five-repeat scaling/
+DIMACS witnesses/resources/timeouts,full acceptance/build/provenance/offline
+notebooks/isolated historical replay,traced manuscript/reviewer responses/evidence
+gate/final independent correctness/claim/reproducibility reviews remain open.
+Bounded completion differs from scientific admission. Full paper unfinished.

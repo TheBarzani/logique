@@ -1060,3 +1060,9 @@ witnesses/resources/timeouts; acceptance/build/provenance/offline notebooks/
 isolated historical replay; traced manuscript/reviewer responses/evidence gate/
 independent final correctness/claim/reproducibility reviews remain open. Broader
 research is outside this bounded authorization. Full paper unfinished.
+
+Preparation-success handoff correction: queue validator initially rejected finished
+dependency on costs-profile guide worker before any live write. Failed proposal/
+script/message retained in this batch. Corrected worker to successful completion;
+review/coordinator retain finished triage. Whole54-job validation passed; prior51
+header/definitions/prompts unchanged. No numerical tests were repeated.

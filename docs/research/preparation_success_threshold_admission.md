@@ -140,6 +140,11 @@ first interrupted intake; overly broad/combined output truncation corrected by
 focused document ranges and parsed whole queue/state/manifest; initial cherry-pick
 index.lock sandbox denial followed by successful scoped automatic escalation.
 Git printed automatic committer identity; no config or author rewriting occurred.
+Initial queue validation rejected dependency_policy=finished on the costs-profile
+guide worker before any live queue write (Only coordinators/reviewers may follow
+blocked tasks). The failed proposal/script and message are retained. Worker
+dependency was corrected to default complete; review/coordinator retain finished.
+Corrected whole queue validation passed, with prior definitions/prompts unchanged.
 No automatic approval rejection, numerical/static failure, timeout/OOM or unresolved
 candidate counterexample. Earlier Task6 lowering failures, edge-width13 exclusion,
 old ideal categorical blocker and unrelated native blocked statuses remain in
@@ -165,7 +170,8 @@ explanation of supplied-event/renewal obligations and zero/unknown statuses;
 current evidence lives in code/review/admission. At most12 hypothetical scalar
 examples, no production extension, experiment or achieved graph claim. Both
 admitted preparation modules/tests and all specialty scopes remain read-only.
-Finished dependencies permit blocked-predecessor triage; dispatcher alone
+The worker requires successful coordinator completion; finished review/coordinator
+dependencies permit blocked-predecessor triage. Dispatcher alone
 launches models and pushes committed integration HEAD. Prior header/definitions/
 prompts stay immutable. No further analytical feature is preauthorized beyond
 that guide; broader research remains in the full plan, outside this batch.

@@ -45,6 +45,7 @@ CONFIG_FIELDS = {
     "mcx_decomposition",
     "mcx_workspace",
     "max_component_qubits",
+    "max_component_instructions",
 }
 
 RESTORING_MCX_POLICIES = ("clean_tree",)
@@ -332,6 +333,11 @@ def validate_study_config(config: dict) -> dict:
         or config["max_component_qubits"] < 1
     ):
         raise ValueError("max_component_qubits must be a positive integer")
+    if "max_component_instructions" in config and (
+        type(config["max_component_instructions"]) is not int
+        or config["max_component_instructions"] < 1
+    ):
+        raise ValueError("max_component_instructions must be a positive integer")
     if {"mcx_decomposition", "mcx_workspace"} & set(config):
         if config.get("mcx_decomposition") not in RESTORING_MCX_POLICIES:
             raise ValueError("mcx_decomposition supports only restoring clean_tree")
@@ -962,6 +968,10 @@ def run_coloring_study(config: dict, *, executable=None) -> Path:
     saved too. No routing, FT precision, memory/timeout controls or profiles exist.
     Optional max_component_qubits accepts allocated widths only after assembly;
     it neither prevents assembly/native allocation nor bounds memory or liveness.
+    Optional max_component_instructions accepts unexpanded top-level instruction
+    counts after assembly and width acceptance, before artifacts. Counts include
+    barriers at current mixed granularity, not elementary gates or resource costs;
+    the cap cannot bound later definition generation/export, memory or time.
     """
     config = validate_study_config(config)
     primary_level = "restoring_mcx" if "mcx_decomposition" in config else "logical"
@@ -1118,6 +1128,35 @@ def run_coloring_study(config: dict, *, executable=None) -> Path:
                                                 for name in exceeded
                                             )
                                             + "; post-assembly allocated-width acceptance"
+                                        )
+                                if "max_component_instructions" in config:
+                                    cap = config["max_component_instructions"]
+                                    counts = {
+                                        name: len(circuit.data)
+                                        for name, circuit in assembled.circuits.items()
+                                    }
+                                    exceeded = [
+                                        name
+                                        for name, count in counts.items()
+                                        if count > cap
+                                    ]
+                                    case["component_instruction_check"] = {
+                                        "max_component_instructions": cap,
+                                        "top_level_instructions": counts,
+                                        "over_budget_components": exceeded,
+                                        "status": (
+                                            "excluded" if exceeded else "accepted"
+                                        ),
+                                        "scope": "post-assembly, post-width acceptance of unexpanded top-level emitted instructions at current mixed granularity, including barriers; opaque/nested instructions count once; not elementary gates, complexity, resolved artifact size, cost, memory, timeout, depth or liveness enforcement; does not prevent assembly/native allocations or bound later definition generation/export work",
+                                    }
+                                    if exceeded:
+                                        raise ExcludedCase(
+                                            f"max_component_instructions={cap} exceeded by "
+                                            + ", ".join(
+                                                f"{name}={counts[name]}"
+                                                for name in exceeded
+                                            )
+                                            + "; post-assembly top-level instruction acceptance"
                                         )
                                 artifacts = {}
                                 case["artifacts"] = artifacts

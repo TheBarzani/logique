@@ -1638,3 +1638,323 @@ def test_component_width_counts_real_j0_reserved_mcx_pools(tmp_path, monkeypatch
     assert "search" in saved["component_width_check"]["over_budget_components"]
     assert not list(output.glob("*.qpy"))
     assert not (output / "summary.csv").exists()
+
+
+class _InstructionIntSubclass(int):
+    pass
+
+
+@pytest.mark.parametrize(
+    "cap",
+    [
+        None,
+        True,
+        False,
+        0,
+        -1,
+        -(10**100),
+        1.0,
+        2.5,
+        float("nan"),
+        float("inf"),
+        "4",
+        "",
+        [],
+        {},
+        (),
+        {1},
+        complex(1),
+        _InstructionIntSubclass(4),
+        np.int64(4),
+    ],
+)
+def test_component_instructions_reject_before_input_or_run(monkeypatch, cap):
+    from logique.benchmarks import runner
+
+    def forbidden(*args, **kwargs):
+        raise AssertionError("work before instruction config rejection")
+
+    monkeypatch.setattr(study, "read_dimacs", forbidden)
+    monkeypatch.setattr(study, "assemble_case", forbidden)
+    monkeypatch.setattr(runner, "new_run_directory", forbidden)
+    with pytest.raises(
+        ValueError, match="max_component_instructions.*positive integer"
+    ):
+        study.run_coloring_study(
+            {"inputs": ["missing.col"], "max_component_instructions": cap}
+        )
+
+
+@pytest.mark.parametrize("cap", [1, 4, 10**100])
+def test_component_instructions_positive_builtin_config(cap):
+    config = study.validate_study_config(
+        {"inputs": ["missing.col"], "max_component_instructions": cap}
+    )
+    assert config["max_component_instructions"] == cap
+    assert "max_component_instructions" not in study.validate_study_config(
+        {"inputs": ["missing.col"]}
+    )
+
+
+@pytest.mark.parametrize(
+    "over", ["raw", "preparation", "oracle", "diffusion", "search", "all"]
+)
+@pytest.mark.parametrize("width_cap", [None, 4])
+def test_component_instructions_gate_all_before_artifacts(
+    tmp_path, monkeypatch, over, width_cap
+):
+    from types import SimpleNamespace
+    from logique.benchmarks import metrics
+
+    names = ("raw", "preparation", "oracle", "diffusion", "search")
+    counts = {n: 10**9 if over in (n, "all") else 4 for n in names}
+    reads = []
+
+    class Instructions:
+        def __init__(self, name):
+            self.name = name
+
+        def __len__(self):
+            reads.append(self.name)
+            return counts[self.name]
+
+        def __iter__(self):
+            raise AssertionError("acceptance traversed instructions")
+
+    # Count/width stand-ins avoid allocating large synthetic quantum objects.
+    assembled = study.ColoringStudyCase(
+        *(SimpleNamespace(data=Instructions(n), num_qubits=4) for n in names),
+        metadata={},
+    )
+    monkeypatch.setattr(study, "assemble_case", lambda *a, **kw: assembled)
+
+    def forbidden(*args, **kwargs):
+        raise AssertionError("count exclusion entered downstream work")
+
+    monkeypatch.setattr(study, "_resolved_qpy_circuit", forbidden)
+    monkeypatch.setattr(metrics, "lower_circuit", forbidden)
+    monkeypatch.setattr(metrics, "circuit_metrics", forbidden)
+    monkeypatch.setattr(qpy, "dump", forbidden)
+    controls = {} if width_cap is None else {"max_component_qubits": width_cap}
+    output = study.run_coloring_study(
+        _width_config(
+            tmp_path, max_component_instructions=4, common_basis=True, **controls
+        )
+    )
+    rec = json.loads((output / "run.json").read_text())["cases"][0]
+    check = rec["component_instruction_check"]
+    assert reads == list(names)
+    assert check["top_level_instructions"] == counts
+    assert check["max_component_instructions"] == 4
+    assert check["over_budget_components"] == [n for n in names if counts[n] > 4]
+    assert rec["status"] == check["status"] == "excluded"
+    assert "mixed granularity" in check["scope"]
+    for n in check["over_budget_components"]:
+        assert f"{n}=1000000000" in rec["reason"]
+    if width_cap is not None:
+        assert rec["component_width_check"]["status"] == "accepted"
+    assert json.loads((output / f'{rec["name"]}.json').read_text()) == rec
+    assert not rec.get("artifacts")
+    assert not list(output.glob("*.qpy"))
+    assert not (output / "summary.csv").exists()
+
+
+def test_component_instructions_width_rejection_short_circuits(tmp_path, monkeypatch):
+    class WidthOnly:
+        num_qubits = 5
+
+        @property
+        def data(self):
+            raise AssertionError("instruction gate ran after width exclusion")
+
+    case = study.ColoringStudyCase(*(WidthOnly() for _ in range(5)), metadata={})
+    monkeypatch.setattr(study, "assemble_case", lambda *a, **kw: case)
+    output = study.run_coloring_study(
+        _width_config(tmp_path, max_component_qubits=4, max_component_instructions=1)
+    )
+    rec = json.loads((output / "run.json").read_text())["cases"][0]
+    assert rec["status"] == "excluded"
+    assert "component_instruction_check" not in rec
+    assert rec["component_width_check"]["status"] == "excluded"
+    assert not list(output.glob("*.qpy"))
+
+
+@pytest.mark.parametrize("restoring", [False, True])
+@pytest.mark.parametrize("iterations", [0, 1])
+def test_component_instructions_genuine_equality_omission_and_continuation(
+    tmp_path, monkeypatch, restoring, iterations
+):
+    import copy
+    import csv
+    from types import SimpleNamespace
+
+    controls = (
+        {"mcx_decomposition": "clean_tree", "mcx_workspace": "fresh_zero"}
+        if restoring
+        else {}
+    )
+    assembled = study.assemble_case(
+        ColoringProblem((42,), (), 3),
+        "sb_balanced",
+        "R2",
+        iterations=iterations,
+        **controls,
+    )
+    counts = {n: len(q.data) for n, q in assembled.circuits.items()}
+    cap = max(counts.values())
+    width = max(q.num_qubits for q in assembled.circuits.values())
+    assert width <= 5
+
+    def outcomes(*a, seed, **kw):
+        if seed == 1:
+            raise RuntimeError("intentional assembly failure")
+        case = copy.deepcopy(assembled)
+        if seed == 2:
+            case.search = SimpleNamespace(data=range(cap + 1), num_qubits=width)
+        return case
+
+    monkeypatch.setattr(study, "assemble_case", outcomes)
+    output = study.run_coloring_study(
+        _width_config(
+            tmp_path,
+            max_component_instructions=cap,
+            max_component_qubits=width,
+            seeds=[1, 2, 3],
+            iterations=[iterations],
+            common_basis=True,
+            optimization_level=0,
+            **controls,
+        )
+    )
+    manifest = json.loads((output / "run.json").read_text())
+    assert manifest["status"] == "complete_with_failures"
+    assert [c["status"] for c in manifest["cases"]] == [
+        "failed",
+        "excluded",
+        "complete",
+    ]
+    failed, excluded, accepted = manifest["cases"]
+    assert "component_instruction_check" not in failed
+    assert "intentional assembly failure" in failed["reason"]
+    check = accepted["component_instruction_check"]
+    assert check["top_level_instructions"] == counts
+    assert check["status"] == "accepted" and not check["over_budget_components"]
+    assert accepted["component_width_check"]["status"] == "accepted"
+    for rec in (failed, excluded):
+        assert not list(output.glob(rec["name"] + "*.qpy"))
+    rows = list(csv.DictReader((output / "summary.csv").open()))
+    assert len(rows) == 10 and {r["seed"] for r in rows} == {"3"}
+    for name, original in assembled.circuits.items():
+        level = "restoring_mcx" if restoring else "logical"
+        with (output / accepted["artifacts"][name + "_" + level]).open("rb") as f:
+            assert_resolved_semantics(original, qpy.load(f)[0])
+
+    monkeypatch.setattr(
+        study, "assemble_case", lambda *a, **kw: copy.deepcopy(assembled)
+    )
+    omitted = study.run_coloring_study(
+        _width_config(
+            tmp_path,
+            seeds=[3],
+            iterations=[iterations],
+            common_basis=True,
+            optimization_level=0,
+            output=str(tmp_path / "1027030000-omitted"),
+            **controls,
+        )
+    )
+    old = json.loads((omitted / "run.json").read_text())
+    assert "max_component_instructions" not in old["config"]
+    assert "component_instruction_check" not in old["cases"][0]
+    old_rows = list(csv.DictReader((omitted / "summary.csv").open()))
+
+    def normalize(rs):
+        return [{k: v for k, v in r.items() if k != "lowering_seconds"} for r in rs]
+
+    assert normalize(rows) == normalize(old_rows)
+    for artifact in accepted["artifacts"].values():
+        assert (output / artifact).read_bytes() == (omitted / artifact).read_bytes()
+
+
+@pytest.mark.parametrize("failure", ["barrier", "opaque"])
+def test_component_instructions_empty_barrier_nested_and_opaque(
+    tmp_path, monkeypatch, failure
+):
+    from qiskit import QuantumCircuit
+    from qiskit.circuit import Gate
+
+    tiny = study.assemble_case(
+        ColoringProblem((1,), (), 2), "sb_balanced", "R2", iterations=0
+    )
+    tiny.raw = QuantumCircuit(tiny.raw.num_qubits)  # empty -> zero
+    tiny.preparation = QuantumCircuit(1)
+    body = QuantumCircuit(1)
+    for _ in range(20):
+        body.x(0)
+    tiny.oracle = QuantumCircuit(tiny.oracle.num_qubits)
+    tiny.oracle.append(body.to_gate().inverse(), [0])  # nested -> one
+    tiny.diffusion = QuantumCircuit(1)
+    tiny.search = QuantumCircuit(tiny.search.num_qubits)
+    if failure == "barrier":
+        tiny.search.barrier()  # included -> one
+    else:
+        tiny.search.append(Gate("unsupported_opaque", 1, []), [0])  # opaque -> one
+    monkeypatch.setattr(study, "assemble_case", lambda *a, **kw: tiny)
+    output = study.run_coloring_study(
+        _width_config(tmp_path, max_component_instructions=1)
+    )
+    rec = json.loads((output / "run.json").read_text())["cases"][0]
+    check = rec["component_instruction_check"]
+    assert check["top_level_instructions"] == dict(
+        raw=0, preparation=0, oracle=1, diffusion=0, search=1
+    )
+    assert check["status"] == "accepted"
+    # Later QPY resolution still rejects unsupported opaque definitions and
+    # retains previous partial artifacts; acceptance is not export admission.
+    assert rec["status"] == "failed" and failure in rec["reason"]
+    assert rec["artifacts"] and list(output.glob("*.qpy"))
+    assert not (output / "summary.csv").exists()
+
+
+def test_component_instructions_real_reserved_j0(tmp_path, monkeypatch):
+    from qiskit import QuantumCircuit
+
+    case = study.assemble_case(
+        ColoringProblem((-7, 20), ((-7, 20),), 3),
+        "sb_balanced",
+        "R2",
+        iterations=0,
+        mcx_decomposition="clean_tree",
+        mcx_workspace="fresh_zero",
+    )
+    owners = case.metadata["mcx_lowering"]["search_scratch_ownership"]
+    assert owners["zero_reflection"]
+    assert (
+        case.metadata["component_workspace"]["search"]["mcx_live_peak_upper_bound"] == 0
+    )
+    expected = QuantumCircuit(case.search.num_qubits)
+    expected.compose(
+        case.preparation,
+        case.metadata["mcx_lowering"]["search_embeddings"]["preparation"],
+        inplace=True,
+    )
+    # Ordered exact emitted composition also retains scalar phase and idle pools.
+    assert study._qpy_semantic_signature(expected) == study._qpy_semantic_signature(
+        case.search
+    )
+    counts = {n: len(q.data) for n, q in case.circuits.items()}
+    assert counts["search"] < max(counts.values())
+    monkeypatch.setattr(study, "assemble_case", lambda *a, **kw: case)
+    output = study.run_coloring_study(
+        _width_config(
+            tmp_path,
+            max_component_instructions=counts["search"],
+            mcx_decomposition="clean_tree",
+            mcx_workspace="fresh_zero",
+        )
+    )
+    rec = json.loads((output / "run.json").read_text())["cases"][0]
+    assert rec["status"] == "excluded"
+    assert rec["component_instruction_check"]["top_level_instructions"] == counts
+    assert "oracle" in rec["component_instruction_check"]["over_budget_components"]
+    assert not list(output.glob("*.qpy"))

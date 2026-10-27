@@ -1066,3 +1066,70 @@ dependency on costs-profile guide worker before any live write. Failed proposal/
 script/message retained in this batch. Corrected worker to successful completion;
 review/coordinator retain finished triage. Whole54-job validation passed; prior51
 header/definitions/prompts unchanged. No numerical tests were repeated.
+
+
+## Component-instruction acceptance: bounded coordinator integration
+
+Both component-instructions-1026172157 and its independent exact-hash review
+completed. THIS coordinator had no prior completed own handoff. Only owned
+source/tests f16b4d1 entered correctness commit cff63e8; checkpoint-only f6dad9f,
+build/dependency/research-metric changes were excluded. The byte-preserved
+[independent review](component_instructions_review.md) and
+[coordinator admission](component_instructions_admission.md) record exact hashes,
+proof, actual commands/resources/failures and exclusions. Admission is ONLY
+optional positive builtin-int max_component_instructions after assembly/width
+acceptance, before artifacts: all-five unexpanded len(circuit.data), equality/
+empty accepted, all offenders, explicit status/scope and zero count-excluded
+QPY/rows with continuation. Omission, width short-circuit and later partial-
+artifact failure behavior remain unchanged. Counts include barriers/nested opaque
+instructions at current mixed granularity; not elementary gates, complexity,
+resolved artifact size, cost, memory, timeout, depth or liveness enforcement.
+Cannot prevent assembly/native allocation or bound later definitions/export.
+
+Integrated suite:227 passed,31 retained wider dense exclusions,zero skips.
+Independent-review harness replay:21 invalid rejections,12 noniterable billion-
+count fixtures/downstream forbidden,16 genuine tiny default/restoring assemblies,
+160 fixed-assembly byte-identical baseline/omitted/equality artifact triples,
+354 <=4-wire Operator calls,16 <=5-wire statevectors,104 ordered compositions;
+max error5.65233285126159e-15,no phase alignment. Wider j0 widths9/4/9/5/10,
+counts39/8/43/37/8; cap8 excludes raw/O/D,cap43 accepts. Mixed failed/excluded/
+complete,empty/nested/barrier/opaque and retained partial exports verified;
+all62 worker records and915 saved rows reconciled. Existing actual inverse,
+signed diffusion,ordered wires and clean-scratch proof remain; general wider
+original-to-transpiler equivalence and archived-pilot repair remain excluded.
+Relevant Black/Ruff/whitespace pass; no full suite/mypy/build/notebook/replay/
+routing/FT/full study. Sequential existing Python,explicit root src/cache/private
+native,threads1,<=120s each/300s cumulative; numerical45.285339s,max child
+RSS226492416 bytes,not enforced aggregate cap/OS visibility. No compiler.
+
+All755 worker protected/2856 reviewer protected/1720 worker evidence/1635 reviewer
+evidence hashes matched before integration. README,prototypes,archives,histories,
+pins,binaries and original evidence retained. Failures:optional discovery/read
+truncation,temporary nonconforming dump pointer immediately removed,initial
+audit FileNotFoundError for two newer independent root modules corrected to check
+all worker dependencies,and Git index.lock denial/scoped escalation success;
+no automatic approval rejection,numerical failure,timeout/OOM. Worker Ruff/Black,
+review fence-newline finalizer and older QPY/restoring failures remain explicit.
+
+Checkpoint:dump/1027081900-component-instructions-coordinator-triage/batch.json.
+Entire54-job queue/all51 states inspected; unrelated native blocked statuses and
+existing preparation-guide ownership retained; completed controls/QPY/restoring/
+width coordinators not redispatched. Append only ONE optional max_component_depth
+acceptance slice/review/coordinator,after existing gates,before artifacts,using
+current emitted QuantumCircuit.depth() default semantics. No resolved/lowered/
+routed/FT depth,duration,process memory/timeout promise or protocol freeze.
+Immutable prior headers/definitions/prompts; isolated worktrees,finished review/
+coordinator triage. Dispatcher alone launches/pushes committed integration HEAD.
+On completed repeat verify/release COMPLETE without tests/integration/jobs.
+
+All remaining controls/post-pilot freeze/old-QPY review,native/profiles/SAT,
+structure comparisons,nine-graph R1/R2/R3 multilevel strongest-baseline/ablation/
+five-seed studies,meaningful graph static FT under unchanged exact-hash numerical/
+caller contract,separate dynamic RUS/achieved break-even,executed ideal/noisy/
+leakage/confidence/random-sampling/cost-per-success,five-repeat scaling/DIMACS
+witnesses/resources/timeouts,full acceptance/build/provenance/offline notebooks/
+isolated historical replay,traced manuscript/reviewer responses/evidence gate/
+final independent correctness/claim/reproducibility reviews remain open. Current
+analytical exact-count ideal and static C/p admissions are retained; their old
+blocked checkpoints remain historical. No interval certificate,ideal-amplitude
+guarantee,new FT/RUS or paper approval. Full paper remains unfinished.

@@ -46,6 +46,8 @@ def _qiskit_records(circuit):
     for item in circuit.data:
         op = item.operation
         qs = [circuit.find_bit(q).index for q in item.qubits]
+        if op.name == "barrier":
+            continue
         count = op.num_ctrl_qubits if isinstance(op, ControlledGate) else 0
         base = op.base_gate if count else op
         if base.name not in ("x", "rx", "z"):

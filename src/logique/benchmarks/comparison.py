@@ -79,6 +79,10 @@ def strongest_baseline_comparison(frame, *, metrics=("qubits", "depth", "gates")
                         "cost": cost,
                         "baseline_cost": best,
                         "baseline_methods": "|".join(winners),
+                        "available_baseline_methods": "|".join(
+                            sorted(baselines.method)
+                        ),
+                        "available_baseline_count": len(baselines),
                         "ratio": ratio,
                         "outcome": outcome,
                         "ratio_status": (

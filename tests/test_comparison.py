@@ -81,3 +81,12 @@ def test_invalid_comparisons_fail(failure):
         frame.loc[0, "gates"] = -1 if failure == "negative" else float("nan")
     with pytest.raises(ValueError):
         strongest_baseline_comparison(frame, metrics=("gates",))
+
+
+def test_strongest_comparison_records_available_baseline_denominator():
+    details, _ = strongest_baseline_comparison(costs(), metrics=("gates",))
+    assert details.available_baseline_count.tolist() == [2, 2]
+    assert details.available_baseline_methods.tolist() == [
+        "sb_minimal|sb_simple",
+        "sb_minimal|sb_simple",
+    ]

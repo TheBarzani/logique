@@ -25,9 +25,12 @@ if TYPE_CHECKING:
     from qiskit import QuantumCircuit
 
 STUDY_METHODS = (*METHODS, *(f"sb_{variant}" for variant in VARIANTS))
+STRUCTURE_METHODS = ("structure_sequential", "structure_parallel")
+OPTIMIZATION_PROFILES = ("none", "refactoring", "balanced")
 REGIMES = ("R1", "R2", "R3")
 CONFIG_FIELDS = {
     "kind",
+    "optimization_profile",
     "inputs",
     "methods",
     "regimes",
@@ -54,13 +57,15 @@ RESTORING_MCX_POLICIES = ("clean_tree",)
 
 def _qpy_standard_gate_classes() -> set[type]:
     """Return recognized QPY gate classes with explicit numeric/control state."""
+    from qiskit.circuit import Barrier
     from qiskit.circuit.library import MCXGate
     from qiskit.circuit.library.standard_gates import get_standard_gate_name_mapping
 
     # The fixed-arity catalogue omits generic MCX. Retain this serializable
     # class so preparation resolution does not implicitly lower logical MCX.
     return {gate.base_class for gate in get_standard_gate_name_mapping().values()} | {
-        MCXGate
+        MCXGate,
+        Barrier,
     }
 
 
@@ -110,12 +115,21 @@ def _resolved_qpy_circuit(
             )
             if expand_wide and mcx and controls > 20:
                 raise ValueError("Restoring MCX subset is limited to 20 controls")
-            if expand_wide and operation.num_qubits > 21:
+            if (
+                expand_wide
+                and operation.num_qubits > 21
+                and operation.name != "barrier"
+            ):
                 raise ValueError("Restoring definition operation exceeds 21 wires")
             if (
                 operation.base_class in standard
                 and closed_controls
-                and (not expand_wide or operation.num_qubits <= 3 or mcx)
+                and (
+                    not expand_wide
+                    or operation.num_qubits <= 3
+                    or mcx
+                    or operation.name == "barrier"
+                )
             ):
                 # Standard gates have numeric parameters; reject nonfinite ones
                 # before QPY, including hidden NaN/Inf in a nested definition.
@@ -194,6 +208,7 @@ def _stage_timings(timings: dict, backend: dict) -> dict:
         "synthesis": "whole Python synthesis/baseline adapter call, including native invocation when used",
         "oracle_wrapper": "initial phase wrapper; selected kickback wrapper may be built during validation",
         "validation": "predicate/phase/restoration checks and selection/construction of final oracle wrapper",
+        "profile_equivalence": "finite independent graph checks at exported before/after preprocessing boundaries",
         "preparation_diffusion_search": "combined preparation, diffusion and search assembly; no split measurements",
         "mcx_decomposition": "resolve and lower source blocks once; assemble actual inverses and explicit disjoint scratch embeddings",
     }
@@ -324,8 +339,15 @@ def validate_study_config(config: dict) -> dict:
     Verification assignments are a mapping from resolved input paths to lists of
     input-register integers. Missing inputs receive the selected default coverage.
     Exhaustive monomial checks are limited to 12 data bits; auto samples above it.
-    Unknown controls (including target, precision, limits, and profiles) fail.
+    Unknown controls (including target, precision and process limits) fail.
+    Profiles are explicit shared Boolean preprocessing choices; hand-constructed
+    baselines/structure references record their inapplicability.
     """
+    if (
+        "optimization_profile" in config
+        and config["optimization_profile"] not in OPTIMIZATION_PROFILES
+    ):
+        raise ValueError(f"optimization_profile must be one of {OPTIMIZATION_PROFILES}")
     unknown = set(config) - CONFIG_FIELDS
     if unknown:
         raise ValueError(f"Unsupported coloring-study controls: {sorted(unknown)}")
@@ -373,7 +395,10 @@ def validate_study_config(config: dict) -> dict:
     result["inputs"] = [str(Path(p).resolve()) for p in inputs]
     if len(set(result["inputs"])) != len(inputs):
         raise ValueError("inputs must be distinct")
-    for key, known in (("methods", STUDY_METHODS), ("regimes", REGIMES)):
+    for key, known in (
+        ("methods", (*STUDY_METHODS, *STRUCTURE_METHODS)),
+        ("regimes", REGIMES),
+    ):
         values = result[key]
         if (
             not isinstance(values, list)
@@ -508,7 +533,8 @@ def _restoring_mcx_block(circuit: QuantumCircuit) -> tuple[QuantumCircuit, dict]
         lowered, range(lowered.num_qubits)
     )
     if any(
-        is_mcx(item.operation, 3) or item.operation.num_qubits > 3
+        is_mcx(item.operation, 3)
+        or (item.operation.num_qubits > 3 and item.operation.name != "barrier")
         for item in lowered.data
     ):
         raise ValueError("Restoring MCX lowering left an unsupported wide gate")
@@ -714,6 +740,47 @@ def _apply_restoring_mcx(case: ColoringStudyCase, result) -> ColoringStudyCase:
     return case
 
 
+def _profile_equivalence(result, encoding, options: dict) -> dict:
+    """Check each exported preprocessing boundary against the graph reference.
+
+    Exhaustive through 12 inputs, seeded sampled plus caller witnesses above it.
+    This is explicitly finite evidence, not SAT equivalence for large functions.
+    Balanced encoder associativity preserves the predicate and input ordering.
+    """
+    import numpy as np
+    from logique.verification.classical import verification_assignments, truth_outputs
+
+    selected, coverage = verification_assignments(encoding.input_count, **options)
+    expected = np.array(
+        [
+            encoding.problem.is_valid(
+                encoding.decode(sum(int(b) << i for i, b in enumerate(column)))
+            )
+            for column in selected.T
+        ]
+    )
+    evidence = result.metadata.get("preprocessing", {})
+    boundaries = {
+        name: evidence.get(name) for name in ("before_network", "after_network")
+    }
+    for name, graph in boundaries.items():
+        if graph is None or len(graph["inputs"]) != encoding.input_count:
+            raise ValueError(f"Missing ordered preprocessing boundary: {name}")
+        actual = truth_outputs(graph, selected)
+        if actual.shape != (1, selected.shape[1]) or not np.array_equal(
+            actual[0], expected
+        ):
+            raise AssertionError(f"Preprocessing changed coloring predicate at {name}")
+    return {
+        **coverage,
+        "status": "sampled" if options["sampled"] else "exhaustive",
+        "assignments": selected.shape[1],
+        "boundaries": list(boundaries),
+        "reference": "independent complete/effective graph predicate",
+        "balanced_encoder_argument": "AND/OR associativity, identical leaves and ordered primary inputs",
+    }
+
+
 def assemble_case(
     problem: ColoringProblem,
     method: str,
@@ -728,6 +795,7 @@ def assemble_case(
     mcx_decomposition: str | None = None,
     mcx_workspace: str | None = None,
     executable=None,
+    optimization_profile: str | None = None,
 ) -> ColoringStudyCase:
     """Assemble and validate one controlled case without saving or simulating it.
 
@@ -747,6 +815,11 @@ def assemble_case(
             "validation": validation,
             "samples": samples,
             "remove_precolors": remove_precolors,
+            **(
+                {"optimization_profile": optimization_profile}
+                if optimization_profile is not None
+                else {}
+            ),
             **(
                 {"mcx_decomposition": mcx_decomposition, "mcx_workspace": mcx_workspace}
                 if mcx_decomposition is not None or mcx_workspace is not None
@@ -787,10 +860,21 @@ def assemble_case(
         problem.edges,
         (1 << encoding.bits_per_color) if regime == "R3" else problem.colors,
     )
-    effective_encoding = encode_coloring(effective)
+    effective_encoding = encode_coloring(
+        effective, balanced=optimization_profile == "balanced"
+    )
     timings["effective_encoding_seconds"] = time.perf_counter() - start
     start = time.perf_counter()
-    if method.startswith("sb_"):
+    if method in STRUCTURE_METHODS:
+        from logique.circuits.structure import structure_oracle
+
+        result = structure_oracle(
+            problem,
+            domain_policy="domain_free" if regime == "R3" else "complete",
+            emission=method.removeprefix("structure_"),
+        )
+        construction = "compute_Z_inverse_compute"
+    elif method.startswith("sb_"):
         try:
             result = baseline_components(
                 problem,
@@ -805,7 +889,22 @@ def assemble_case(
             raise
         construction = "clean_xor_kickback"
     else:
-        result = synthesize(effective_encoding, method, executable=executable)
+        result = synthesize(
+            effective_encoding,
+            method,
+            executable=executable,
+            **(
+                {
+                    "preprocessing": (
+                        "none"
+                        if optimization_profile == "balanced"
+                        else optimization_profile
+                    )
+                }
+                if optimization_profile is not None
+                else {}
+            ),
+        )
         construction = "compute_Z_inverse_compute"
     timings["synthesis_seconds"] = time.perf_counter() - start
     start = time.perf_counter()
@@ -829,7 +928,13 @@ def assemble_case(
             phase_evidence="on checked assignments both target sectors have exact XOR and unit phase; kickback by linearity",
         )
     else:
-        raw_report = validate(result, **options)
+        raw_report = (
+            verify_phase_oracle(
+                result, encoding=effective_encoding, circuit=oracle, **options
+            )
+            if method in STRUCTURE_METHODS
+            else validate(result, **options)
+        )
         try:
             report = verify_kickback_oracle(
                 result, encoding=effective_encoding, **options
@@ -880,9 +985,12 @@ def assemble_case(
             "data": data,
             "output": [] if construction == "verified_clean_xor_kickback" else outputs,
             "synthesis_workspace": sorted(
-                set(range(oracle.num_qubits)) - set(data) - set(outputs)
+                set(range(oracle.num_qubits))
+                - set(data)
+                - set(outputs)
+                - set(result.metadata.get("constraint_qubits", []))
             ),
-            "constraint": [],
+            "constraint": result.metadata.get("constraint_qubits", []),
             "kickback": (
                 outputs if construction == "verified_clean_xor_kickback" else []
             ),
@@ -960,6 +1068,42 @@ def assemble_case(
             for name in ("raw", "preparation", "oracle", "diffusion", "search")
         },
     }
+    if optimization_profile is not None:
+        equivalence_started = time.perf_counter()
+        metadata.update(
+            optimization_profile=optimization_profile,
+            profile_application={
+                "scope": "shared Boolean encoder/preprocessing across five synthesis representations; hand-built references unchanged",
+                "status": (
+                    "applied"
+                    if method in METHODS
+                    else "not_applicable_hand_constructed_reference"
+                ),
+                "balanced_encoder": optimization_profile == "balanced"
+                and method in METHODS,
+                "native_preprocessing": (
+                    (
+                        "none"
+                        if optimization_profile == "balanced"
+                        else optimization_profile
+                    )
+                    if method in METHODS
+                    else None
+                ),
+                "equivalence": (
+                    _profile_equivalence(result, effective_encoding, options)
+                    if method in METHODS
+                    else {
+                        "status": "not_applicable",
+                        "reason": "hand-constructed reference has no Boolean optimization pass",
+                    }
+                ),
+            },
+        )
+        timings["profile_equivalence_seconds"] = (
+            time.perf_counter() - equivalence_started
+        )
+        metadata["stage_timings"] = _stage_timings(timings, result.metadata)
     case = ColoringStudyCase(
         result.circuit, preparation, oracle, diffusion, search, metadata
     )
@@ -971,7 +1115,7 @@ def run_coloring_study(config: dict, *, executable=None) -> Path:
 
     All controls and input-specific assignments are checked before numerical work.
     QPY artifacts are the source for every metric row; common-basis artifacts are
-    saved too. No routing, FT precision, memory/timeout controls or profiles exist.
+    saved too. No routing, FT precision or process-memory/timeout controls exist.
     Optional max_component_qubits accepts allocated widths only after assembly;
     it neither prevents assembly/native allocation nor bounds memory or liveness.
     Optional max_component_instructions accepts unexpanded top-level instruction
@@ -1036,6 +1180,11 @@ def run_coloring_study(config: dict, *, executable=None) -> Path:
             for source in (
                 Path(__file__),
                 Path(__file__).with_name("runner.py"),
+                Path(__file__).with_name("comparison.py"),
+                Path(__file__).with_name("metrics.py"),
+                Path(__file__).parents[1] / "synthesis" / "api.py",
+                Path(__file__).parents[1] / "coloring" / "encoding.py",
+                Path(__file__).parents[1] / "circuits" / "structure.py",
                 *(
                     (Path(__file__).with_name("costs.py"),)
                     if primary_level == "restoring_mcx"
@@ -1112,6 +1261,15 @@ def run_coloring_study(config: dict, *, executable=None) -> Path:
                                         else {}
                                     ),
                                     executable=executable,
+                                    **(
+                                        {
+                                            "optimization_profile": config[
+                                                "optimization_profile"
+                                            ]
+                                        }
+                                        if "optimization_profile" in config
+                                        else {}
+                                    ),
                                 )
                                 case.update(assembled.metadata)
                                 if "max_component_qubits" in config:
@@ -1225,7 +1383,7 @@ def run_coloring_study(config: dict, *, executable=None) -> Path:
                                         )
                                         if level == "common_basis" and not set(
                                             measured.count_ops()
-                                        ) <= {"u", "cx"}:
+                                        ) <= {"u", "cx", "barrier"}:
                                             raise AssertionError(
                                                 "Common basis contains non U/CX gates"
                                             )
@@ -1374,6 +1532,21 @@ def run_coloring_study(config: dict, *, executable=None) -> Path:
                                                 "iteration": iteration,
                                                 "seed": seed,
                                                 **metrics,
+                                                **(
+                                                    {
+                                                        "optimization_profile": config[
+                                                            "optimization_profile"
+                                                        ]
+                                                    }
+                                                    if "optimization_profile" in config
+                                                    else {}
+                                                ),
+                                                "mcx_method": config.get(
+                                                    "mcx_decomposition",
+                                                    "qiskit_default_uncontrolled",
+                                                ),
+                                                "target": "unrouted",
+                                                "precision": "native_float_no_rotation_synthesis",
                                                 "metric_level": level,
                                                 "representation": representation[
                                                     "representation"

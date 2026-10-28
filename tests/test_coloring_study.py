@@ -164,7 +164,7 @@ def test_precolors_require_explicit_removal():
         {"precision": 0.001},
         {"memory_limit": 1024},
         {"parameters": {"k": 5}},
-        {"optimization_profile": "balanced"},
+        {"optimization_profile": "esop"},
         {"workspace_policy": "dirty"},
         {"routing": True},
         {"timeout": 180},
@@ -1911,9 +1911,16 @@ def test_component_instructions_empty_barrier_nested_and_opaque(
     assert check["status"] == "accepted"
     # Later QPY resolution still rejects unsupported opaque definitions and
     # retains previous partial artifacts; acceptance is not export admission.
-    assert rec["status"] == "failed" and failure in rec["reason"]
-    assert rec["artifacts"] and list(output.glob("*.qpy"))
-    assert not (output / "summary.csv").exists()
+    if failure == "barrier":
+        assert rec["status"] == "complete"
+        with (output / rec["artifacts"]["search_logical"]).open("rb") as stream:
+            assert study._qpy_semantic_signature(
+                qpy.load(stream)[0]
+            ) == study._qpy_semantic_signature(tiny.search)
+    else:
+        assert rec["status"] == "failed" and failure in rec["reason"]
+        assert rec["artifacts"] and list(output.glob("*.qpy"))
+        assert not (output / "summary.csv").exists()
 
 
 def test_component_instructions_real_reserved_j0(tmp_path, monkeypatch):
@@ -2288,7 +2295,7 @@ def test_component_depth_real_default_granularity_and_partial_exports(
     if witness == "serial":
         assert rec["status"] == check["status"] == "excluded"
         assert not list(output.glob("*.qpy"))
-    elif witness in ("barrier_only", "barrier", "opaque"):
+    elif witness == "opaque":
         assert check["status"] == "accepted" and rec["status"] == "failed"
         assert rec["artifacts"] and len(list(output.glob("*.qpy"))) == 4
         assert not (output / "summary.csv").exists()

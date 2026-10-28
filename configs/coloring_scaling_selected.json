@@ -1,0 +1,44 @@
+{
+  "kind": "selected_scaling_preparation",
+  "scope": "Preparation-only complete requested Task8 ledger; not accepted by the blocked synthesis_scaling runner",
+  "execution_gate": {
+    "decision": "BLOCK",
+    "integration_commit": "a9dbc557464b8e8725afc736649e70e9c30978b2",
+    "review_commit": "5411998f31cc3ae46e88c841a7b748734889260b",
+    "review_sha256": "da9a3ac97a5f1aa1918cc4c213a1fa333421aeec7e9c435fc9f581faa38c12ca",
+    "next": "Correct cleanup/accounting, independently review exact hashes, integrate before compiler execution"
+  },
+  "budget": {
+    "repetitions": 5,
+    "validation_seeds": [11, 23, 37, 53, 71],
+    "seed_scope": "validation only; no native randomization parameter",
+    "methods": ["xag_bennett"],
+    "encoder_profiles": ["none", "balanced"],
+    "preprocessing": "none for both encoder profiles",
+    "per_child_wall_seconds": 90,
+    "cumulative_boundary_wall_seconds": 900,
+    "memory_bytes": 6442450944,
+    "memory_scope": "6 GiB target; corrected runner must expose this setting and honest enforcement/measurement scopes before execution",
+    "all_numerical_threads": 1,
+    "max_native_response_bytes": 67108864,
+    "max_validation_estimated_bytes": 536870912,
+    "quantum_simulation": "none",
+    "remaining_case_policy": "five explicit rows per method/profile; gate/budget/witness/unsupported failures stay visible",
+    "expected_native_sha256": "6aa7357d2f64202584b14b0a14f8fb183379faf5907723cd24bd838b9be14a9a"
+  },
+  "controlled_families": [
+    {"family": "planted_multipartite", "vertices": [16, 32, 64], "densities": [0.2, 0.6], "colors": [2, 3], "graph_seed": 1729, "status": "blocked_admission", "compiler_repeats": 0}
+  ],
+  "selected_inputs": [
+    {"name": "queen-family-5", "requested_group": "queen families", "queen_size": 5, "colors": 5},
+    {"name": "queen-family-7", "requested_group": "queen families", "queen_size": 7, "colors": 7},
+    {"name": "queen-family-9", "requested_group": "queen families", "queen_size": 9, "colors": 11},
+    {"name": "myciel6", "path": "../datasets/graphs/scaling/primary/myciel6.col", "colors": 7},
+    {"name": "myciel7", "path": "../datasets/graphs/scaling/primary/myciel7.col", "colors": 8},
+    {"name": "DSJC125.1", "path": "../datasets/graphs/scaling/primary/DSJC125.1.col.b", "transform": "decode_binary", "colors": 5},
+    {"name": "le450_5a", "path": "../datasets/graphs/scaling/primary/le450_5a.col", "colors": 5},
+    {"name": "queen8_8", "path": "../datasets/graphs/scaling/queen8_8.col", "queen_formula_size": 8, "colors": 11},
+    {"name": "5-FullIns_3", "path": "../datasets/graphs/scaling/5-FullIns_3.col", "transform": "remove_legacy_precolors", "colors": 8},
+    {"name": "4-Insertions_3", "path": "../datasets/graphs/scaling/4-Insertions_3.col", "transform": "remove_legacy_precolors", "colors": 4}
+  ]
+}

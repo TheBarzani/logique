@@ -1,0 +1,61 @@
+{
+  "schema_version": 1,
+  "task": "selected-scaling-study-1028023823",
+  "acquired_on": "2026-10-28T03:18:49.669026-04:00",
+  "source_index": "https://mat.tepper.cmu.edu/COLOR/instances.html",
+  "source_index_sha256": "79ac93058c11533bc19bb0111372a46cdd2b4f0ecc1dd797b3992e6ff5aa0ba0",
+  "inputs": [
+    {
+      "file": "myciel6.col",
+      "sha256": "5bb1be3fcb0da7bada24b90fa4e1ef67a02cdbcb1aa1e69587b2a75e287f61b1",
+      "bytes": 6008,
+      "source_url": "https://mat.tepper.cmu.edu/COLOR/instances/myciel6.col",
+      "provenance": "Primary DIMACS archive hosted by Michael Trick at CMU; downloaded bytes unchanged",
+      "acquisition_status": "downloaded",
+      "acquisition_date": "2026-10-28 America/Montreal"
+    },
+    {
+      "file": "myciel7.col",
+      "sha256": "8037aaba268f3da68d8278c17694db04a18dacd9fbca669660f8edb1e6010602",
+      "bytes": 20162,
+      "source_url": "https://mat.tepper.cmu.edu/COLOR/instances/myciel7.col",
+      "provenance": "Primary DIMACS archive hosted by Michael Trick at CMU; downloaded bytes unchanged",
+      "acquisition_status": "downloaded",
+      "acquisition_date": "2026-10-28 America/Montreal"
+    },
+    {
+      "file": "le450_5a.col",
+      "sha256": "a39058fbffffa5220e7c70e64403196b0be19ec859d7d29a105738bf80785490",
+      "bytes": 55501,
+      "source_url": "https://mat.tepper.cmu.edu/COLOR/instances/le450_5a.col",
+      "provenance": "Primary DIMACS archive hosted by Michael Trick at CMU; downloaded bytes unchanged",
+      "acquisition_status": "downloaded",
+      "acquisition_date": "2026-10-28 America/Montreal"
+    },
+    {
+      "file": "DSJC125.1.col.b",
+      "sha256": "d1fa485ae23e795500adde49e5904e3b9641c4d80351be538e873001a28b9346",
+      "bytes": 1503,
+      "source_url": "https://mat.tepper.cmu.edu/COLOR/instances/DSJC125.1.col.b",
+      "provenance": "Primary DIMACS archive hosted by Michael Trick at CMU; downloaded bytes unchanged",
+      "acquisition_status": "downloaded",
+      "acquisition_date": "2026-10-28 America/Montreal"
+    }
+  ],
+  "binary_reference": {
+    "url": "https://mat.tepper.cmu.edu/COLOR/format/binformat.shar",
+    "sha256": "178f0e2925be76237c9f5a62520eb2423e745e987b1a0c03b598db8f138c6297",
+    "execution": "not executed; read bin2asc.c as reference only"
+  },
+  "evidence_directory": "/Users/mar/codex-work/logique/dump/1028023823-full-revision-implementation-coordinator/worktrees/selected-scaling-study/dump/1028031213-selected-scaling-preparation",
+  "command_template": "curl --fail --location --max-time 20 --max-filesize 2097152 URL -o NEW_OUTPUT",
+  "acquisition_failure": {
+    "command": "curl --fail --location --max-time 20 --max-filesize 2097152 https://mat.tepper.cmu.edu/COLOR/instances/myciel6.col -o dump/1028031213-selected-scaling-preparation/myciel6.col",
+    "status": 6,
+    "error": "Could not resolve host in sandbox; authorized elevated download succeeded",
+    "exact_wall_seconds": null,
+    "peak_rss_bytes": null
+  },
+  "acquisition_timing_scope": "curl progress/tool receipts only; no per-download peak RSS or research timing claimed; each transfer max20 seconds, input max2 MiB",
+  "preservation": "Existing scaling/provenance.json and all three legacy restored files unchanged"
+}

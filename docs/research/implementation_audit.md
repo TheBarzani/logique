@@ -1331,3 +1331,36 @@ correctness correction -> independent exact-hash re-review -> integration chain
 and subsequent full-scope priorities. No duplicate queue/coordinator jobs were
 added. The executed-iteration chain and its bounded admissions are unchanged;
 full paper and full Task8 remain open.
+
+
+## Full revision implementation continuation — 28 October
+
+Renewed full-plan coordinator `continue-full-revision-1028004102` implemented
+scaling process-contract correction `4bd9a16` in a fresh isolated candidate,
+with separate checkpoint `01935f4`. Final candidate suite: **114 passed**,
+including both previous review regressions; exact hashes, resource scopes,
+cleanup failure history and the attempt-1 log-retention limitation are recorded
+in [the full batch matrix](full_revision_batch_20261028.md). Source remains
+**unadmitted and unintegrated** pending independent exact-hash re-review.
+No old scaling/ideal pilot, failure, pin, binary, archive or user README was changed.
+
+Atomically appended twelve concrete jobs, preserving all first 64 definitions,
+old prompts/header and dispatcher state: scaling correction review/integration;
+selected larger five-repeat scaling plus review; FakeTorino/five-seed noisy
+iterations plus review; coherent controls/nine-graph comparison/post-pilot
+protocol plus review; primary-source manuscript background plus claim review;
+fresh Astra mathematical native value/restoration escalation; then NEW full
+research coordinator `continue-full-research-1028023823`. Total76 definitions,
+104/128 batches used at append, twelve minimum successor batches. Hard deadline,
+included-only gates, one numerical/model worker and scientific exclusions remain.
+The two old native blocked records remain unchanged; they do not stop independent
+unblocked studies. No complete-protocol, FT/RUS, general ideal-amplitude,
+scalability, comparative-superiority or full-paper approval is inferred.
+
+Checkpoint: `dump/1028023823-full-revision-implementation-coordinator/batch.json`.
+The linked tasks1–8 matrix retains actual commits/evidence and open versus
+blocked scope, final environment/native/offline-notebook/isolated135-replay and
+Astra claim-review requirements. This bounded implementation/handoff completes
+once committed, without revisiting completed coordinator sessions. Dispatcher
+alone publishes integration HEAD; next coordinator must implement/integrate
+actual admitted work and leave concrete successors within remaining bounds.

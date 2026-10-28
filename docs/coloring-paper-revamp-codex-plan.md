@@ -657,3 +657,15 @@ Seven new jobs cover executed ideal iterations, a five-repeat scaling pilot,
 independent reviews/integration, and fresh full-scope coordination. Completed
 tasks are not redispatched. Correctness admissions remain limited to their
 reviewed evidence, and full research/manuscript completion remains open.
+
+
+## Full research implementation successor batch — 28 October
+
+Checkpoint: `dump/1028023823-full-revision-implementation-coordinator/batch.json`.
+[Updated tasks1–8 matrix](research/full_revision_batch_20261028.md) records an
+implemented/tested scaling timeout/RSS correction awaiting independent review,
+twelve atomic successor jobs for selected scaling/noisy iterations/comparisons/
+protocol/manuscript/native-value review and a new integration coordinator.
+104/128 batches used at append, 76 immutable-preserving task definitions; hard
+bounds and included-usage gates unchanged. Full research and manuscript remain
+open; no new scientific admission follows from this handoff.

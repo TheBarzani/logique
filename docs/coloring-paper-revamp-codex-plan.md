@@ -644,3 +644,16 @@ validated task-owned changes, the coordinator integrates on
 `origin`. Preserve unrelated user edits, dependency pins and historical results;
 never force push or publish worker branches. See dispatcher operations for the
 explicit publication policy and failure checkpoints.
+
+## Full-scope continuation renewed 28 October
+
+The user explicitly requested continuation of the full revision after the first
+57 bounded queue jobs reached 55 complete/two blocked. This renews authority to
+implement the remaining plan and append unblocked implementation/review jobs;
+older narrow task handoffs do not prohibit work newly assigned under this
+request. See [the resumption audit](research/full_scope_resumption_20261028.md).
+Checkpoint: `dump/1028004102-coloring-full-scope-resumption/`.
+Seven new jobs cover executed ideal iterations, a five-repeat scaling pilot,
+independent reviews/integration, and fresh full-scope coordination. Completed
+tasks are not redispatched. Correctness admissions remain limited to their
+reviewed evidence, and full research/manuscript completion remains open.

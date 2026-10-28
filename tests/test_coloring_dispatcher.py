@@ -613,3 +613,15 @@ def test_publication_failure_does_not_stop_local_research(queue, monkeypatch):
     d.run(once=True)
     assert len(launched) == 1
     assert "publication_failed" in d.state["publication_error"]["reason"]
+
+
+def test_append_capacity_preserves_bounded_queue_history(queue):
+    config = dispatch.load_queue(queue)
+    first = config["jobs"][0]
+    config["jobs"] = [dict(first, id=f"task-{n}") for n in range(128)]
+    dispatch.atomic_json(queue, config)
+    assert len(dispatch.load_queue(queue)["jobs"]) == 128
+    config["jobs"].append(dict(first, id="task-overflow"))
+    dispatch.atomic_json(queue, config)
+    with pytest.raises(ValueError, match="1..128 bounded jobs"):
+        dispatch.load_queue(queue)

@@ -298,8 +298,8 @@ def load_queue(path: Path) -> dict:
     if deadline.tzinfo is None:
         raise ValueError("deadline must include its time zone")
     jobs = config.get("jobs")
-    if not isinstance(jobs, list) or not 1 <= len(jobs) <= 64:
-        raise ValueError("Queue must contain 1..64 bounded jobs")
+    if not isinstance(jobs, list) or not 1 <= len(jobs) <= 128:
+        raise ValueError("Queue must contain 1..128 bounded jobs")
     identifiers = [job["id"] for job in jobs]
     if len(set(identifiers)) != len(identifiers):
         raise ValueError("Duplicate task IDs")

@@ -15,8 +15,11 @@ requests independent Astra re-review, then runs an integration coordinator.
 Scientific approval is separate from task completion: the coordinator must
 verify the reviewed file hashes and review decision before admitting FT work.
 It can append further bounded tasks from the full research plan. The queue is
-limited to 64 tasks/128 batches and stops at the end of 1 November 2026, recording
+limited to 128 tasks/128 batches and stops at the end of 1 November 2026, recording
 unfinished work. A stopped/blocked queue is not overall research completion.
+The task-definition ceiling was raised from 64 on 28 October to permit further
+implementation/review/integration chains without deleting completed history.
+The existing 128-batch ceiling, deadline, quota gates and concurrency stay fixed.
 
 ## Controls
 

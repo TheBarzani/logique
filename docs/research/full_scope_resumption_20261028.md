@@ -140,3 +140,18 @@ Astra claim-review requirements. This bounded implementation/handoff completes
 once committed, without revisiting completed coordinator sessions. Dispatcher
 alone publishes integration HEAD; next coordinator must implement/integrate
 actual admitted work and leave concrete successors within remaining bounds.
+
+## Scaling correction re-review integration triage — 28 October
+
+The independent correction re-review `5411998` explicitly **BLOCKS** candidate
+`01935f4`/`4bd9a16`: an exit/reap/kill race loses timeout accounting and bypasses
+the cumulative study budget. Fresh coordinator replay reproduced four failures;
+the existing focused suite still passes 114. All scaling implementation remains
+withheld. See the [admission gate](scaling_study_admission.md),
+[verbatim review](scaling_contract_rereview.md) and
+[triage](scaling_contract_triage.md). Checkpoint:
+`dump/1028030635-scaling-contract-integration-triage/batch.json`.
+This bounded triage is COMPLETE. Selected scaling must inspect the gate and may
+prepare independent inputs/witnesses/protocol without executing the blocked
+harness. The already queued `continue-full-research-1028023823` owns the next
+correction/review chain; no duplicate continuation is added. Full scope stays open.

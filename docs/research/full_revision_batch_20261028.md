@@ -105,3 +105,18 @@ figures/evaluation/reviewer map and final Astra correctness/claim review. At the
 hard batch/deadline ceiling it must leave a precise actionable resume with all
 open/blocked scope. It must not loop completed handoffs, repeat broad hash scans,
 weaken included-usage gates, or call the revision complete because jobs ended.
+
+## Correction integration outcome — 28 October
+
+Independent re-review `5411998` **BLOCKS** exact candidate `01935f4`/`4bd9a16`.
+B1/B2 regressions pass, but cleanup can raise EPERM after the final nonblocking
+reap, omit accounting and bypass cumulative budgets. Root reproduced all four
+new regressions; 114 focused tests pass. No scaling source or metric is admitted
+or integrated. See [gate](scaling_study_admission.md),
+[review](scaling_contract_rereview.md), [triage](scaling_contract_triage.md) and
+`dump/1028030635-scaling-contract-integration-triage/batch.json`.
+The integration/triage job is COMPLETE; selected scaling must check this gate
+before execution and can proceed with its authorized independent preparation.
+Existing final coordinator `continue-full-research-1028023823` owns the concrete
+next cleanup/accounting correction and fresh review. Queue definitions, state,
+other scientific jobs, historical evidence and full scope remain preserved.

@@ -1311,3 +1311,23 @@ saved-circuit sweeps; do not delete domain checks. Noisy/leakage/confidence/
 random-trial/cost-success work, full comparisons, FT/RUS experiments, protocol
 freeze and evidence-gated manuscript/final checks remain open. Dispatcher alone
 pushes the committed integration HEAD; no worker push occurred.
+
+
+## Scaling integration triage — 28 October
+
+The completed independent review BLOCKS the scaling process/resource contract:
+late child completion can bypass its timeout, and wait4 RSS is mislabeled as
+isolated direct-child memory. Coordinator reproduced both failures (2 failed);
+the existing focused suite still passes 105 tests. All scaling implementation
+commits remain withheld. See [triage](scaling_study_triage.md) and the
+[byte-preserved review](scaling_study_review.md). The saved 110-attempt five-repeat
+tiny compiler pilot is neither a complete DIMACS scaling study nor quantum
+circuit correctness evidence. Original metrics, missing/unsupported input ledger,
+unknown larger counts and 145 mapping-suite failures remain explicit.
+
+Checkpoint: `dump/1028012936-scaling-integration-triage/batch.json`. This dependency
+triage is COMPLETE; `continue-full-revision-1028004102` owns a bounded B1/B2
+correctness correction -> independent exact-hash re-review -> integration chain
+and subsequent full-scope priorities. No duplicate queue/coordinator jobs were
+added. The executed-iteration chain and its bounded admissions are unchanged;
+full paper and full Task8 remain open.

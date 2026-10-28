@@ -90,3 +90,33 @@ def test_strongest_comparison_records_available_baseline_denominator():
         "sb_minimal|sb_simple",
         "sb_minimal|sb_simple",
     ]
+
+
+@pytest.mark.parametrize(
+    "control,other",
+    [
+        ("optimization_level", 3),
+        ("basis_identity", "rz,sx,x,cx"),
+        ("target_sha256", "other-target"),
+        ("calibration_sha256", "other-calibration"),
+    ],
+)
+def test_lowering_and_calibration_controls_cannot_cross_match(control, other):
+    frame = costs().assign(**{control: "fixed"})
+    frame.loc[frame.method == "xag", control] = other
+    with pytest.raises(ValueError, match="No baseline"):
+        strongest_baseline_comparison(frame, metrics=("gates",))
+
+
+def test_raw_diagnostics_cannot_be_oracle_service_improvements():
+    with pytest.raises(ValueError, match="Raw primitive"):
+        strongest_baseline_comparison(
+            costs().assign(component="raw"), metrics=("gates",)
+        )
+
+
+def test_recorded_identity_does_not_match_missing_identity():
+    frame = costs().assign(basis_identity="u,cx")
+    frame.loc[frame.method == "xag", "basis_identity"] = None
+    with pytest.raises(ValueError, match="No baseline"):
+        strongest_baseline_comparison(frame, metrics=("gates",))

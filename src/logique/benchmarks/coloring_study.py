@@ -1545,6 +1545,11 @@ def run_coloring_study(config: dict, *, executable=None) -> Path:
                                                     "mcx_decomposition",
                                                     "qiskit_default_uncontrolled",
                                                 ),
+                                                "basis_identity": (
+                                                    "u,cx"
+                                                    if level == "common_basis"
+                                                    else "not_applicable"
+                                                ),
                                                 "target": "unrouted",
                                                 "precision": "native_float_no_rotation_synthesis",
                                                 "metric_level": level,

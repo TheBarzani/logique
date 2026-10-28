@@ -321,7 +321,7 @@ def recount(output: Path) -> dict:
     import pandas as pd
     from qiskit import qpy
     from .metrics import circuit_metrics
-    from .comparison import strongest_baseline_comparison
+    from .comparison import CONTEXT_COLUMNS, strongest_baseline_comparison
 
     rows = []
     checked = 0
@@ -371,18 +371,11 @@ def recount(output: Path) -> dict:
         # Cases with no admitted baseline stay in the ledger, without an invented ratio.
         keys = [
             "benchmark",
-            "regime",
-            "component",
-            "metric_level",
-            "iteration",
-            "seed",
-            "optimization_profile",
-            "mcx_method",
-            "workspace_policy",
-            "target",
-            "precision",
+            "input_sha256",
+            *(name for name in CONTEXT_COLUMNS if name in frame.columns),
         ]
-        comparable = frame.groupby(keys, dropna=False).filter(
+        service_costs = frame[frame.component != "raw"]
+        comparable = service_costs.groupby(keys, dropna=False).filter(
             lambda g: g.method.str.startswith("sb_").any()
         )
         if not comparable.empty:

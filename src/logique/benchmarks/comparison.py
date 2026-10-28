@@ -13,6 +13,10 @@ CONTEXT_COLUMNS = (
     "workspace_policy",
     "target",
     "precision",
+    "optimization_level",
+    "basis_identity",
+    "target_sha256",
+    "calibration_sha256",
 )
 
 
@@ -27,6 +31,9 @@ def strongest_baseline_comparison(frame, *, metrics=("qubits", "depth", "gates")
     Zero-versus-zero is a tie with ratio one. A positive cost versus a zero
     baseline is a loss with an undefined finite ratio, explicitly omitted from
     geometric aggregation. Missing baselines and duplicate cost rows fail.
+    Raw primitives are diagnostic only and rejected: their arbitrary-target XOR
+    and cleanup contracts may differ. Optional lowering and calibration identities
+    separate contexts when recorded; missing identities are not certifications.
     Failed/excluded cases must have no cost rows, as in the study runner.
     """
     import pandas as pd
@@ -36,7 +43,18 @@ def strongest_baseline_comparison(frame, *, metrics=("qubits", "depth", "gates")
         raise ValueError("Require nonempty cost rows with method, level and metrics")
     if not metrics or len(set(metrics)) != len(metrics):
         raise ValueError("metrics must be a nonempty distinct sequence")
+    if "component" in frame and (frame["component"] == "raw").any():
+        raise ValueError("Raw primitive costs have no matched oracle service contract")
     frame = frame.copy()
+    # Legacy missing identities stay explicit; they never match a recorded one.
+    for control in (
+        "optimization_level",
+        "basis_identity",
+        "target_sha256",
+        "calibration_sha256",
+    ):
+        if control in frame:
+            frame[control] = frame[control].fillna("unrecorded")
     for metric in metrics:
         frame[metric] = pd.to_numeric(frame[metric], errors="raise")
     contexts = [name for name in CONTEXT_COLUMNS if name in frame.columns]

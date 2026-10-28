@@ -155,3 +155,22 @@ This bounded triage is COMPLETE. Selected scaling must inspect the gate and may
 prepare independent inputs/witnesses/protocol without executing the blocked
 harness. The already queued `continue-full-research-1028023823` owns the next
 correction/review chain; no duplicate continuation is added. Full scope stays open.
+
+
+## Fresh full research integration and implementation
+
+`continue-full-research-1028023823` integrated only exact independently admitted
+input preparation (`64e210a`/`8955a9f`), bounded comparison implementation/evidence
+(`9240b80`/`a31bb24`) and four-file manuscript background (`eee7baa`). Candidate
+checks313+37 passed; integrated350 passed,31 wider tests deselected. No selected
+compiler/noisy/full-protocol/paper admission follows. Scaling/noisy blocks remain.
+Native review92784ef provides a bounded transition proof requiring a production
+validator and independent implementation review. Private correctness5c0b872
+implements raw-service/context guards;319 tests pass, pending independent review.
+C5 complete-predicate allocation audit identifies best_fit11 wires without
+removing domain checks; no new coherent/ideal execution is admitted. See the
+[current tasks1–8 matrix, reviews, limitations and hard-bound successor plan](full_research_integration_20261028.md).
+Checkpoint: `dump/1028174846-full-research-integration/batch.json`.
+At120/128 batches, eight concrete final successors are prepared, including ONE
+new post-review coordinator. Hard bounds and included-only gates stay unchanged.
+Full revision remains open.

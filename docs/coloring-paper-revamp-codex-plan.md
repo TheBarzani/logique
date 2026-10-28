@@ -669,3 +669,17 @@ protocol/manuscript/native-value review and a new integration coordinator.
 104/128 batches used at append, 76 immutable-preserving task definitions; hard
 bounds and included-usage gates unchanged. Full research and manuscript remain
 open; no new scientific admission follows from this handoff.
+
+
+## Bounded full research integration — 28 October
+
+Checkpoint: `dump/1028174846-full-research-integration/batch.json`.
+[Current full tasks1–8 matrix](research/full_research_integration_20261028.md)
+records exact admitted preparation/comparison/background integration, withheld
+scaling/noisy source, native transition-proof scope, private tested comparison
+correction pending independent review, and complete-predicate C5 allocation audit.
+Eight successors appended atomically at120/128 batches,84 definitions total;
+header/prior definitions/prompts and hard deadline/usage gates preserved.
+Full revision remains open. Final successor owns exact admissions/integration
+and hard-bound actionable resume covering all remaining scope. No scientific
+admission follows from job completion; dispatcher alone publishes HEAD.

@@ -15,7 +15,7 @@ Audited on 25 October 2026 from transferred HEAD `3ec511d` on
 | 4 | Existing all-bitstrings comparison and phase-oracle runner | The K3/K5/myciel3 logical pilot completed 144 validated cases with 18 explicit original-baseline exclusions and no failures. Every completed case exercised a marked input. All 720 metric rows were reproduced from saved QPY; per-instance strongest-baseline summaries are saved separately (`ba6b5b8`). Full nine-graph/multilevel evaluation, complete workspace classification and protocol freeze remain open; these pilot results are not headline evidence. |
 | 5 | Five maintained synthesis methods, native bridge and standalone balancing tool | Balanced AND/OR encoder association is opt-in and validated against independent predicates (`e6f3b45`). The standalone tool supports XAG, algebraic and ESOP passes with per-pass and serialization equivalence checks (`90df410`). Exhaustive pinned-action serialization and opt-in shared native preprocessing are integrated (`fcc52d4`, `7aeacb6`); omitted controls preserve legacy defaults. Opt-in in-place Bennett/eager mappings are integrated after emitted-action review (`ce93291`); low-T and other mappings, MC reduction/profile integration, SAT pebbling and structure-aware scheduled oracles remain open. Dependency pins remain fixed. |
 | 6 | Per-circuit Clifford+T gadgets; hash-bound admitted static rotation compiler (`54c58c3`); independent derivation/RUS review | The independent reviews establish the unitary composition and separate RUS derivation, with explicit limitations. The previously reviewed repair admits a near-unitary matrix that violates its requested search budget. The corrected matrix-admission/norm implementation is now admitted and integrated for the restricted numerical contract in [the independent admission](rotation_norm_admission.md). The root prototype was preserved before replacement. This is not ideal-amplitude certification or RUS admission. FT comparisons, complete-search experiments and preparation break-even results remain open. |
-| 7 | Correct matching-reflection Grover wrapper and small independent amplification regression | Complete ideal/noisy iteration sweeps, leakage, confidence intervals and random-sampling/cost-per-success study remain open. |
+| 7 | Matching-reflection wrapper, admitted analytical ledger, and executed ideal-only harness (`160af98`) | Exact-hash independent review admits 34 cases / 151 rows; C5 R1/R2 remain infeasible under 18 wires. Noisy/routed, random-trial, confidence and cost-success studies remain open. See [bounded admission](iteration_study_admission.md). |
 | 8 | General benchmark runner and fixed 180-second native timeout | The three requested legacy inputs were restored byte-for-byte from `95f6167`, with hashes (`040d420`). Remaining source inputs, controlled families, five repetitions, stage memory/timeouts and larger-instance witnesses remain open. The restored color parameters are historical inputs, not verified chromatic-number claims. |
 
 ## Server evidence
@@ -1245,3 +1245,69 @@ responses/evidence gate/final independent reviews remain unfinished. Analytical
 exact-count ideal/static C/p/caller guide admissions retained;old blocked
 checkpoints historical. No interval/ideal-amplitude/FT/RUS/paper extension.
 Bounded completion differs from scientific admission. Full paper unfinished.
+
+## Executed ideal iterations: 28 October bounded integration
+
+On 28 October 2026, `coordinate-executed-iterations-1028004102` integrated
+exact implementation commit `ca4315b15583823c44e5a2b9d6059212511853f0` as
+`160af98`. The independent review commit is
+`d3a4256` ([byte-preserved review](iteration_study_review.md)). Its decision
+is **ADMIT for the exact bounded ideal-only implementation and final pilot**.
+The worker evidence in `3d5aa19c7231768e1547b00ad0fd1f75c32b804c` is preserved;
+its results document is copied without edits, and its root worker checkpoint
+remains in its original worktree rather than becoming an integration-root file.
+The original results document's “review pending” sentence is historical worker
+status; the subsequent exact-hash review above supplies the decision.
+
+All seven candidate/evidence identities and six reused source identities in the
+review match. Integrated implementation/config/test/guide bytes match the
+reviewed candidate. The 211 final pilot evidence entries and all 13 independent
+review evidence entries match their manifests. The review is copied verbatim,
+not rewritten as coordinator approval. The complete reviewed hash tables are in
+that review; integration identities and protections are in
+`dump/1028010408-iteration-integration/`.
+
+Admission covers the clean-workspace sequential structure oracle, sorted labels,
+LSB-first color words, R1 complete-predicate binary support, R2 complete-predicate
+valid-code support, and R3 edge-only predicate on valid-code support. It covers
+34 completed graph/regime cases and 151 saved-circuit statevector rows, from j=0
+through the exact-count first peak plus one. Scalar phases, signed amplitudes,
+actual preparation inverse, leakage and restoration retain the reviewed tests.
+C5 k3 R1/R2 are **infeasible at 22 wires under the 18-wire cap**: zero executed
+rows, with complete requested sweeps retained. C5 R3 executes at 17 wires.
+The final pilot manifest SHA-256 remains
+`0047365f6e99a4be86261fa5a8610a58e46716b48b6c5f6c131cd9d6b309f811`.
+
+The original pilot measured 29.322163625 seconds and 147324928 bytes maximum
+child RSS; it is not rerun or overwritten. Probability reproduction examples
+are K3 k3 R2 j1 = 0.9903978052126163 and path8 k2 R1 j1 =
+0.06885528564453086. Maximum signed residual was 6.512331117749953e-14
+with tolerance 1e-10. These are bounded numerical ideal-circuit observations.
+
+Focused candidate-source and integrated-source suites each passed **379 tests**,
+no skips/deselections. Relevant Black and Ruff passed for both trees. Import
+paths were asserted explicitly. The eight serial check children measured
+15.959529040 seconds total, maximum RSS 149864448 bytes, each under a 180-second
+timeout and a declared combined 300-second envelope. Existing Python, cache,
+thread limits of one and hash-verified admitted private native executable were
+used. Native was not invoked; no compiler or new full pilot ran. No new numerical
+failure, timeout or OOM occurred. A Git index.lock sandbox denial was resolved
+by scoped automatic escalation; no approval-review rejection occurred.
+
+No noise/routing, random-trial execution, shot confidence interval, equal-resource
+random comparison, cost-per-success, rotation/FT/RUS extension, general
+ideal-amplitude certificate, arbitrary dirty scratch, resource advantage or
+manuscript approval is admitted. The analytical random reference stays labeled.
+Existing numerical static-rotation and analytical first-lobe admissions retain
+their separate limits. Historical failures, outputs, binaries, dependency pins,
+archives, histories and the user's README edits are preserved.
+
+THIS integration batch is COMPLETE. No correction chain is needed for this
+admitted slice, and no queued scaling or full-scope coordinator job is duplicated.
+The already queued continuation coordinator owns prioritization of remaining
+research. A concrete follow-up is a separately implemented/reviewed lower-workspace
+complete-predicate oracle for C5 R1/R2 within the existing cap, then their full
+saved-circuit sweeps; do not delete domain checks. Noisy/leakage/confidence/
+random-trial/cost-success work, full comparisons, FT/RUS experiments, protocol
+freeze and evidence-gated manuscript/final checks remain open. Dispatcher alone
+pushes the committed integration HEAD; no worker push occurred.

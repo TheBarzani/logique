@@ -69,3 +69,21 @@ pauses. No hardware/physicalQEC/precolors/conditional-workspace synthesis.
 
 The implementation is not complete, the protocol is not frozen, and no new
 scientific result or manuscript claim follows from this queue resumption.
+
+
+## Executed-iteration integration update — 28 October
+
+The implementation and independent review handoffs are complete and admitted
+only for their exact bounded ideal-only bytes/evidence. Source commit ca4315b
+is integrated as 160af98; see [admission](iteration_study_admission.md) and
+[verbatim review](iteration_study_review.md). There are 34 completed cases and
+151 executed rows; C5 R1/R2 retain explicit 22>18-wire infeasibility. No noisy,
+FT/RUS, general ideal-amplitude or manuscript claim follows. The original
+resumption audit above is an intake snapshot.
+
+The integration checkpoint is `dump/1028010408-iteration-integration/batch.json`.
+Scaling implementation/review/integration and full-scope continuation already
+have serial queue ownership; this integration adds no duplicate jobs. The
+continuation coordinator owns the next research priorities, including a lower-
+workspace complete-predicate correction/review/execution chain for C5 R1/R2
+and remaining noisy/routed studies. Full scope and all exclusions are retained.

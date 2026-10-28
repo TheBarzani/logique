@@ -101,3 +101,20 @@ gate with more than two controls, valid-color preparation removes unused codes f
 synthesized oracle is verified against an independent coloring predicate. Every quantitative comparison must be
 regenerated under the semantic contract and the explicit cost model of the experimental protocol, and the comparison must
 be stated against the strongest baseline on each graph.
+
+
+## 28 October: bounded executed ideal-iteration evidence
+
+The [exact-hash independent review](iteration_study_review.md) and
+[integration admission](iteration_study_admission.md) add actual ideal-only
+saved-circuit execution: 34 graph/regime cases, 151 iteration rows, including
+K3 k3 R2 j1 success 0.9903978052126163 and path8 k2 R1 j1 success
+0.06885528564453086. This supports matching-reflection behavior only within
+the reviewed clean-workspace construction and numerical tolerance. C5 R1/R2
+remain unexecuted (22 wires > 18); their requested sweeps remain open.
+
+This evidence does not replace the historical claims in rows 4/11/21, certify
+arbitrary ideal amplitudes or FT/RUS preparations, or establish noisy success,
+shot confidence, random-trial costs, comparative savings or paper approval.
+Analytical random references remain distinct from execution. Full Task7 and
+the paper's evidence gate remain open.

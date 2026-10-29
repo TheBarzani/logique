@@ -108,3 +108,26 @@ full revision. Wide-QPY, native validator, other mappings/profiles/SAT, graph FT
 dynamic RUS, grey-code study and final paper checks remain explicit scope even
 when no slot remains to dispatch them. Scientific blockers in one chain must
 not prevent the independent noisy/comparison chains from progressing.
+
+## Final hard-bound successor outcome — 29 October
+
+The latest authoritative [tasks1–8 matrix and actionable resume](full_research_bound_handoff_20261029.md)
+is committed by `full-research-bound-handoff-1028174846`, checkpoint
+`dump/1029034135-full-research-bound-handoff/batch.json`.
+At128/128 no jobs were appended or launched. Independent `60bd6e1` admits exact
+comparison-service correction `5c0b872`, integrated as `4c5f3e4`; candidate319
+and integrated356 tests pass,31 wider dense tests excluded, selected Black/Ruff
+pass. The [verbatim comparison decision](comparison_service_review_20261028.md)
+retains raw/missing-identity/scientific restrictions. No new scientific table.
+
+Cleanup review is absent after quota interruption, so scaling source remains
+withheld. [Selected-execution review0b0f076](selected_execution_review_20261028.md)
+blocks evidence admission: zero compiler runs,220 pending rows. Noisy candidate
+de6ca3a and partial reviewer artifacts remain unadmitted; saved real channel
+reconstruction fails before sampling, nine partial j0 rows have no noisy counts,
+805 requested seed/iteration rows remain partial/unexecuted, C5 results absent.
+Both interrupted reviews require future exact decisions, not inferred approval.
+Source-level manuscript9a980ec admission and native proof92784ef limits are
+unchanged. All wideQPY/matched comparison/native/FT/RUS/MCX/noisy/scaling/final
+research/native/notebook/isolated135/Astra/TeX work is retained in the new matrix.
+Bounded coordinator complete; full revision OPEN. Dispatcher alone publishes HEAD.

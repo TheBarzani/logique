@@ -683,3 +683,16 @@ header/prior definitions/prompts and hard deadline/usage gates preserved.
 Full revision remains open. Final successor owns exact admissions/integration
 and hard-bound actionable resume covering all remaining scope. No scientific
 admission follows from job completion; dispatcher alone publishes HEAD.
+
+## Hard-bound final integration and resume — 29 October
+
+Checkpoint: `dump/1029034135-full-research-bound-handoff/batch.json`.
+[Authoritative remaining tasks1–8 matrix](research/full_research_bound_handoff_20261029.md)
+records exact service/context admission5c0b872 → integration4c5f3e4,
+candidate319/integrated356 tests, withheld scaling/noisy source and interrupted
+independent reviews,220 unexecuted scaling rows, actual partial-noise failures,
+and all remaining scientific/manuscript/final-validation work. Hard128/128
+reached; no extra queue/model launches or gate changes. This bounded integration
+and actionable handoff completes; the full revision remains OPEN. Dispatcher
+alone publishes integration HEAD. Earlier snapshots and failures are historical
+and preserved; no full-paper or blanket FT/RUS/ideal-amplitude admission follows.

@@ -41,3 +41,29 @@ before integration or selected scaling execution. Do not simply swallow EPERM.
 Fresh coordinator reproduction and next ownership are recorded in
 [triage](scaling_contract_triage.md). Full Task8, FT/RUS, ideal-amplitude,
 comparison and manuscript scope remain open. No quantum or paper approval follows.
+
+## Cleanup successor execution gate — 28 October, 22:40 EDT
+
+**BLOCK retained: the required independent cleanup review is absent.** This is
+an execution-prerequisite block, not an independent rejection of the new source.
+Task `integrate-scaling-execute-1028174846` inspected the exact requested path
+`dump/1028174846-full-research-integration/worktrees/scaling-cleanup-review/SCALING_CLEANUP_REVIEW.md`:
+it does not exist. That review worktree is clean at integration intake
+`a6a18c133a6152406c587b55eabefd0cb382fdff`; it supplies no admission decision.
+The older independent re-review above remains preserved verbatim and is not
+reinterpreted as a review of newer bytes.
+
+The actual candidate is `worktrees/scaling-cleanup-fix` beneath that same run,
+clean at `7145b87485eb68bd602f65a3520c46075febfba7`. Its checkpoint requires
+independent review of correctness commits `c8ea5b3` and `8cac9b3`, including
+imported ancestors. Five final source/test hashes match that checkpoint; this
+identity check is not source correctness admission. No scaling source commit
+was integrated, no harness was executed and no new compiler metric was produced.
+
+Fresh checkpoint: `dump/1028224004-scaling-execution-gate-handoff/`.
+See [execution handoff](scaling_execution_handoff_20261028.md) for exact commits,
+hashes, validation limits and the concrete review/integration/execution sequence.
+The already admitted input preparation and historical export remain admitted
+only within their original bounds. Five actual selected repeats, independent
+result review, full Task8 and the full revision remain open. No queue append,
+new model launch or push is authorized by this status update.

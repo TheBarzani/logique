@@ -1,0 +1,14 @@
+{
+  "ideal_pilot": "/Users/mar/codex-work/logique/dump/1028004102-coloring-full-scope-resumption/worktrees/executed-iterations/dump/1028005202-executed-ideal-iterations",
+  "pilot_manifest_sha256": "0047365f6e99a4be86261fa5a8610a58e46716b48b6c5f6c131cd9d6b309f811",
+  "execute": ["path3_k2_R1", "K3_k3_R2"],
+  "shots": 64,
+  "random_batches": 2048,
+  "max_qubits": 18,
+  "timeout_seconds": 120,
+  "budget_seconds": 900,
+  "seed": 71028,
+  "tolerance": 1e-10,
+  "optimization_level": 3,
+  "memory_bytes": 6442450944
+}

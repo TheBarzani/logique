@@ -467,6 +467,32 @@ def session_from_log(path: Path) -> str | None:
     return None
 
 
+def model_capacity_failure(path: Path) -> bool:
+    """Recognize explicit transient model-capacity failures, not scientific errors."""
+    if not path.exists():
+        return False
+    with path.open("rb") as stream:
+        start = max(0, path.stat().st_size - 65536)
+        stream.seek(start)
+        lines = stream.read(65536).decode(errors="replace").splitlines()
+    for line in lines[1 if start else 0 :]:
+        try:
+            event = json.loads(line)
+        except ValueError:
+            continue
+        if event.get("type") == "error":
+            message = event.get("message")
+        elif event.get("type") == "turn.failed":
+            message = (event.get("error") or {}).get("message")
+        else:
+            continue
+        if isinstance(message, str) and message.startswith(
+            "Selected model is at capacity."
+        ):
+            return True
+    return False
+
+
 class Dispatcher:
     """Serialize bounded tasks, checkpoint interruptions, and wait without models."""
 
@@ -813,10 +839,17 @@ class Dispatcher:
                 )
             except Exception:
                 denied = True
+            capacity = model_capacity_failure(attempt / "events.jsonl")
             record["status"] = (
-                "pending" if denied and record.get("session_id") else "blocked"
+                "pending"
+                if capacity or (denied and record.get("session_id"))
+                else "blocked"
             )
-            record["reason"] = "worker_failed; inspect attempt logs"
+            record["reason"] = (
+                "model_at_capacity; retry same model within task/batch bounds"
+                if capacity
+                else "worker_failed; inspect attempt logs"
+            )
         self.save("batch_finished")
 
     def run(self, *, once=False) -> None:

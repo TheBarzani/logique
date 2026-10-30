@@ -9,8 +9,8 @@ committed and integrated on `coloring-paper-revamp-codex`, then pushed to
 `origin/coloring-paper-revamp-codex`. It does not submit hardware or alter
 dependency pins.
 
-The initial queue is
-`dump/1025021922-coloring-auto-dispatch/queue.json`. It resumes rotation repair,
+The active continuation queue is
+`dump/1029204240-coloring-dispatch-continuation/queue.json`. It resumes rotation repair,
 requests independent Astra re-review, then runs an integration coordinator.
 Scientific approval is separate from task completion: the coordinator must
 verify the reviewed file hashes and review decision before admitting FT work.
@@ -44,7 +44,7 @@ To run it directly (or restore the tmux status window), use:
 
 ```bash
 .venv/bin/python tools/coloring_dashboard.py \
-  --queue dump/1025021922-coloring-auto-dispatch/queue.json
+  --queue dump/1029204240-coloring-dispatch-continuation/queue.json
 ```
 
 Add `--once` for a plain-text snapshot. Redirected output also renders once.
@@ -58,7 +58,7 @@ attached to the worker. Internal reasoning is excluded. To run it directly:
 
 ```bash
 .venv/bin/python tools/coloring_dashboard.py --activity \
-  --queue dump/1025021922-coloring-auto-dispatch/queue.json
+  --queue dump/1029204240-coloring-dispatch-continuation/queue.json
 ```
 
 Select `activity` with **Ctrl-b**, then **w**. Its header identifies the displayed
@@ -68,13 +68,13 @@ Run from the integration checkout:
 
 ```bash
 .venv/bin/python tools/coloring_dispatcher.py status \
-  --queue dump/1025021922-coloring-auto-dispatch/queue.json
+  --queue dump/1029204240-coloring-dispatch-continuation/queue.json
 
 .venv/bin/python tools/coloring_dispatcher.py pause \
-  --queue dump/1025021922-coloring-auto-dispatch/queue.json
+  --queue dump/1029204240-coloring-dispatch-continuation/queue.json
 
 .venv/bin/python tools/coloring_dispatcher.py unpause \
-  --queue dump/1025021922-coloring-auto-dispatch/queue.json
+  --queue dump/1029204240-coloring-dispatch-continuation/queue.json
 ```
 
 Pause creates a `PAUSE` marker. It prevents launches and interrupts an owned
@@ -151,7 +151,7 @@ not survive reboot; restart the watcher with its saved queue and environment:
 
 ```bash
 .venv/bin/python tools/coloring_dispatcher.py run \
-  --queue dump/1025021922-coloring-auto-dispatch/queue.json \
+  --queue dump/1029204240-coloring-dispatch-continuation/queue.json \
   --codex /Users/mar/.local/bin/codex
 ```
 
@@ -181,3 +181,19 @@ and retries on the ordinary polling interval; local research continues. There is
 pull/merge/reset, or automatic inclusion of uncommitted work. Git rejects remote
 divergence. An operator pause also pauses publication. Already committed history
 is synchronized when publication is first enabled.
+
+## 29 October continuation
+
+The user authorized resumption after the original run reached its128-batch
+ceiling. That run remains intact at `dump/1025021922-coloring-auto-dispatch/`.
+The new run at `dump/1029204240-coloring-dispatch-continuation/` has its own
+128-batch ceiling through the same 1 November deadline; this is a finite new
+authorization, not a reset of old history. The first task resumes the interrupted
+scaling-cleanup review session. New tasks allow12 attempts so quota interruptions
+do not immediately exhaust a one-attempt task. Explicit CLI model-capacity
+failures retry the same assigned model on the ordinary polling interval, within
+task/batch/deadline and live-quota bounds. Other failures still require triage.
+No model substitution or paid fallback occurs. Fresh noisy-channel repair and
+review, reviewed scaling execution, integration and full-plan continuation follow.
+The `status` and `activity` tmux windows now display this active run. Prior-run
+counts and scientific blockers remain in its preserved state and handoff.

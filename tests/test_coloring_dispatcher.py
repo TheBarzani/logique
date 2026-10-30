@@ -625,3 +625,58 @@ def test_append_capacity_preserves_bounded_queue_history(queue):
     dispatch.atomic_json(queue, config)
     with pytest.raises(ValueError, match="1..128 bounded jobs"):
         dispatch.load_queue(queue)
+
+
+def test_capacity_failure_retries_same_session_with_live_quota(queue, monkeypatch):
+    d = runner(queue)
+    executable = Path(fake_cli(queue.parent))
+    source = executable.read_text()
+    source = source.replace(
+        "    target=Path(sys.argv[sys.argv.index('--output-last-message')+1])",
+        "    print(json.dumps({'type':'turn.failed','error':{'message':'Selected model is at capacity. Please try a different model.'}}),flush=True)\n    sys.exit(1)\n    target=Path(sys.argv[sys.argv.index('--output-last-message')+1])",
+    )
+    executable.write_text(source)
+    d.codex = str(executable)
+    d.stop = FastEvent()
+    monkeypatch.setattr(dispatch, "other_workers", lambda *args: 0)
+    d.run(once=True)
+    record = d.state["jobs"]["repair"]
+    assert record["status"] == "pending"
+    assert record["session_id"] == "fake-session"
+    assert record["model"] == "gpt-6.1-sol"
+    assert record["reason"].startswith("model_at_capacity")
+    assert d.state["batches"] == 1
+
+
+def test_capacity_detection_ignores_tool_output_and_ordinary_failures(tmp_path):
+    path = tmp_path / "events.jsonl"
+    path.write_text(
+        json.dumps(
+            {
+                "type": "item.completed",
+                "item": {
+                    "type": "command_execution",
+                    "aggregated_output": "Selected model is at capacity.",
+                },
+            }
+        )
+        + "\n"
+        + json.dumps(
+            {
+                "type": "turn.failed",
+                "error": {"message": "Scientific validation failed"},
+            }
+        )
+        + "\n"
+    )
+    assert not dispatch.model_capacity_failure(path)
+    path.write_text(
+        json.dumps(
+            {
+                "type": "error",
+                "message": "Selected model is at capacity. Please try again.",
+            }
+        )
+        + "\n"
+    )
+    assert dispatch.model_capacity_failure(path)

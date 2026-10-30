@@ -696,3 +696,14 @@ reached; no extra queue/model launches or gate changes. This bounded integration
 and actionable handoff completes; the full revision remains OPEN. Dispatcher
 alone publishes integration HEAD. Earlier snapshots and failures are historical
 and preserved; no full-paper or blanket FT/RUS/ideal-amplitude admission follows.
+
+## 29 October included-usage resumption
+
+After the original dispatcher stopped at128 total batches, the user explicitly
+authorized resuming with remaining included usage. New bounded continuation:
+`dump/1029204240-coloring-dispatch-continuation/queue.json`, up to128 additional batches,
+same deadline and spending/model/review rules. Old state, completed jobs and
+scientific exclusions remain intact. Saved interrupted review session resumes;
+new tasks allow multiple bounded attempts and explicit transient model-capacity
+errors retry without changing models. See dispatcher operations and the new
+run's continuation/activation receipts. Full revision remains unfinished.

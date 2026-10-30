@@ -721,3 +721,20 @@ appended to the authorized continuation queue (14 definitions, unchanged128
 additional-batch ceiling/deadline/prior jobs,12 attempts per new job). Original
 candidate/review/evidence and README are preserved. This assigned triage is
 COMPLETE; the full research and manuscript evidence gate remain OPEN/BLOCKED.
+
+## 30 October full-scope implementation continuation
+
+Checkpoint: `dump/1030020413-full-scope-continuation-coordinator/batch.json`.
+The [new full tasks1–8 matrix and concrete successor chains](research/full_scope_continuation_20261030.md)
+retain the actual selected-scaling cancellation BLOCK and exact28-observation
+noisy admission/source BLOCK. Existing correction chains are not duplicated.
+Twenty-nine new bounded implementation/review/integration/coordinator jobs were
+appended atomically (14→43 definitions), preserving prior jobs/header and the
+new run's own128-additional-batch ceiling/deadline. They cover wide-QPY/missing
+comparisons,native capped validator/private build,MC/balancing,mappings/SAT,
+whole-circuitMCX,graphFT,separate dynamicRUS,C5 and remaining noise. New final
+coordinator owns actual outputs and further full-scope work/final checks.
+The isolated Tectonic0.17.0 and saved Quantikz are usable: an actual new offline
+copy-build of current manuscript source succeeded; original PDF/source preserved.
+Warnings and failed initial generic smoke remain. No scientific/visual/full-paper
+approval follows. This assigned coordinator task is COMPLETE; evidence gate BLOCKED.

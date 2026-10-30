@@ -2,7 +2,8 @@
 
 from .classical import validate, truth_outputs
 from .quantum import verify_small_quantum
-from .phase import verify_phase_oracle, verify_kickback_oracle
+from .phase import verify_phase_oracle, verify_kickback_oracle, verify_xor_oracle
+from .assignments import proper_colorings, verification_assignments
 
 __all__ = [
     "validate",
@@ -10,4 +11,7 @@ __all__ = [
     "verify_small_quantum",
     "verify_phase_oracle",
     "verify_kickback_oracle",
+    "verify_xor_oracle",
+    "proper_colorings",
+    "verification_assignments",
 ]

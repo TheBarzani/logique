@@ -56,20 +56,29 @@ def _apply_record(bits, phases, rec, *, inverse=False):
     bits[rec["target"]] ^= mask
 
 
-def validate(result, *, sampled=False, samples=256, seed=7):
+def validate(result, *, sampled=False, samples=256, seed=7, assignments=None):
     """Check function values and the wrapped oracle, including coherent phases.
 
     Exact X/MCX/LUT/Rx(+/-pi) records are monomial: tracking their permutation
     and phase on every input also proves the action on input superpositions.
-    Larger examples may explicitly request seeded sampling, which is not proof.
+    Larger examples may explicitly request seeded sampling, which is not proof,
+    or supply explicit ``assignments`` (inputs × columns) such as known solutions.
     """
     md = result.metadata
     n = len(md["input_qubits"])
-    assignments = (
-        np.random.default_rng(seed).integers(0, 2, (n, samples)).astype(bool)
-        if sampled
-        else input_assignments(n)
-    )
+    if assignments is not None:
+        assignments = np.asarray(assignments, dtype=bool)
+        if assignments.ndim != 2 or assignments.shape[0] != n:
+            raise ValueError(f"assignments must have shape ({n}, count)")
+        status = "explicit"
+    elif sampled:
+        assignments = (
+            np.random.default_rng(seed).integers(0, 2, (n, samples)).astype(bool)
+        )
+        status = "sampled"
+    else:
+        assignments = input_assignments(n)
+        status = "exhaustive"
     expected = truth_outputs(md["source_network"], assignments)
     if not np.array_equal(expected, truth_outputs(md["network"], assignments)):
         raise AssertionError("Network transformation changed the Boolean function")
@@ -102,9 +111,9 @@ def validate(result, *, sampled=False, samples=256, seed=7):
     if not np.array_equal(bits, initial) or not np.allclose(phases, 1):
         raise AssertionError("Wrapped oracle does not restore workspace and phase")
     report = {
-        "status": "sampled" if sampled else "exhaustive",
+        "status": status,
         "assignments": assignments.shape[1],
-        "seed": seed if sampled else None,
+        "seed": seed if status == "sampled" else None,
         "raw_workspace_zero": raw_clean,
         "raw_inputs_restored": raw_inputs,
         "raw_phase_exact": bool(raw_phase),

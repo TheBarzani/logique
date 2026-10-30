@@ -40,6 +40,17 @@ def load_config(path: str | Path, **overrides) -> dict:
         "kind",
         "basis_gates",
         "optimization_level",
+        # Controlled-study settings (kind "study"); see benchmarks/study.py.
+        "regimes",
+        "mcx_policies",
+        "pricing",
+        "optimization_profile",
+        "targets",
+        "rotation_budget",
+        "seeds",
+        "limits",
+        "relative_phase_mirrored",
+        "drop_precolors",
     }
     unknown = set(config) - allowed
     if unknown:
@@ -76,8 +87,13 @@ def run_benchmarks(config: dict, *, executable=None) -> Path:
         "synthesis",
         "comparison",
         "phase_oracle",
+        "study",
     ):
-        raise ValueError("kind must be synthesis, comparison, or phase_oracle")
+        raise ValueError("kind must be synthesis, comparison, phase_oracle, or study")
+    if config.get("kind") == "study":
+        from .study import run_study
+
+        return run_study(config, executable=executable)
     if config.get("kind", "synthesis") != "comparison" and any(
         m.startswith("sb_") for m in methods
     ):

@@ -15,7 +15,7 @@ from qiskit import ClassicalRegister, QuantumCircuit
 from qiskit.circuit import ControlledGate
 from qiskit.circuit.library import RXGate
 
-from .costs import clifford_t, ft_metrics, is_mcx
+from .costs import clifford_t, decompose_mcx, ft_metrics, is_mcx
 
 _DIAGONAL = {
     "id",
@@ -317,3 +317,38 @@ def measurement_assisted_metrics(
     )
     metrics = ft_metrics(clifford_t(skeleton), rotation_t=rotation_t)
     return {**metrics, **info, "metric_level": "fault-tolerant, measurement-assisted"}
+
+
+def isolated_mcx_assisted_costs(method: str, controls: int) -> dict:
+    """Cost one decomposed MCX gate when its clean ancillas are measured away.
+
+    Uses the same circuit as ``costs.isolated_mcx_costs``: the controls, the
+    target and controls - 2 spare wires. Only appended ancillas count as
+    clean, so conditionally clean wires keep their unitary uncomputation.
+    """
+    circuit = QuantumCircuit(2 * controls - 1)
+    circuit.mcx(list(range(controls)), controls)
+    decomposed, info = decompose_mcx(circuit, method)
+    ancillas = list(range(circuit.num_qubits, decomposed.num_qubits))
+    metrics = measurement_assisted_metrics(decomposed, clean_wires=ancillas)
+    return {
+        "method": f"{method} + measurement",
+        "controls": controls,
+        "workspace": info["mcx_workspace"],
+        "ancillas": info["appended_ancillas"] + info["borrowed_dirty_wires"],
+        **{
+            key: metrics[key]
+            for key in (
+                "t_count",
+                "t_depth",
+                "rotation_count",
+                "cx_count",
+                "and_pairs",
+                "measurements",
+                "reaction_depth",
+                "pair_check",
+            )
+        },
+        "reference": f"{info['mcx_reference']}; Gidney, arXiv:1709.06648",
+        "metric_level": "explicit, measurement-assisted",
+    }

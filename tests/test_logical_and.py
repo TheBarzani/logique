@@ -198,3 +198,12 @@ def test_k3_xag_phase_oracle(k3_xag):
     assert assisted["t_count"] == 4 * expected
     dynamic, _, _ = logical_and.measurement_assisted(oracle, clean_wires=clean)
     assert_dynamic_matches(oracle, dynamic, clean=set(clean), shots=3)
+
+
+@pytest.mark.parametrize("controls", [3, 8])
+def test_isolated_restoring_tree_with_measurement(controls):
+    row = logical_and.isolated_mcx_assisted_costs("clean_tree", controls)
+    # n - 2 internal nodes become 4-T ANDs; the gate on the target stays exact.
+    assert row["and_pairs"] == controls - 2
+    assert row["t_count"] == 4 * (controls - 2) + 7
+    assert row["ancillas"] == controls - 2

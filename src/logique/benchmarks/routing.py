@@ -87,7 +87,7 @@ def _seed_metrics(routed: QuantumCircuit, target) -> dict:
     counts = {
         name: count
         for name, count in routed.count_ops().items()
-        if name not in _IGNORED
+        if name not in (*_IGNORED, "measure")
     }
     return {
         "two_qubit_count": sum(counts.get(name, 0) for name in two_qubit),

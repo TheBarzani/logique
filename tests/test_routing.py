@@ -54,3 +54,26 @@ def test_wide_circuits_are_labelled_infeasible():
     record = routing.routed_metrics(circuit)
     assert record["routed"] is False
     assert "134" in record["reason"]
+
+
+def test_routed_gate_count_excludes_measurements_and_delays():
+    circuit = QuantumCircuit(2, 2)
+    circuit.x(0)
+    circuit.cx(0, 1)
+    circuit.delay(10, 0, unit="dt")
+    circuit.barrier()
+    circuit.measure(1, 0)
+    circuit.measure(0, 1)
+    from qiskit.circuit import Measure
+    from qiskit.circuit.library import XGate, CXGate
+    from qiskit.transpiler import Target, InstructionProperties
+
+    target = Target(num_qubits=2, dt=1e-9)
+    properties = InstructionProperties(duration=1e-7, error=0.01)
+    target.add_instruction(XGate(), {(0,): properties})
+    target.add_instruction(CXGate(), {(0, 1): properties})
+    target.add_instruction(Measure(), {(0,): properties, (1,): properties})
+    metrics = routing._seed_metrics(circuit, target)
+    assert metrics["gates"] == 2
+    assert metrics["two_qubit_count"] == 1
+    assert metrics["active_qubits"] == 2

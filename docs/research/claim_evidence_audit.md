@@ -138,3 +138,20 @@ correctness correction -> independent exact-hash re-review -> integration chain
 and subsequent full-scope priorities. No duplicate queue/coordinator jobs were
 added. The executed-iteration chain and its bounded admissions are unchanged;
 full paper and full Task8 remain open.
+
+## 29 October: completed cleanup review and execution decision
+
+The [finished exact-source review](scaling_cleanup_review_20261029.md), commit
+`44ad4ba`, **BLOCKS** candidate7145b87: a single SIGINT first arriving during
+cleanup leaves an owned leader running and loses its final process receipt.
+Both direct-native and scaling-runner regressions fail despite150 focused and18
+prior independent passes. No new harness commits or metrics are admitted.
+
+The [fresh execution decision](scaling_execution_handoff_20261029.md) preserves
+the review bytes, verifies candidate/evidence identities and the unchanged
+220-row unexecuted ledger, and appends one fresh cancellation correction →
+exact independent review → conditional integration/actual pilot → evidence
+review chain to the newly authorized continuation queue. Zero selected compiler
+invocations occurred. This assigned integration decision is complete with
+scientific BLOCK; full Task8/DIMACS and full research remain open. Earlier
+missing-review handoffs and failed evidence are preserved unchanged.

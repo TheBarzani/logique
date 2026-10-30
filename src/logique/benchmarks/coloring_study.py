@@ -167,11 +167,15 @@ def _resolved_qpy_circuit(
     definition (including its inverse and scalar phases), not its amplitudes.
     This is a bounded definition-based representation, not support for arbitrary
     opaque operations, dynamic circuits, or an ideal-amplitude certificate.
+    MCX with 33..512 controls uses an explicit phase ladder with <=32-control
+    leaves, preserving width and all-input workspace action. Its changed gate
+    granularity is separately identified; it is not a cost improvement.
     """
     standard = _qpy_standard_gate_classes()
     resolved = circuit.copy_empty_like()
     resolved.global_phase = 0
     expanded = Counter()
+    wide_mcx = Counter()
     visited = 0
 
     def visit(block, wires, depth):
@@ -214,7 +218,7 @@ def _resolved_qpy_circuit(
                     )
                 mapped = [wires[block.find_bit(q).index] for q in item.qubits]
                 _append_qpy_mcx(resolved, mapped, operation.ctrl_state)
-                expanded[operation.name] += 1
+                wide_mcx[controls] += 1
                 continue
             mapped = [wires[block.find_bit(q).index] for q in item.qubits]
             closed_controls = getattr(operation, "ctrl_state", None) in (
@@ -252,16 +256,38 @@ def _resolved_qpy_circuit(
                 visit(definition, mapped, depth + 1)
 
     visit(circuit, list(circuit.qubits), 0)
-    return resolved, {
+    representation = {
         "policy": "recursive_emitted_definitions_to_standard_gates_v1",
         "representation": "resolved_standard_gates",
         "expanded_definitions": dict(expanded),
         "visited_operations": visited,
         "source_global_phase": float(circuit.global_phase),
         "resolved_global_phase": float(resolved.global_phase),
-        "limits": {"definition_depth": 32, "visited_operations": 100_000},
+        "limits": {
+            "definition_depth": 32,
+            "visited_operations": QPY_MAX_OPERATIONS,
+            "emitted_operations": QPY_MAX_OPERATIONS,
+            "wide_mcx_controls": QPY_MAX_MCX_CONTROLS,
+        },
         "semantic_scope": "actual recursive definitions and scalar phases; no ideal-amplitude guarantee",
     }
+    if wide_mcx:
+        representation.update(
+            policy="recursive_definitions_and_bounded_mcx_phase_ladder_v2",
+            representation="resolved_standard_gates_bounded_mcx_phase_v2",
+            wide_mcx={
+                "source_control_histogram": {
+                    str(n): count for n, count in sorted(wide_mcx.items())
+                },
+                "construction": "H / controlled-P(pi) phase ladder / H; exact dirty ABAB partitions; X conjugation for open controls",
+                "max_leaf_controls": 32,
+                "added_qubits": 0,
+                "scratch_contract": "only source controls used temporarily inside exact dirty partitions; restored for arbitrary initial state/reference at every partition boundary; no other role borrowed",
+                "emitted_operations": len(resolved.data),
+                "metric_scope": "mixed granularity changes; count saved gates, never combine silently with direct-MCX or historical opaque counts; no FT or common-basis equivalence certificate",
+            },
+        )
+    return resolved, representation
 
 
 def _qpy_semantic_signature(circuit: QuantumCircuit) -> dict:
@@ -1645,7 +1671,11 @@ def run_coloring_study(config: dict, *, executable=None) -> Path:
                                                 ),
                                                 "mcx_method": config.get(
                                                     "mcx_decomposition",
-                                                    "qiskit_default_uncontrolled",
+                                                    (
+                                                        "qpy_bounded_phase_ladder_32_control_leaves"
+                                                        if "wide_mcx" in representation
+                                                        else "qiskit_default_uncontrolled"
+                                                    ),
                                                 ),
                                                 "basis_identity": (
                                                     "u,cx"

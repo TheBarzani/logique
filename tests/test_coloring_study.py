@@ -2420,9 +2420,21 @@ def test_qpy_wide_mcx_symbolic_phase_polarity_scratch_and_readback(
     )
     assert saved.num_qubits == circuit.num_qubits
     assert saved.global_phase == circuit.global_phase
+    assert {saved.find_bit(q).index for item in saved.data for q in item.qubits} <= set(
+        wires
+    )  # every external scratch/reference wire is untouched
     assert max(getattr(x.operation, "num_ctrl_qubits", 0) for x in saved.data) <= 32
     if controls <= 32:
-        assert sum(x.operation.name == "mcx" for x in saved.data) == 1
+        leaves = [item for item in saved.data if item.operation.name == "mcx"]
+        assert len(leaves) == 1
+        assert [saved.find_bit(q).index for q in leaves[0].qubits] == wires
+        from collections import Counter
+
+        assert Counter(
+            saved.find_bit(item.qubits[0]).index
+            for item in saved.data
+            if item.operation.name == "x"
+        ) == Counter({wires[i]: 2 for i in range(controls) if not (state >> i) & 1})
         return
     assert len(saved.data) == study._qpy_mcx_operation_count(controls, state)
     hadamards = [i for i, x in enumerate(saved.data) if x.operation.name == "h"]
@@ -2538,3 +2550,85 @@ def test_qpy_wide_caps_reject_before_gate_or_definition_allocation(monkeypatch):
     assert not target.data
     with pytest.raises(ValueError, match="limited to 20"):
         study._resolved_qpy_circuit(over_budget, expand_wide=True)
+
+
+def test_qpy_wide_representation_is_explicit_and_distinct():
+    from qiskit import QuantumCircuit
+    from qiskit.circuit.library import MCXGate
+
+    circuit = QuantumCircuit(34)
+    circuit.append(MCXGate(33), range(34))
+    circuit.append(MCXGate(33, ctrl_state=0), list(reversed(range(34))))
+    resolved, metadata = study._resolved_qpy_circuit(circuit)
+    assert metadata["representation"] == "resolved_standard_gates_bounded_mcx_phase_v2"
+    assert metadata["policy"] == "recursive_definitions_and_bounded_mcx_phase_ladder_v2"
+    assert metadata["wide_mcx"]["source_control_histogram"] == {"33": 2}
+    assert metadata["wide_mcx"]["added_qubits"] == 0
+    assert metadata["wide_mcx"]["max_leaf_controls"] == 32
+    assert metadata["wide_mcx"]["emitted_operations"] == len(resolved.data) == 592
+    assert metadata["visited_operations"] == 2
+    assert metadata["expanded_definitions"] == {}
+    assert metadata["limits"]["emitted_operations"] == 100_000
+    assert metadata["limits"]["wide_mcx_controls"] == 512
+    circuit = QuantumCircuit(33)
+    circuit.mcx(list(range(32)), 32)
+    _, ordinary = study._resolved_qpy_circuit(circuit)
+    assert ordinary["representation"] == "resolved_standard_gates"
+    assert "wide_mcx" not in ordinary
+
+
+def test_qpy_wide_total_emitted_cap_counts_prior_expansions(monkeypatch):
+    from qiskit import QuantumCircuit
+    from qiskit.circuit.library import MCXGate
+
+    circuit = QuantumCircuit(34)
+    for _ in range(2):
+        circuit.append(MCXGate(33), range(34))
+    append = study._append_qpy_mcx
+    calls = []
+
+    def counted(*args):
+        calls.append(True)
+        return append(*args)
+
+    monkeypatch.setattr(study, "_append_qpy_mcx", counted)
+    monkeypatch.setattr(study, "QPY_MAX_OPERATIONS", 525)
+    with pytest.raises(ValueError, match="100000 emitted"):
+        study._resolved_qpy_circuit(circuit)
+    assert len(calls) == 1  # second block rejected before gate construction
+
+
+def test_qpy_wide_runner_labels_saved_representation_and_workspace(tmp_path):
+    """Synthetic isolated fixture checks export plumbing, not comparison results."""
+    import pandas as pd
+
+    config_path = write_config(
+        tmp_path,
+        regimes=["R1"],
+        seeds=[7],
+        iterations=[0],
+        samples=4,
+        common_basis=False,
+    )
+    (tmp_path / "edge.col").write_text("p edge 17 0\nx colors 3\n")
+    output = study.run_coloring_study(load_config(config_path))
+    manifest = json.loads((output / "run.json").read_text())
+    assert manifest["status"] == "complete"
+    case = manifest["cases"][0]
+    artifact = case["artifacts"]["diffusion_logical"]
+    record = case["artifact_statistics"][artifact]
+    assert record["serialization"]["wide_mcx"]["source_control_histogram"] == {"33": 1}
+    assert record["workspace"]["peak_reserved_qubits"] == 34
+    assert record["workspace"]["roles"]["data"] == list(range(34))
+    with (output / artifact).open("rb") as stream:
+        saved = qpy.load(stream)[0]
+    assert saved.num_qubits == 34
+    assert (
+        record["readback_signatures"]["actual"]
+        == record["readback_signatures"]["expected"]
+    )
+    row = pd.read_csv(output / "summary.csv").query("component == 'diffusion'").iloc[0]
+    assert row.representation == "resolved_standard_gates_bounded_mcx_phase_v2"
+    assert row.mcx_method == "qpy_bounded_phase_ladder_32_control_leaves"
+    assert row.qubits == 34
+    assert row.gates == record["metrics"]["gates"] == circuit_metrics(saved)["gates"]

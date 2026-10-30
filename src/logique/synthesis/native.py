@@ -25,7 +25,14 @@ def build_native(
     return build / "boolean_synthesis"
 
 
-def run_native(path: str | Path, method: str, *, executable=None, **parameters) -> dict:
+def run_native(
+    path: str | Path,
+    method: str,
+    *,
+    executable=None,
+    timeout: float = 180,
+    **parameters,
+) -> dict:
     """Read one response; surface native diagnostics without losing context."""
     request = {"path": str(Path(path).resolve()), "method": method, **parameters}
     proc = subprocess.run(
@@ -33,7 +40,7 @@ def run_native(path: str | Path, method: str, *, executable=None, **parameters) 
         input=json.dumps(request),
         text=True,
         capture_output=True,
-        timeout=180,
+        timeout=timeout,
     )
     if proc.returncode:
         raise RuntimeError(f"Native synthesis failed ({method}): {proc.stderr.strip()}")

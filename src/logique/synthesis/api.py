@@ -21,8 +21,12 @@ def synthesize(
     outer_cut: int = 16,
     inner_cut: int = 4,
     executable=None,
+    timeout: float = 180,
 ) -> SynthesisResult:
-    """Synthesize a raw computation; oracle wrappers explicitly restore workspace."""
+    """Synthesize a raw computation; oracle wrappers explicitly restore workspace.
+
+    ``timeout`` bounds the native bridge call in seconds.
+    """
     if method not in METHODS:
         raise ValueError(f"method must be one of {METHODS}")
     if isinstance(source, ColoringEncoding):
@@ -36,6 +40,7 @@ def synthesize(
                 outer_cut=outer_cut,
                 inner_cut=inner_cut,
                 executable=executable,
+                timeout=timeout,
             )
         result.metadata.update(
             source="coloring predicate",
@@ -57,7 +62,7 @@ def synthesize(
     if outputs is not None:
         params["outputs"] = list(outputs)
     start = time.perf_counter()
-    md = run_native(source, method, executable=executable, **params)
+    md = run_native(source, method, executable=executable, timeout=timeout, **params)
     if method == "xag":
         md["gates"], md["num_qubits"] = _xag_records(md["network"])
         n, m = len(md["network"]["inputs"]), len(md["network"]["outputs"])

@@ -6,6 +6,22 @@ from qiskit import QuantumCircuit
 from logique.circuits.records import _qiskit_records
 
 
+def multiplicative_depth(graph: dict) -> int | None:
+    """Largest number of AND nodes on any input-to-output path of an XAG or AIG.
+
+    LUT networks have no multiplicative depth, so they return None.
+    """
+    nodes = {node["id"]: node for node in graph["nodes"]}
+    if any(node["kind"] == "lut" for node in nodes.values()):
+        return None
+    depth: dict[int, int] = {}
+    for node_id in sorted(nodes):  # fanins always precede their nodes
+        node = nodes[node_id]
+        reached = max((depth[f["node"]] for f in node["fanins"]), default=0)
+        depth[node_id] = reached + (node["kind"] == "and")
+    return max((depth[output["node"]] for output in graph["outputs"]), default=0)
+
+
 @dataclass
 class SynthesisResult:
     """Raw clean-output computation plus metadata; use oracle() for XOR targets."""
@@ -47,6 +63,7 @@ class SynthesisResult:
             "AND": kinds["and"],
             "XOR": kinds["xor"],
             "LUT": kinds["lut"],
+            "multiplicative_depth": multiplicative_depth(graph),
             "gates": self.circuit.size(),
             "depth": self.circuit.depth(),
             "seconds": md["seconds"],

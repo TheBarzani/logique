@@ -91,9 +91,11 @@ should follow the same naming convention.
 
 The [manuscript study](experiments/manuscript/README.md) preserves the original VCGC code, nine-graph inputs, reference CSV/JSON, figures, and provenance. `tools/generate_paper_benchmarks.py` rebuilds the paper circuits through the maintained `src/logique/` package. The recorded full replay matches all 135 historical width, depth, and gate-count values; it also exports a separate comparison with measurements on every method's data register.
 
-Use a separate research environment for historical replay: its depth patch changes the installed Qiskit and must not affect corrected studies. After setting up that environment, a small K3 replay is:
+Use a separate research environment for historical replay: its depth patch changes the installed Qiskit and must not affect corrected studies. Create it beside the default environment with `UV_PROJECT_ENVIRONMENT`, which every command below must also set:
 
 ```bash
+export UV_PROJECT_ENVIRONMENT=.venv-replay
+python3 tools/sync.py --all-extras
 uv run --no-sync python tools/patch_qiskit_depth.py
 uv run --no-sync python tools/generate_paper_benchmarks.py --graphs K3
 ```

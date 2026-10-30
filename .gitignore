@@ -172,6 +172,7 @@ pyrightconfig.json
 
 # Custom Added
 .venv/
+.venv-*/
 .vscode/
 *.DS_Store
 docs/manuscript/

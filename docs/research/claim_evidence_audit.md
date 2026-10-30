@@ -179,3 +179,23 @@ noise resilience, speedup, FT/RUS or paper approval is admitted. The prior ideal
 → exact independent review → conditional integration chain (12 attempts per
 job) was appended to the renewed queue. This triage is COMPLETE; the full
 research/manuscript evidence gate stays BLOCKED.
+
+## 30 October: corrected noisy ledger source admitted and integrated
+
+The [exact independent review](noisy_ledger_fix_review_20261030.md), efc74db,
+admits the cumulative corrected frozen-pilot harnessf2bc546 at92a6e03, with a
+separate gate-total metric decision. The [integration and full tasks1–8 update](noisy_ledger_integration_20261030.md)
+records exact correctness/configuration9a766b1 and metric0a0e605. All five final
+paths match admitted hashes; newer root QPY helpers and4c5f3e4 are preserved.
+The parent now retains all805 analytical requests before launch and atomically
+saves pre-Aer validation/seed metadata without claiming counts. Candidate52 and
+integrated256 tests pass; selected Black/Ruff pass. This supersedes only the
+source BLOCK for the corrected intersection, preserving historical defects.
+
+No new scientific observation was generated. Exactly28 rows/1792 shots retain
+their original conditional/pointwise qualification. Historical seed37/j2 remains
+timeout without counts or worker validation metadata; seed23/j2 remains21-wire
+excluded. A new iteration-only API needs separate implementation and exact review
+before the existing remaining-noise chain can retry seed37/j2. Claims4/11/21,
+full five-seed/family/C5, superiority, FT/RUS and paper approval remain unsupported
+beyond prior narrow admissions. The full evidence gate remains BLOCKED.

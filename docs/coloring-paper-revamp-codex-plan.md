@@ -738,3 +738,19 @@ The isolated Tectonic0.17.0 and saved Quantikz are usable: an actual new offline
 copy-build of current manuscript source succeeded; original PDF/source preserved.
 Warnings and failed initial generic smoke remain. No scientific/visual/full-paper
 approval follows. This assigned coordinator task is COMPLETE; evidence gate BLOCKED.
+
+## 30 October exact noisy-ledger source integration
+
+Checkpoint: `dump/1030115004-noisy-ledger-exact-integration/`.
+The [exact integration and full tasks1–8 update](research/noisy_ledger_integration_20261030.md)
+records reviewefc74db ADMIT of corrected cumulative harnessf2bc546/92a6e03:
+three exact correctness/config paths integrated as9a766b1, separately admitted
+9bfa2cd gate-total metric patch as0a0e605. All five final hashes/dependencies,
+163 pilot evidence files and completed review inventory match. Candidate52 and
+integrated256 tests pass with explicit source paths; selected Black/Ruff pass.
+Prior noisy source BLOCK is superseded only for these corrected bytes; historical
+defective revisions and timeout metadata remain unchanged. Exactly28 conditional
+observations remain admitted; no noisy rerun occurred. Existing remaining-noise
+chain owns a separately implemented/reviewed iteration-only API before any
+K3 R2/seed37/j2 retry. Seed23/j2 stays21-wire excluded. This assigned integration
+is COMPLETE; full study/paper evidence gate stays BLOCKED. Dispatcher publishes HEAD.

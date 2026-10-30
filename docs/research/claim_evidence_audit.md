@@ -155,3 +155,27 @@ review chain to the newly authorized continuation queue. Zero selected compiler
 invocations occurred. This assigned integration decision is complete with
 scientific BLOCK; full Task8/DIMACS and full research remain open. Earlier
 missing-review handoffs and failed evidence are preserved unchanged.
+
+
+## 30 October: noisy-channel source BLOCK and exact bounded observations
+
+The [completed independent review](noisy_channel_repair_review_20261030.md),
+commit `672dc5f`, BLOCKS the whole candidate907a936/b62b77e chain:50 excluded
+C5 requests are omitted from the maintained manifest and killed Aer sampling
+can lose completed validation metadata. No noisy source or routed-metric patch
+is integrated. The [fresh triage and full tasks1–8 matrix](noisy_channel_integration_20261030.md)
+verifies reviewed source/evidence identities and independently recounts saved
+bitstrings, admitting exactly28 completed64-shot rows (1792 measured shots) as
+conditional observations. The external805-entry ledger retains one21-wire
+exclusion, one timeout and775 unexecuted requests; the maintained manifest
+records755 and remains blocked pending repair.
+
+All15 path3 R1 rows and13 K3 R2 rows are retained, including poor K3 success
+and invalid-code leakage. Pointwise intervals do not pool routing seeds;
+quantum two-qubit-gate costs and random classical draw/evaluation costs use
+different units. No30-row/five-seed K3 completion, full families, new C5 R1/R2,
+noise resilience, speedup, FT/RUS or paper approval is admitted. The prior ideal
+34-case/151-row gate remains unchanged. A single focused bookkeeping correction
+→ exact independent review → conditional integration chain (12 attempts per
+job) was appended to the renewed queue. This triage is COMPLETE; the full
+research/manuscript evidence gate stays BLOCKED.

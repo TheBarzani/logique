@@ -707,3 +707,17 @@ scientific exclusions remain intact. Saved interrupted review session resumes;
 new tasks allow multiple bounded attempts and explicit transient model-capacity
 errors retry without changing models. See dispatcher operations and the new
 run's continuation/activation receipts. Full revision remains unfinished.
+
+## 30 October noisy-channel integration decision
+
+Checkpoint: `dump/1030015553-noisy-channel-integration-triage/`.
+The [fresh triage and full tasks1–8 matrix](research/noisy_channel_integration_20261030.md)
+records completed independent review672dc5f: whole candidate907a936/b62b77e
+source integration BLOCKED on two bookkeeping defects; exactly28 completed
+64-shot noisy rows admitted only as bounded conditional observations. No new C5
+R1/R2 execution, full graph-family coverage, superiority or paper approval.
+One correction → exact independent review → conditional integration chain was
+appended to the authorized continuation queue (14 definitions, unchanged128
+additional-batch ceiling/deadline/prior jobs,12 attempts per new job). Original
+candidate/review/evidence and README are preserved. This assigned triage is
+COMPLETE; the full research and manuscript evidence gate remain OPEN/BLOCKED.

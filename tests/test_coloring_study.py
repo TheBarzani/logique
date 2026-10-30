@@ -2347,3 +2347,194 @@ def test_component_depth_real_reserved_j0(tmp_path, monkeypatch):
     assert rec["component_depth_check"]["depths"] == depths
     assert "oracle" in rec["component_depth_check"]["over_budget_components"]
     assert not list(output.glob("*.qpy"))
+
+
+@pytest.mark.parametrize("controls", [1, 2, 3, 4])
+def test_qpy_phase_mcx_construction_small_dense(controls):
+    """Every polarity, including scalar phase, on at most five wires."""
+    from qiskit import QuantumCircuit
+    from qiskit.circuit.library import MCXGate
+    from qiskit.quantum_info import Operator
+
+    for state in range(1 << controls):
+        wires = list(reversed(range(controls + 1)))
+        original = QuantumCircuit(controls + 1, global_phase=0.417)
+        original.append(MCXGate(controls, ctrl_state=state), wires)
+        resolved = original.copy_empty_like()
+        study._append_qpy_mcx(resolved, wires, state)
+        assert len(resolved.data) == study._qpy_mcx_operation_count(controls, state)
+        saved = qpy_roundtrip(resolved)
+        np.testing.assert_allclose(
+            Operator(saved).data, Operator(original).data, atol=3e-14, rtol=0
+        )
+
+
+def _qpy_exact_phase_column(items, bits, circuit):
+    """Independent monomial propagation with exact dyadic phases in units of pi."""
+    from fractions import Fraction
+
+    phase = Fraction(0)
+    for item in items:
+        op = item.operation
+        wires = [circuit.find_bit(q).index for q in item.qubits]
+        if op.name in ("p", "rz"):
+            angle = Fraction(float(op.params[0]) / np.pi)
+            value = (bits >> wires[0]) & 1
+            phase += angle * (value if op.name == "p" else value - Fraction(1, 2))
+        else:
+            assert op.name in ("x", "cx", "ccx", "mcx")
+            controls, target = wires[:-1], wires[-1]
+            assert getattr(op, "ctrl_state", (1 << len(controls)) - 1) == (
+                (1 << len(controls)) - 1
+            )
+            if all((bits >> q) & 1 for q in controls):
+                bits ^= 1 << target
+    return bits, phase % 2
+
+
+@pytest.mark.parametrize("controls", [31, 32, 33, 65, 129, 283, 512])
+@pytest.mark.parametrize("opened", [False, True])
+def test_qpy_wide_mcx_symbolic_phase_polarity_scratch_and_readback(
+    controls, opened, monkeypatch
+):
+    """No wide definitions or dense arrays; check the diagonal H-conjugate."""
+    from qiskit import QuantumCircuit
+    from qiskit.circuit.library import MCXGate
+
+    # Fail immediately if resolution/QPY asks generic MCX for any definition.
+    # Qiskit's own small fixed-arity gates remain available as trusted leaves.
+    def forbidden(*args, **kwargs):
+        raise AssertionError("wide MCX definition must never be requested")
+
+    monkeypatch.setattr(MCXGate, "_define", forbidden)
+    state = (1 << controls) - 1
+    if opened:
+        state ^= (1 << (controls - 1)) | 1
+    circuit = QuantumCircuit(controls + 3, global_phase=-0.271)
+    wires = list(reversed(range(controls + 1)))
+    circuit.append(MCXGate(controls, ctrl_state=state).inverse(), wires)
+    resolved, _ = study._resolved_qpy_circuit(circuit)
+    saved = qpy_roundtrip(resolved)
+    assert study._qpy_semantic_signature(saved) == study._qpy_semantic_signature(
+        resolved
+    )
+    assert saved.num_qubits == circuit.num_qubits
+    assert saved.global_phase == circuit.global_phase
+    assert max(getattr(x.operation, "num_ctrl_qubits", 0) for x in saved.data) <= 32
+    if controls <= 32:
+        assert sum(x.operation.name == "mcx" for x in saved.data) == 1
+        return
+    assert len(saved.data) == study._qpy_mcx_operation_count(controls, state)
+    hadamards = [i for i, x in enumerate(saved.data) if x.operation.name == "h"]
+    assert len(hadamards) == 2
+    start, end = hadamards
+    assert saved.data[start].qubits == saved.data[end].qubits
+    assert saved.find_bit(saved.data[start].qubits[0]).index == wires[-1]
+    # Both initial values of every off-block scratch wire. Cover the marked
+    # predicate and every single control violation; for larger cases also
+    # use alternating and all-zero patterns. Exact fractions detect tiny
+    # omitted ladder phases which floating tolerances alone could miss.
+    values = [state, state ^ ((1 << controls) - 1), 0]
+    values += [state ^ (1 << i) for i in range(controls)]
+    if controls > 65:
+        values = values[:3] + [
+            state ^ (1 << i) for i in (0, 31, controls // 2, controls - 1)
+        ]
+    for value in values:
+        for target in (0, 1):
+            initial = sum(((value >> i) & 1) << q for i, q in enumerate(wires[:-1]))
+            initial |= target << wires[-1]
+            initial |= target << (controls + 1) | (1 - target) << (controls + 2)
+            before, phase = _qpy_exact_phase_column(saved.data[:start], initial, saved)
+            assert phase == 0
+            for branch in (0, 1):
+                branch_bits = (before & ~(1 << wires[-1])) | (branch << wires[-1])
+                after, middle_phase = _qpy_exact_phase_column(
+                    saved.data[start + 1 : end], branch_bits, saved
+                )
+                assert after == branch_bits  # all controls/borrowed wires restored
+                assert middle_phase == (int(value == state) * branch)
+            after, phase = _qpy_exact_phase_column(saved.data[end + 1 :], before, saved)
+            assert after == initial and phase == 0
+
+
+@pytest.mark.parametrize("inversions", [0, 1, 2, 3])
+def test_qpy_wide_nested_actual_inverse_order_and_scalar_phase(inversions):
+    from qiskit import QuantumCircuit
+    from qiskit.circuit.library import MCXGate
+
+    inner = QuantumCircuit(34, global_phase=0.417)
+    inner.append(MCXGate(33, ctrl_state=(1 << 32) | 5), range(34))
+    body = inner
+    for _ in range(inversions):
+        outer = QuantumCircuit(34, global_phase=-0.291)
+        outer.append(body.to_gate().inverse(), list(reversed(range(34))))
+        body = outer
+    actual, _ = study._resolved_qpy_circuit(body)
+    # Independent ordered wire/phase reference through the actual definitions.
+    wires = list(range(34))
+    phase = 0
+    block = body
+    while len(block.data) == 1 and not isinstance(block.data[0].operation, MCXGate):
+        phase += float(block.global_phase)
+        item = block.data[0]
+        wires = [wires[block.find_bit(q).index] for q in item.qubits]
+        block = item.operation.definition
+    phase += float(block.global_phase)
+    item = block.data[0]
+    expected = QuantumCircuit(34, global_phase=phase)
+    study._append_qpy_mcx(
+        expected,
+        [wires[block.find_bit(q).index] for q in item.qubits],
+        item.operation.ctrl_state,
+    )
+    signature = study._qpy_semantic_signature(actual)
+    reference = study._qpy_semantic_signature(expected)
+    signature.pop("global_phase")
+    reference.pop("global_phase")
+    assert signature == reference
+    # Independent accumulation groups modulo-2pi additions differently.
+    assert (
+        abs(np.exp(1j * actual.global_phase) - np.exp(1j * expected.global_phase))
+        < 3e-14
+    )
+    assert study._qpy_semantic_signature(actual) == study._qpy_semantic_signature(
+        qpy_roundtrip(actual)
+    )
+
+
+def test_qpy_wide_caps_reject_before_gate_or_definition_allocation(monkeypatch):
+    from qiskit import QuantumCircuit
+    from qiskit.circuit import ControlledGate
+    from qiskit.circuit.library import MCXGate, ZGate
+
+    too_wide = QuantumCircuit(514)
+    too_wide.append(MCXGate(513), range(514))
+    over_budget = QuantumCircuit(34)
+    over_budget.append(MCXGate(33), range(34))
+    unsupported = QuantumCircuit(34)
+    unsupported.append(
+        ControlledGate("wide_z", 34, [], num_ctrl_qubits=33, base_gate=ZGate()),
+        range(34),
+    )
+    target = QuantumCircuit(34)
+
+    def forbidden(*args, **kwargs):
+        raise AssertionError("rejection must precede definitions and emitted gates")
+
+    monkeypatch.setattr(MCXGate, "_define", forbidden)
+    monkeypatch.setattr(QuantumCircuit, "mcx", forbidden)
+    monkeypatch.setattr(QuantumCircuit, "h", forbidden)
+    monkeypatch.setattr(QuantumCircuit, "x", forbidden)
+    monkeypatch.setattr(study, "QPY_MAX_OPERATIONS", 262)
+    with pytest.raises(ValueError, match="1..512"):
+        study._resolved_qpy_circuit(too_wide)
+    with pytest.raises(ValueError, match="100000 emitted"):
+        study._resolved_qpy_circuit(over_budget)
+    with pytest.raises(ValueError, match="100000 emitted"):
+        study._append_qpy_mcx(target, list(range(34)), (1 << 33) - 1)
+    with pytest.raises(ValueError, match="requires MCXGate"):
+        study._resolved_qpy_circuit(unsupported)
+    assert not target.data
+    with pytest.raises(ValueError, match="limited to 20"):
+        study._resolved_qpy_circuit(over_budget, expand_wide=True)

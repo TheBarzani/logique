@@ -53,6 +53,95 @@ CONFIG_FIELDS = {
 }
 
 RESTORING_MCX_POLICIES = ("clean_tree",)
+QPY_MAX_MCX_CONTROLS = 512
+QPY_MAX_OPERATIONS = 100_000
+
+
+def _qpy_mcx_operation_count(controls: int, control_state: int) -> int:
+    """Preflight the width-preserving phase construction before emitting gates."""
+    from functools import lru_cache
+
+    if not 1 <= controls <= QPY_MAX_MCX_CONTROLS:
+        raise ValueError("QPY MCX representation requires 1..512 controls")
+    if not 0 <= control_state < (1 << controls):
+        raise ValueError("QPY MCX control state is out of range")
+
+    @lru_cache(None)
+    def dirty_count(n):
+        if n <= 32:
+            return 1
+        left = (n + 1) // 2
+        return 2 * (dirty_count(left) + dirty_count(n - left + 1))
+
+    # H, a ladder of controlled RZs, one P, H; X conjugation for open controls.
+    return (
+        7
+        + sum(
+            4 + 2 * (dirty_count((n + 1) // 2) + dirty_count(n // 2))
+            for n in range(2, controls + 1)
+        )
+        + 2 * (controls - control_state.bit_count())
+    )
+
+
+def _append_qpy_mcx(circuit, wires, control_state):
+    """Append exact MCX using <=32-control leaves and no additional wires.
+
+    P(theta) = exp(i theta/2) RZ(theta), so C^n P(theta) is a
+    C^n RZ(theta) followed by C^(n-1) P(theta/2) on the last control.
+    Iteration ends in a one-wire P; H C^n P(pi) H is MCX, including phase.
+
+    For two disjoint control predicates a,b, the sequence
+    RZ(theta/4) X^a RZ(-theta/4) X^b RZ(theta/4) X^a
+    RZ(-theta/4) X^b equals RZ(theta*a*b). Each larger X^a leaf
+    uses a restored dirty wire from the other control group: A B A B,
+    with A toggling that wire by one conjunction and B toggling the target
+    by the other conjunction AND that wire. This identity holds for either
+    initial dirty value, with no relative phase, hence also for entanglement.
+    No wide gate definition, matrix, synthesis plugin or extra scratch is used.
+    The operation count and width are checked before any gate is allocated.
+    """
+    count = _qpy_mcx_operation_count(len(wires) - 1, control_state)
+    if len(circuit.data) + count > QPY_MAX_OPERATIONS:
+        raise ValueError("QPY MCX representation exceeds 100000 emitted operations")
+
+    def dirty_mcx(controls, target, borrowed):
+        if len(controls) <= 32:
+            circuit.mcx(controls, target)
+            return
+        split = (len(controls) + 1) // 2
+        a, b = controls[:split], controls[split:]
+        for _ in range(2):
+            dirty_mcx(a, borrowed, b[0])
+            dirty_mcx(b + [borrowed], target, a[0])
+
+    controls, target = wires[:-1], wires[-1]
+    opened = [q for i, q in enumerate(controls) if not (control_state >> i) & 1]
+    for q in opened:
+        circuit.x(q)
+    circuit.h(target)
+    angle = math.pi
+    while controls:
+        if len(controls) == 1:
+            circuit.rz(angle / 2, target)
+            circuit.cx(controls[0], target)
+            circuit.rz(-angle / 2, target)
+            circuit.cx(controls[0], target)
+        else:
+            split = (len(controls) + 1) // 2
+            a, b = controls[:split], controls[split:]
+            for _ in range(2):
+                circuit.rz(angle / 4, target)
+                dirty_mcx(a, target, b[0])
+                circuit.rz(-angle / 4, target)
+                dirty_mcx(b, target, a[0])
+        target = controls[-1]
+        controls = controls[:-1]
+        angle /= 2
+    circuit.p(angle, target)
+    circuit.h(wires[-1])
+    for q in opened:
+        circuit.x(q)
 
 
 def _qpy_standard_gate_classes() -> set[type]:
@@ -61,8 +150,7 @@ def _qpy_standard_gate_classes() -> set[type]:
     from qiskit.circuit.library import MCXGate
     from qiskit.circuit.library.standard_gates import get_standard_gate_name_mapping
 
-    # The fixed-arity catalogue omits generic MCX. Retain this serializable
-    # class so preparation resolution does not implicitly lower logical MCX.
+    # Generic closed MCX is directly serializable only through 32 controls.
     return {gate.base_class for gate in get_standard_gate_name_mapping().values()} | {
         MCXGate,
         Barrier,
@@ -97,18 +185,10 @@ def _resolved_qpy_circuit(
         resolved.global_phase += block.global_phase
         for item in block.data:
             visited += 1
-            if visited > 100_000:
+            if visited > QPY_MAX_OPERATIONS:
                 raise ValueError("QPY definition resolution exceeds 100000 operations")
             operation = item.operation
-            mapped = [wires[block.find_bit(q).index] for q in item.qubits]
             controls = getattr(operation, "num_ctrl_qubits", 0)
-            closed_controls = getattr(operation, "ctrl_state", None) in (
-                None,
-                (1 << controls) - 1,
-            )
-            # QPY 2.1.1 also loses generic MCX open-control state. Its emitted
-            # definition is X conjugation around a closed-control instance.
-            # Resolve open controls consistently, without lowering closed MCX.
             mcx = (
                 controls >= 3
                 and getattr(getattr(operation, "base_gate", None), "name", None) == "x"
@@ -121,6 +201,26 @@ def _resolved_qpy_circuit(
                 and operation.name != "barrier"
             ):
                 raise ValueError("Restoring definition operation exceeds 21 wires")
+            if controls > 32:
+                from qiskit.circuit.library import MCXGate
+
+                # Never ask an unsupported wide controlled gate for a definition.
+                if operation.base_class is not MCXGate:
+                    raise ValueError("QPY wide controlled operation requires MCXGate")
+                count = _qpy_mcx_operation_count(controls, operation.ctrl_state)
+                if len(resolved.data) + count > QPY_MAX_OPERATIONS:
+                    raise ValueError(
+                        "QPY MCX representation exceeds 100000 emitted operations"
+                    )
+                mapped = [wires[block.find_bit(q).index] for q in item.qubits]
+                _append_qpy_mcx(resolved, mapped, operation.ctrl_state)
+                expanded[operation.name] += 1
+                continue
+            mapped = [wires[block.find_bit(q).index] for q in item.qubits]
+            closed_controls = getattr(operation, "ctrl_state", None) in (
+                None,
+                (1 << controls) - 1,
+            )
             if (
                 operation.base_class in standard
                 and closed_controls
@@ -137,6 +237,8 @@ def _resolved_qpy_circuit(
                     value = complex(param)
                     if not (math.isfinite(value.real) and math.isfinite(value.imag)):
                         raise ValueError("QPY resolution requires finite parameters")
+                if len(resolved.data) >= QPY_MAX_OPERATIONS:
+                    raise ValueError("QPY resolution exceeds 100000 emitted operations")
                 resolved.append(operation, mapped)
             else:
                 definition = operation.definition

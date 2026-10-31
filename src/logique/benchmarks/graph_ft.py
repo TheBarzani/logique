@@ -595,6 +595,15 @@ def run_case(
     options: rotations.SynthesisOptions = rotations.SynthesisOptions(),
 ) -> Path:
     """Persist a single bounded actual edge experiment, including every failure."""
+    # Reject invalid requests before native synthesis, preparation arrays or SK.
+    if regime not in ("R1", "R2", "R3"):
+        raise ValueError("regime must be R1, R2 or R3")
+    if type(iterations) is not int or not 0 <= iterations <= 3:
+        raise ValueError("iterations must be an integer in [0, 3]")
+    error_budget = rotations._precision(error_budget, "error_budget")
+    if not isinstance(options, rotations.SynthesisOptions):
+        raise ValueError("Explicit bounded SynthesisOptions required")
+    preflight(4, 4, limits)
     identities = static_ft.verify_admission(source_root, executable)
     if (
         Path(__file__).resolve()

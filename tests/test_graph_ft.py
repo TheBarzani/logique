@@ -203,3 +203,34 @@ def test_failure_saved_without_fallback(tmp_path):
 
 def test_no_break_even_from_missing_or_failed_rows():
     assert ft.compare_executed({}, {})["achieved_break_even"] is None
+
+
+@pytest.mark.parametrize(
+    "bad_request",
+    [
+        {"regime": "R4"},
+        {"iterations": -1},
+        {"iterations": 4},
+        {"iterations": True},
+        {"error_budget": True},
+        {"error_budget": 0},
+        {"error_budget": float("nan")},
+        {"error_budget": 1e-13},
+        {"options": None},
+    ],
+)
+def test_invalid_request_rejects_before_native_or_arrays(tmp_path, bad_request):
+    options = {"regime": "R2", "output_root": tmp_path, **bad_request}
+    with (
+        patch.object(
+            ft, "build_components", side_effect=AssertionError("native/arrays")
+        ),
+        patch.object(
+            static_ft,
+            "verify_admission",
+            side_effect=AssertionError("before preflight"),
+        ),
+    ):
+        with pytest.raises(ValueError):
+            ft.run_case(Path.cwd(), Path("unused"), **options)
+    assert not list(tmp_path.iterdir())

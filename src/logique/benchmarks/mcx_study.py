@@ -12,7 +12,7 @@ import math
 from typing import TYPE_CHECKING
 
 from . import costs
-from .coloring_study import _resolved_qpy_circuit, assemble_case
+from .coloring_study import ExcludedCase, _resolved_qpy_circuit, assemble_case
 
 if TYPE_CHECKING:
     from qiskit import QuantumCircuit
@@ -175,9 +175,17 @@ def assemble_mcx_case(
         raise StudyExclusion("whole fixtures require no precolors, k2..8, data1..8")
     if type(iterations) is not int or not 0 <= iterations <= 2:
         raise StudyExclusion("whole fixtures require j0..2")
-    source = assemble_case(
-        problem, method, regime, iterations=iterations, seed=seed, executable=executable
-    )
+    try:
+        source = assemble_case(
+            problem,
+            method,
+            regime,
+            iterations=iterations,
+            seed=seed,
+            executable=executable,
+        )
+    except ExcludedCase as error:
+        raise StudyExclusion(str(error)) from error
     restoring = "clean_tree" if policy == "throwaway_tree" else policy
     blocks = {}
     target = source.metadata["backend_metadata"]["output_qubits"][0]

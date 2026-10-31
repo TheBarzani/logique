@@ -112,13 +112,14 @@ def test_throwaway_requires_mirror_and_monomial_prefix():
 @pytest.mark.parametrize(
     "method", ["sb_balanced", "structure_sequential", "xag", "klut_bennett", "best_fit"]
 )
-def test_complete_graph_phase_and_search(policy, method):
+@pytest.mark.parametrize("iterations", [0, 1, 2])
+def test_complete_graph_phase_and_search(policy, method, iterations):
     if method in ("xag", "klut_bennett", "best_fit") and not os.environ.get(
         "LOGIQUE_NATIVE_EXECUTABLE"
     ):
         pytest.skip("native service tests require an explicit provenanced executable")
     p = ColoringProblem((-7, 20), ((-7, 20),), 3)
-    case = s.assemble_mcx_case(p, method, "R2", policy)
+    case = s.assemble_mcx_case(p, method, "R2", policy, iterations=iterations)
     q = case.circuits["oracle"]
     data = case.metadata["data_qubits"]
     assert q.num_qubits <= 18
@@ -139,9 +140,11 @@ def test_complete_graph_phase_and_search(policy, method):
     marked = np.array(
         [(x & 3) < 3 and (x >> 2) < 3 and (x & 3) != x >> 2 for x in range(16)]
     )
-    phased = predicted.copy()
-    phased[marked] *= -1
-    predicted = 2 * predicted * np.vdot(predicted, phased) - phased
+    a = predicted.copy()
+    for _ in range(iterations):
+        phased = predicted.copy()
+        phased[marked] *= -1
+        predicted = 2 * a * np.vdot(a, phased) - phased
     physical = np.zeros(1 << search.num_qubits, complex)
     for x, value in enumerate(predicted):
         physical[sum(((x >> b) & 1) << w for b, w in enumerate(data))] = value
@@ -199,6 +202,10 @@ def test_dutta_is_analytical_and_out_of_range_explicit():
 
 def test_import_is_candidate():
     assert Path(s.__file__).resolve().is_relative_to(Path.cwd() / "src")
+    assert (
+        Path(s.costs.__file__).resolve()
+        == Path.cwd() / "src/logique/benchmarks/costs.py"
+    )
 
 
 def test_throwaway_actual_inverse_after_control_changes():
@@ -220,3 +227,9 @@ def test_throwaway_actual_inverse_after_control_changes():
         expected[x] *= -1 if (y >> 5) & 1 else 1
     np.testing.assert_allclose(state(actual, v), expected, atol=2e-10)
     assert info["held_scratch"] == 3  # held once, never doubled for inverse
+
+
+def test_known_baseline_restriction_is_an_exclusion():
+    p = ColoringProblem((2, 8, 90), ((2, 8), (8, 90), (2, 90)), 2)
+    with pytest.raises(s.StudyExclusion, match="multiple higher-index neighbors"):
+        s.assemble_mcx_case(p, "sb_original", "R1", "clean_tree")

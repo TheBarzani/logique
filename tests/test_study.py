@@ -221,6 +221,27 @@ def test_study_runner_exports_every_level(native, tmp_path):
     assert set(rows.component) >= {"preparation", "oracle", "diffusion", "search"}
 
 
+def test_iterations_beyond_the_routing_limit_are_recorded(tmp_path):
+    pytest.importorskip("qiskit_ibm_runtime")
+    pytest.importorskip("saha_belletti")
+    import pandas as pd
+
+    from logique.benchmarks.study import run_study
+
+    run = run_study(
+        {
+            "inputs": [str(GRAPHS / "K3.col")],
+            "methods": ["sb_balanced"],
+            "regimes": ["R3"],
+            "targets": ["routed"],
+            "limits": {"route_operations": 10},
+            "output": str(tmp_path / "1030000000-study"),
+        }
+    )
+    row = pd.read_csv(run / "summary.csv").set_index("component").loc["iteration"]
+    assert not row["routed"] and "multi-qubit operations; limit 10" in row["reason"]
+
+
 def test_study_settings_reject_unknown_values():
     pytest.importorskip("qiskit")
     from logique.benchmarks.study import study_settings

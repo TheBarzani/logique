@@ -44,7 +44,10 @@ Study fields:
   problem.
 - `limits`: `exhaustive_inputs`, `witnesses` (proper colorings added to
   verification inputs beyond the exhaustive limit), `synthesis_timeout_s`,
-  `count_budget`, and `route_qubits` (defaults to the device size).
+  `count_budget`, `route_qubits` (defaults to the device size), and
+  `route_operations` (multi-qubit operations in an expanded iteration, 20,000
+  by default). Iterations beyond either routing limit are recorded as not
+  routed, with the reason.
 
 A study writes `summary.csv` with one row per measurement: `component` is
 `preparation`, `oracle`, `diffusion`, `search` (complete search at the stated

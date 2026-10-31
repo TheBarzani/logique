@@ -43,6 +43,8 @@ LIMITS = {
     "synthesis_timeout_s": 180,
     "count_budget": 10_000_000,
     "route_qubits": None,
+    # Routing takes about 2.5 ms per two-qubit gate over five seeds.
+    "route_operations": 20_000,
 }
 
 
@@ -436,10 +438,21 @@ def run_study(config: dict, *, executable=None) -> Path:
                                 diffusion, range(diffusion.num_qubits), inplace=True
                             )
                             started = time.perf_counter()
+                            operations = sum(
+                                len(inst.qubits) > 1 for inst in iteration.data
+                            )
                             if total_width > route_qubits:
                                 record = {
                                     "routed": False,
                                     "reason": f"needs {total_width} qubits; limit {route_qubits}",
+                                }
+                            elif operations > limits["route_operations"]:
+                                record = {
+                                    "routed": False,
+                                    "reason": (
+                                        f"has {operations} multi-qubit operations; "
+                                        f"limit {limits['route_operations']}"
+                                    ),
                                 }
                             else:
                                 record = routed_metrics(

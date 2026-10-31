@@ -48,7 +48,20 @@ string(REPLACE "${cell_marker}"
   "  uint32_t fanout_size( node<Ntk> const& n ) const\n  {\n    return (*_cell_fanout)[n];\n  }\n\n${cell_marker}"
   best_fit_patched "${best_fit_source}")
 file(WRITE ${CMAKE_CURRENT_BINARY_DIR}/compat/caterpillar/synthesis/strategies/best_fit_mapping_strategy.hpp "${best_fit_patched}")
+# Only the existing bundled ABC bsat2 sources are needed; no full ABC build.
+add_library(logique_bsat STATIC
+  ${caterpillar_SOURCE_DIR}/lib/abcsat/satSolver.cpp
+  ${caterpillar_SOURCE_DIR}/lib/abcsat/satStore.cpp)
+target_include_directories(logique_bsat SYSTEM PRIVATE ${caterpillar_SOURCE_DIR}/lib/abcsat)
+target_compile_definitions(logique_bsat PRIVATE LIN64 ABC_NAMESPACE=pabc)
+# Keep linkage evidence separate from the pre-existing LHRS provenance record.
+file(SHA256 ${caterpillar_SOURCE_DIR}/lib/abcsat/satSolver.cpp bsat_sha256)
+file(SHA256 ${caterpillar_SOURCE_DIR}/lib/abcsat/satStore.cpp store_sha256)
+file(SHA256 ${caterpillar_SOURCE_DIR}/include/caterpillar/solvers/bsat_solver.hpp pebble_sha256)
+file(WRITE ${CMAKE_CURRENT_BINARY_DIR}/sat_build_provenance.json
+  "{\n  \"solver\": \"bundled ABC bsat2\",\n  \"satSolver_cpp_sha256\": \"${bsat_sha256}\",\n  \"satStore_cpp_sha256\": \"${store_sha256}\",\n  \"bsat_pebble_solver_sha256\": \"${pebble_sha256}\",\n  \"definitions\": \"LIN64 ABC_NAMESPACE=pabc\"\n}\n")
 add_executable(boolean_synthesis main.cpp)
+target_link_libraries(boolean_synthesis PRIVATE logique_bsat)
 function(configure_bridge_target target)
   target_include_directories(${target} BEFORE PRIVATE ${CMAKE_CURRENT_BINARY_DIR}/compat)
   target_include_directories(${target} PRIVATE ${caterpillar_SOURCE_DIR}/include)
@@ -68,4 +81,8 @@ if(LOGIQUE_BUILD_CONTRACT_PROBES)
   add_executable(native_contract_probe tests/action_serialization.cpp)
   configure_bridge_target(native_contract_probe)
   add_test(NAME native_contract_actions COMMAND native_contract_probe)
+  add_executable(native_sat_probe tests/sat_pebbling.cpp)
+  configure_bridge_target(native_sat_probe)
+  target_link_libraries(native_sat_probe PRIVATE logique_bsat)
+  add_test(NAME native_sat_semantics COMMAND native_sat_probe)
 endif()

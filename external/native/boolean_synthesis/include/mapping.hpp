@@ -1,6 +1,7 @@
 #pragma once
 #include "serialization.hpp"
 #include "actions.hpp"
+#include "sat_pebbling.hpp"
 template<class Ntk, class Strategy> json compile(Ntk const& ntk, Strategy& strategy) {
     RecordingCircuit circ;
     cp::logic_network_synthesis_stats stats;
@@ -34,8 +35,8 @@ inline json map_network(mt::xag_network const& selected, json const& request) {
         const auto strategy = explicit_strategy ? request.at("strategy").get<std::string>() : "bennett";
         if (explicit_strategy && method != "aig_bennett" && method != "xag_bennett")
             throw std::runtime_error("strategy is supported only for AIG/XAG Bennett methods");
-        if (strategy != "bennett" && strategy != "bennett_inplace" && strategy != "eager")
-            throw std::runtime_error("strategy must be bennett, bennett_inplace or eager");
+        if (strategy != "bennett" && strategy != "bennett_inplace" && strategy != "eager" && strategy != "sat_pebbling")
+            throw std::runtime_error("strategy must be bennett, bennett_inplace, eager or sat_pebbling");
         const bool common = request.find("preprocessing") != request.end();
         const auto policy = common ? request.at("preprocessing").get<std::string>()
                                    : (method == "aig_bennett" ? "none" : "refactoring");
@@ -44,6 +45,7 @@ inline json map_network(mt::xag_network const& selected, json const& request) {
         for (auto it = request.begin(); it != request.end(); ++it) {
             const auto& key = it.key();
             if (key == "path" || key == "method" || key == "outputs" || key == "preprocessing" || key == "strategy") continue;
+            if (strategy == "sat_pebbling" && (key == "qubit_budget" || key == "sat_max_steps" || key == "sat_conflict_limit" || key == "sat_time_seconds")) continue;
             if (key == "k" && method == "klut_bennett") continue;
             if ((key == "inner_cut" || key == "outer_cut") && method == "best_fit") continue;
             throw std::runtime_error("Unsupported synthesis control: " + key);
@@ -58,10 +60,10 @@ inline json map_network(mt::xag_network const& selected, json const& request) {
         if (method == "xag") result = {{"network", graph_json(xag)}};
         else if (method == "aig_bennett") {
             Network<mt::aig_network> ntk(mt::cleanup_dangling<mt::xag_network, mt::aig_network>(xag));
-            result = compile_bennett(ntk, strategy);
+            result = strategy == "sat_pebbling" ? compile_sat(ntk, sat_budget(request)) : compile_bennett(ntk, strategy);
         } else if (method == "xag_bennett") {
             Network<mt::xag_network> ntk(xag);
-            result = compile_bennett(ntk, strategy);
+            result = strategy == "sat_pebbling" ? compile_sat(ntk, sat_budget(request)) : compile_bennett(ntk, strategy);
         } else if (method == "klut_bennett") {
             const int k = request.value("k", 4);
             if (k < 2 || k > 6) throw std::runtime_error("k must be between 2 and 6");
@@ -87,6 +89,7 @@ inline json map_network(mt::xag_network const& selected, json const& request) {
                                  method == "best_fit" ? "best_fit" : strategy;
         result["mapping_strategy"] = {{"name", name}, {"explicit", explicit_strategy},
             {"implementation", method == "xag" ? "tweedledum::xag_synth" :
+                name == "sat_pebbling" ? "logique::bounded_sat_pebbling" :
                 "caterpillar::" + name + "_mapping_strategy"}};
         result["preprocessing"] = {{"policy", policy}, {"common", common},
                                    {"before_network", graph_json(selected)},

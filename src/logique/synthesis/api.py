@@ -7,7 +7,7 @@ import time
 from logique.coloring import ColoringEncoding
 from logique.benchmarks.provenance import environment
 from logique.circuits.records import records_to_qiskit
-from .native import METHODS, run_native
+from .native import METHODS, _sat_controls, run_native
 from .tweedledum import _network_records, _xag_records
 from .result import SynthesisResult
 
@@ -22,6 +22,10 @@ def synthesize(
     inner_cut: int = 4,
     preprocessing: str | None = None,
     strategy: str | None = None,
+    qubit_budget: int | None = None,
+    sat_max_steps: int | None = None,
+    sat_conflict_limit: int | None = None,
+    sat_time_seconds: int | None = None,
     executable=None,
 ) -> SynthesisResult:
     """Synthesize a raw computation; oracle wrappers explicitly restore workspace.
@@ -30,7 +34,13 @@ def synthesize(
     before conversion to each representation. Omission preserves legacy defaults
     (unrefactored AIG Bennett, refactored XAG for the other methods).
     AIG/XAG Bennett additionally accept ``strategy='bennett'``,
-    ``'bennett_inplace'`` or ``'eager'``. Omission retains Bennett mapping.
+    ``'bennett_inplace'``, ``'eager'`` or ``'sat_pebbling'``. SAT requires all
+    four explicit budgets and supports only tiny binary AIG/XAGs (<=6 inputs,
+    <=32 gates, <=64 nodes, <=16 outputs), with clean initial workspace.
+    ``qubit_budget`` includes inputs, constants and output copies; it excludes
+    external XOR-wrapper targets. SAT wall time is bounded by the Python process
+    timeout; native search checks time between conflict-bounded solver calls.
+    Omission retains Bennett mapping.
     """
     if method not in METHODS:
         raise ValueError(f"method must be one of {METHODS}")
@@ -39,8 +49,20 @@ def synthesize(
     if strategy is not None:
         if method not in ("aig_bennett", "xag_bennett"):
             raise ValueError("strategy is supported only for AIG/XAG Bennett methods")
-        if strategy not in ("bennett", "bennett_inplace", "eager"):
-            raise ValueError("strategy must be bennett, bennett_inplace or eager")
+        if strategy not in ("bennett", "bennett_inplace", "eager", "sat_pebbling"):
+            raise ValueError(
+                "strategy must be bennett, bennett_inplace, eager or sat_pebbling"
+            )
+    sat = dict(
+        qubit_budget=qubit_budget,
+        sat_max_steps=sat_max_steps,
+        sat_conflict_limit=sat_conflict_limit,
+        sat_time_seconds=sat_time_seconds,
+    )
+    if strategy == "sat_pebbling":
+        _sat_controls(sat)
+    elif any(value is not None for value in sat.values()):
+        raise ValueError("SAT budgets require strategy='sat_pebbling'")
     if isinstance(source, ColoringEncoding):
         with tempfile.TemporaryDirectory(prefix="logique-coloring-") as directory:
             path = source.write_verilog(Path(directory) / "coloring.v")
@@ -53,6 +75,7 @@ def synthesize(
                 inner_cut=inner_cut,
                 preprocessing=preprocessing,
                 strategy=strategy,
+                **sat,
                 executable=executable,
             )
         result.metadata.update(
@@ -79,6 +102,8 @@ def synthesize(
         params["preprocessing"] = preprocessing
     if strategy is not None:
         params["strategy"] = strategy
+    if strategy == "sat_pebbling":
+        params.update(sat)
     start = time.perf_counter()
     md = run_native(source, method, executable=executable, **params)
     if method == "xag":

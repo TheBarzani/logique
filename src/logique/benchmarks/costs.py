@@ -118,7 +118,23 @@ MCX_DECOMPOSITIONS = {
 
 @lru_cache(maxsize=256)
 def _construction(method: str, controls: int) -> QuantumCircuit:
-    return MCX_DECOMPOSITIONS[method].build(controls)
+    """Build a construction without the ancilla wires it never touches.
+
+    Qiskit's two-ancilla Khattar–Gidney circuits use only one of their
+    ancillas for up to five controls; an idle wire is not workspace.
+    """
+    built = MCX_DECOMPOSITIONS[method].build(controls)
+    used = {built.find_bit(q).index for inst in built.data for q in inst.qubits}
+    kept = [i for i in range(built.num_qubits) if i <= controls or i in used]
+    if len(kept) == built.num_qubits:
+        return built
+    position = {old: new for new, old in enumerate(kept)}
+    trimmed = QuantumCircuit(len(kept), global_phase=built.global_phase)
+    for inst in built.data:
+        trimmed.append(
+            inst.operation, [position[built.find_bit(q).index] for q in inst.qubits]
+        )
+    return trimmed
 
 
 def is_mcx(operation, min_controls: int) -> bool:

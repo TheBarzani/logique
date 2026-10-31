@@ -178,7 +178,17 @@ def test_isolated_costs_of_restoring_trees(controls):
     assert row["t_count"] == 8 * controls - 9
     assert row["ancillas"] == controls - 2 and row["rotation_count"] == 0
     kg24 = costs.isolated_mcx_costs("2_clean_kg24", controls)
-    assert kg24["ancillas"] == 2
+    # Up to five controls, Qiskit's two-ancilla circuit touches only one.
+    assert kg24["ancillas"] == (1 if controls <= 5 else 2)
+
+
+@pytest.mark.parametrize("method", ["2_clean_kg24", "2_dirty_kg24"])
+def test_idle_construction_wires_are_not_counted(method):
+    circuit = single(MCXGate(4), 5)
+    decomposed, info = costs.decompose_mcx(circuit, method)
+    used = {decomposed.find_bit(q).index for i in decomposed.data for q in i.qubits}
+    assert info["appended_ancillas"] == 1 and used == set(range(6))
+    assert_equal_on_clean_ancillas(decomposed, circuit, 5)
 
 
 def test_dutta_costs_follow_theorem_one():

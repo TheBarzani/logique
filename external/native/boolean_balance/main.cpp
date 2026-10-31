@@ -105,13 +105,14 @@ int main() {
             for (uint32_t i = 0; i < network.num_pos(); ++i)
                 verilog << (i ? ", " : "") << "y" << i;
             verilog << ");" << std::endl;
+            for (uint32_t i = 0; i < network.num_pos(); ++i)
+                verilog << "output y" << i << ";" << std::endl;
             for (uint32_t i = 0; i < network.num_pos(); ++i) {
                 auto signal = network.po_at(i);
                 auto node = network.get_node(signal);
                 if (!network.is_constant(node))
                     throw std::runtime_error("Nonconstant output without primary inputs");
                 const bool value = network.constant_value(node) != network.is_complemented(signal);
-                verilog << "output y" << i << ";" << std::endl;
                 verilog << "assign y" << i << " = 1'b" << int(value) << ";" << std::endl;
             }
             verilog << "endmodule" << std::endl;

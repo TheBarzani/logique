@@ -727,6 +727,7 @@ class Dispatcher:
             LOGIQUE_DISPATCH_QUEUE=str(self.queue),
             LOGIQUE_DISPATCH_JOB=job["id"],
             LOGIQUE_DISPATCH_STATE=str(self.directory / "state.json"),
+            LOGIQUE_RESEARCH_BRIEF=str(attempt / "research-brief.md"),
         )
         publication = self.publication_policy()
         publication_rules = (
@@ -749,6 +750,9 @@ class Dispatcher:
             + "This is one bounded batch; return the required result JSON. "
             "If scope remains, outcome=continue and leave a concrete checkpoint."
         )
+        reporting = root / "docs" / "coloring-dispatcher-reporting.md"
+        if reporting.exists():
+            prompt += "\n\n" + reporting.read_text()
         started = time.monotonic()
         interrupted = None
         with (

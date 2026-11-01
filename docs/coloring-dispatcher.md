@@ -113,8 +113,8 @@ state file. Authentication responses, email and credentials are not saved.
 - Free resets are authorized only at weekly exhaustion. Select the earliest
   unexpired advertised reset, save an idempotency key before consuming, and
   re-read usage rather than infer recovery. Never redeem one merely because the
-  five-hour window is exhausted. No credit-purchase or notification API exists
-  in this tool.
+  five-hour window is exhausted. No credit-purchase API exists in the model dispatcher. Research notifications
+  use the separate GitHub sender described below.
 
 The underlying read/resume interfaces are documented in the official
 [Codex App Server reference](https://learn.chatgpt.com/docs/app-server) and
@@ -197,3 +197,61 @@ No model substitution or paid fallback occurs. Fresh noisy-channel repair and
 review, reviewed scaling execution, integration and full-plan continuation follow.
 The `status` and `activity` tmux windows now display this active run. Prior-run
 counts and scientific blockers remain in its preserved state and handoff.
+
+## Research notifications
+
+The dedicated [research briefing issue](https://github.com/TheBarzani/logique/issues/4)
+receives researcher-written explanations, measured results, calculations,
+limitations and next scientific questions. Markdown math and Mermaid diagrams
+render on GitHub; email previews may display their source. The account must
+subscribe and enable the desired email/mobile settings; updates posted with the
+same account may require enabling notifications for its own updates. Posting a
+verified comment is not proof of email or phone delivery.
+
+Each new/resumed worker receives
+[the reporting contract](coloring-dispatcher-reporting.md) and the absolute
+`LOGIQUE_RESEARCH_BRIEF` output path. It writes `research-brief.md` beside its
+batch result. This uses its ordinary included model turn; no separate model job
+or API inference is used to summarize. The sender accepts a briefing only after
+a completed CLI turn and valid structured outcome. It relays up to three full
+briefings per digest, preserving individual scientific qualifications instead
+of automatically inventing an overarching conclusion.
+
+`tools/coloring_notifications.py` follows the canonical `active-dispatch.json`
+pointer, polling local files every minute in `coloring-paper:notifications`.
+The default is a digest every four hours **when new briefs exist**, with material
+quota pauses, blocked/stale execution and deadline/batch stops reported sooner
+(subject to a fifteen-minute alert cooldown). Identical alerts are suppressed;
+there are no empty repeating digests. It continues monitoring independently of
+model quota and the research watcher, so it can report a stopped dispatcher.
+It is a tmux process, not a reboot-persistent service.
+
+Configuration and delivery receipts live under
+`dump/1031203137-coloring-research-notifications/`. The existing GitHub CLI login
+is used; no token is copied into the configuration. A repository-local lock
+prevents duplicate senders. Pending content is saved before posting; retries
+search for its unique marker and read back the complete body before acknowledging
+it. This reconciles accepted-but-timed-out requests; it cannot guarantee atomic
+exactly-once delivery across GitHub and the local filesystem. Delivery errors
+never interrupt research, never invoke another model, and are retained in
+`notification-state.json` for recovery. No raw logs or account/authentication
+snapshots are included in the briefings. Only issue comments are written;
+comments received on GitHub are not interpreted as commands.
+
+```bash
+.venv/bin/python tools/coloring_notifications.py status \
+  --config dump/1031203137-coloring-research-notifications/config.json
+
+.venv/bin/python tools/coloring_notifications.py pause \
+  --config dump/1031203137-coloring-research-notifications/config.json
+
+.venv/bin/python tools/coloring_notifications.py unpause \
+  --config dump/1031203137-coloring-research-notifications/config.json
+```
+
+Stopping the notifications window affects delivery only. To restart:
+
+```bash
+.venv/bin/python tools/coloring_notifications.py run \
+  --config dump/1031203137-coloring-research-notifications/config.json
+```

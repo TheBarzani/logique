@@ -680,3 +680,31 @@ def test_capacity_detection_ignores_tool_output_and_ordinary_failures(tmp_path):
         + "\n"
     )
     assert dispatch.model_capacity_failure(path)
+
+
+def test_worker_receives_research_brief_contract_and_output_path(queue, monkeypatch):
+    d = runner(queue)
+    config = dispatch.load_queue(queue)
+    docs = Path(config["repository"]) / "docs"
+    docs.mkdir()
+    (docs / "coloring-dispatcher-reporting.md").write_text(
+        "Write a research briefing with measured results."
+    )
+    executable = Path(fake_cli(queue.parent))
+    source = executable.read_text().replace(
+        "import json,sys,time", "import json,sys,time,os"
+    )
+    source = source.replace(
+        "    sys.stdin.read()",
+        "    prompt = sys.stdin.read()\n    assert 'Write a research briefing with measured results.' in prompt\n    Path(os.environ['LOGIQUE_RESEARCH_BRIEF']).write_text('Research result briefing')",
+    )
+    executable.write_text(source)
+    d.codex = str(executable)
+    d.stop = FastEvent()
+    monkeypatch.setattr(dispatch, "other_workers", lambda *args: 0)
+    d.run(once=True)
+    record = d.state["jobs"]["repair"]
+    assert record["status"] == "complete"
+    assert (
+        Path(record["attempt"]) / "research-brief.md"
+    ).read_text() == "Research result briefing"

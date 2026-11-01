@@ -771,3 +771,9 @@ the structure pilot, and independently review any new results before scientific
 admission. Queue completion and resource feasibility do not establish admission.
 The dispatcher is temporarily operator-paused to prevent numerical overlap and
 will be restored after this bounded run. No new model calls are needed to run it.
+
+Pilot outcome: both22-wire R1/R2 j=0,1 runs passed, ~50.5/51.1seconds and
+~503.1/478.3MiB peak RSS. Full sweeps and independent admission remain pending.
+Current shared launch context links `docs/research/c5_22_qubit_pilot_20261031.md`
+for older worktrees. Dispatcher restored; included-usage gate still applies.
+Related422 regression tests and selected Black/Ruff passed.

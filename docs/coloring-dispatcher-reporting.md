@@ -51,3 +51,16 @@ conclusions, also atomically write `research-brief.meta.json` beside the Markdow
 with `{"priority":"important"}`. This requests an earlier notification; it is
 not an independent scientific admission. Ordinary updates need no sidecar. Keep
 this rare and explain the exact finding in the narrative.
+
+## Current coordinator handoff: C5 pilot (31 October 2026)
+
+Before executing or reviewing C5 work, read the CURRENT integration-checkout
+`docs/research/c5_22_qubit_pilot_20261031.md` and its linked checkpoint. Resolve
+this path relative to the repository root given by the active queue, even if
+your isolated worktree contains an older plan. The user separately authorized
+the original structure oracle at22 statevector wires; all other caps remain.
+Reuse its saved evidence instead of repeating its numerical run. This is
+additional evidence awaiting independent review, not scientific admission.
+The existing lower-width best_fit execution/review chain remains in scope.
+C5 review must separately assess these new structure-pilot bytes/evidence,
+or record a precise pending review if its bounded budget cannot cover them.

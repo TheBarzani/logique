@@ -182,6 +182,23 @@ def test_isolated_costs_of_restoring_trees(controls):
     assert kg24["ancillas"] == (1 if controls <= 5 else 2)
 
 
+@pytest.mark.parametrize("method", ["n_dirty_i15", "1_clean_b95"])
+def test_toffoli_based_constructions_need_no_rotations(method):
+    # Qiskit uses rotation-based C3X and C4X circuits for small sizes.
+    for controls in range(3, 9):
+        circuit = single(MCXGate(controls), 2 * controls)
+        decomposed, _ = costs.decompose_mcx(circuit, method)
+        metrics = costs.ft_metrics(costs.clifford_t(decomposed))
+        assert metrics["rotation_count"] == 0
+    dirty = single(MCXGate(3), 5)
+    decomposed, info = costs.decompose_mcx(dirty, "n_dirty_i15")
+    assert info["borrowed_dirty_wires"] == 1
+    np.testing.assert_allclose(
+        Operator(decomposed).data, Operator(dirty).data, atol=1e-9
+    )
+    assert costs.isolated_mcx_costs("n_dirty_i15", 3)["t_count"] == 22
+
+
 @pytest.mark.parametrize("method", ["2_clean_kg24", "2_dirty_kg24"])
 def test_idle_construction_wires_are_not_counted(method):
     circuit = single(MCXGate(4), 5)

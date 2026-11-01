@@ -62,6 +62,51 @@ def _tree(controls: int, *, uncompute: bool) -> QuantumCircuit:
     return qc
 
 
+def _dirty_i15(controls: int, relative_phase: bool = False) -> QuantumCircuit:
+    """Iten et al. with controls - 2 dirty ancillas, built from Toffoli gates.
+
+    For an exact gate with three controls Qiskit substitutes an ancilla-free
+    C3X made of p(±pi/8) phase gates, which are not Clifford+T. Lemma 8 of Iten
+    et al. needs one dirty ancilla a: t ^= c2 a, a ^= c0 c1, t ^= c2 a,
+    a ^= c0 c1. The gates on the ancilla may be relative-phase Toffoli gates,
+    because their diagonal phases commute with the gates on the target and
+    cancel in pairs.
+    """
+    if controls != 3 or relative_phase:
+        return _mcx.synth_mcx_n_dirty_i15(controls, relative_phase)
+    qc = QuantumCircuit(5)  # controls 0-2, target 3, dirty ancilla 4
+    qc.ccx(2, 4, 3)
+    qc.append(RCCXGate(), [0, 1, 4])
+    qc.ccx(2, 4, 3)
+    qc.append(RCCXGate().inverse(), [0, 1, 4])
+    return qc
+
+
+def _clean_b95(controls: int) -> QuantumCircuit:
+    """Barenco et al. with one ancilla, splitting the controls into two halves.
+
+    This follows Qiskit's recursion (Lemma 7.3 of Barenco et al., with the
+    first and third gates up to a relative phase) but uses ``_dirty_i15`` for
+    every half, where Qiskit uses rotation-based C3X and C4X circuits for small
+    sizes.
+    """
+    qc = QuantumCircuit(controls + 2)
+    target, ancilla = controls, controls + 1
+    middle = math.ceil((controls + 1) / 2)
+    first = list(range(middle))
+    mcx1 = _dirty_i15(len(first), relative_phase=True)
+    spare1 = mcx1.num_qubits - len(first) - 1
+    qubits1 = [*first, ancilla, *range(middle, middle + spare1)]
+    second = [*range(middle, controls), ancilla]
+    mcx2 = _dirty_i15(len(second))
+    qubits2 = [*second, target, *range(mcx2.num_qubits - len(second) - 1)]
+    qc.compose(mcx1, qubits1, inplace=True)
+    qc.compose(mcx2, qubits2, inplace=True)
+    qc.compose(mcx1.inverse(), qubits1, inplace=True)
+    qc.compose(mcx2, qubits2, inplace=True)
+    return qc
+
+
 _KG24 = "Khattar and Gidney, Quantum 9, 1752 (2025)"
 MCX_DECOMPOSITIONS = {
     item.name: item
@@ -82,7 +127,7 @@ MCX_DECOMPOSITIONS = {
             "1_clean_b95",
             "clean",
             "Barenco et al. (1995); Iten et al., Phys. Rev. A 93, 032318 (2016)",
-            _mcx.synth_mcx_1_clean_b95,
+            _clean_b95,
         ),
         MCXDecomposition(
             "n_clean_m15",
@@ -94,7 +139,7 @@ MCX_DECOMPOSITIONS = {
             "n_dirty_i15",
             "dirty",
             "Iten et al., Phys. Rev. A 93, 032318 (2016)",
-            _mcx.synth_mcx_n_dirty_i15,
+            _dirty_i15,
         ),
         MCXDecomposition("1_clean_kg24", "clean", _KG24, _mcx.synth_mcx_1_clean_kg24),
         MCXDecomposition("1_dirty_kg24", "dirty", _KG24, _mcx.synth_mcx_1_dirty_kg24),

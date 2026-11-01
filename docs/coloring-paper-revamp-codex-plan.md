@@ -796,3 +796,19 @@ Fresh worker branches and dependency DAG validate;dispatcher alone launches and
 pushes. The last new coordinator follows mandatory final Astrahigh review and
 owns concrete remaining scope within the existing bound. This assigned batch
 completes;the full research/manuscript evidence gate remains BLOCKED.
+
+## 1 November selected-noise timeout admission and concrete continuation
+
+Checkpoint: `dump/1101151114-noisy-final-exact-coordination/checkpoint.json`.
+[New exact decision and full ownership update](research/noisy_final_integration_20261101.md)
+verifies review2ac4aa2/worker0f8b7b8,35+62 fresh inventory entries and all frozen
+ideal/noisy/C5 evidence. K3R2/seed37/j2 timed out after120.006279s without counts;
+still28 observations/1792shots and777 outstanding. Candidate/root17tests each
+pass; no new library/metric bytes or scientific experiment imported. Six bounded
+jobs94→100 close distinct resource-plan and post-adapter C5execution/review gaps,
+with a new final coordinator following existing final Astra chain.62batches at
+append; all old jobs/header/state/history and128additional/deadline/usage bounds
+preserved. Existing full46job matrix retains ownership, including current-root
+scaling composition despite new old-candidate finalization ADMIT. No blind retry,
+C5noisy inference, structure22 proof or full-paper completion. Dispatcher alone
+launches models and publishes committed root HEAD.

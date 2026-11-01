@@ -164,3 +164,17 @@ to the claim ledger and plan are committed. Existing README hash remains
 No push, models/subagents/Codex subprocesses,sync,API/paid fallback,purchases,
 hardware,physicalQEC,precolored or conditional-workspace research occurred.
 Dispatcher alone publishes committed root integration HEAD.
+
+## Later selected-noise decision and additional owners — 1 November
+
+[Exact selected timeout integration](noisy_final_integration_20261101.md) now
+admits review2ac4aa2's timeout/pre-sampling scope only: no counts, still28
+observations/777 outstanding. The family worker must skip K3R2/seed37/j2 until
+separate resource-plan admission; repeating the identical120s timeout is not
+licensed. Six additional jobs94→100 provide that implementation/review/root
+chain, distinct C5bestfit execution/evidence review after the existing adapter,
+and a new final coordinator after the existing final-review/coordinator chain.
+Prior definitions/headers/bounds are unchanged. Existing46 jobs keep ownership.
+Scaling finalization now has exact old-candidate ADMIT0f8c9c7/a8b3606; current-root
+composition/review still precedes selected execution, with zero selected runs.
+No new scientific count/source/whole-paper admission follows from these updates.

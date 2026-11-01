@@ -221,3 +221,16 @@ scaling invocations/220 pending slots,and broader MCX/FT/RUS/native/noise gates
 remain explicit. Forty-six new bounded tasks include actual corrections,proofs,
 execution,scoped writing,final isolated checks and final Astra review; scheduling
 establishes no scientific admission or full-paper completion.
+
+## 1 November selected noisy retry: no new histogram
+
+[Exact coordinator decision](noisy_final_integration_20261101.md) and
+[verbatim independent review](noisy_selected_retry_independent_review_20261101.md)
+admit only the fresh K3R2/seed37/j2 timeout/pre-Aer evidence.64 requested shots
+returned no counts at120.006279s; still28 conditional observations/1792shots and
+805−28=777 without completed observations. No new confidence interval, resilience,
+cost/p or speedup claim. Old poor K3 j1 counts/exclusions remain. A separately
+reviewed resource plan precedes any repeat, and C5bestfit noise requires its own
+adapter plus distinct execution/evidence review. Structure22 proof stays pending.
+Current-root scaling composition/review is still required despite the new exact
+old-candidate finalization admission. Full scientific/manuscript gate BLOCKED.

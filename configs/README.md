@@ -24,7 +24,8 @@ including the Saha–Belletti variants, is evaluated under three regimes: `R1`
 (Hadamard preparation, complete predicate), `R2` (valid-color preparation,
 complete predicate) and `R3` (valid-color preparation without domain checks).
 `corrected_comparison.json` applies the same settings to the nine graphs of
-the manuscript, with a count budget large enough for myciel4.
+the manuscript, with a count budget large enough for myciel4, and adds
+Caterpillar's four XAG and eager strategies to the five methods.
 Study fields:
 
 - `regimes`: any of `R1`, `R2`, `R3`.

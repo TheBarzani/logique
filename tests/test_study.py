@@ -187,6 +187,40 @@ def test_expanded_mirrored_oracle_is_exact(policy):
     assert abs(overlap) == pytest.approx(1, abs=1e-9)
 
 
+@pytest.mark.integration
+@pytest.mark.parametrize("method", ["aig_bennett", "xag_lowt", "xag_bennett"])
+def test_mirrored_logique_oracles_take_relative_phases(native, method):
+    np = pytest.importorskip("numpy")
+    from qiskit import QuantumCircuit
+    from qiskit.quantum_info import Statevector
+
+    from logique.benchmarks.costs import ft_counts
+    from logique.benchmarks.study import expand_oracle
+    from logique.circuits.search import logique_instance
+
+    problem = ColoringProblem(vertices=(1, 2, 3), edges=((1, 2), (2, 3)), colors=3)
+    instance = logique_instance(problem, method, "R3", executable=native)
+    if instance.mirrored is None:
+        # Bennett's schedule on an XAG uncomputes XOR nodes out of order.
+        assert method == "xag_bennett"
+        return
+    expanded, _ = expand_oracle(instance, "clean_tree")
+    exact, _ = expand_oracle(instance, "clean_tree", relative_phase=False)
+    assert ft_counts(expanded)["t_count"] < ft_counts(exact)["t_count"]
+    width = instance.oracle.num_qubits
+    rng = np.random.default_rng(5)
+    start = QuantumCircuit(expanded.num_qubits)
+    for q in [*instance.data, *instance.roles["output"]]:
+        start.ry(rng.uniform(0.3, 2.8), q)
+        start.rz(rng.uniform(0, 6.2), q)
+    reference = start.copy()
+    reference.compose(instance.oracle, range(width), inplace=True)
+    actual = start.copy()
+    actual.compose(expanded, inplace=True)
+    overlap = np.vdot(Statevector(reference).data, Statevector(actual).data)
+    assert abs(overlap) == pytest.approx(1, abs=1e-9)
+
+
 def test_throwaway_ancillas_are_held_until_their_mirror():
     pytest.importorskip("saha_belletti")
     from logique.benchmarks.costs import is_mcx

@@ -321,6 +321,62 @@ def relative_phase_toffolis(block: QuantumCircuit) -> QuantumCircuit:
     return result
 
 
+def paired_relative_phase_toffolis(circuit: QuantumCircuit) -> QuantumCircuit:
+    """Replace matched pairs of exact Toffoli gates by RCCX and its inverse.
+
+    A Toffoli gate and the next Toffoli gate with the same controls,
+    polarities and target form a pair when no operation in between may change
+    the computational-basis value of any of their three qubits. The relative
+    phase of RCCX is diagonal on those qubits, so it commutes with everything
+    in between and cancels in the inverse: the circuit's unitary is unchanged
+    and each pair costs eight T gates instead of fourteen. Unpaired Toffoli
+    gates stay exact.
+    """
+    from .logical_and import _written
+
+    def toffoli(inst):
+        operation = inst.operation
+        if not (is_mcx(operation, 2) and operation.num_ctrl_qubits == 2):
+            return None
+        wires = [circuit.find_bit(q).index for q in inst.qubits]
+        polarity = ((operation.ctrl_state >> i) & 1 for i in range(2))
+        return frozenset(zip(wires[:2], polarity)), wires[2]
+
+    pending: dict = {}  # unpaired Toffoli -> its index, with its wires intact
+    waiting: dict[int, set] = {}  # wire -> pending Toffoli gates that read it
+    opening, closing = set(), set()
+    for index, inst in enumerate(circuit.data):
+        key = toffoli(inst)
+        if key is not None and key in pending:
+            opening.add(pending.pop(key))
+            closing.add(index)
+        for wire in _written(circuit, inst):
+            for other in waiting.pop(wire, ()):
+                pending.pop(other, None)
+        if key is not None and index not in closing:
+            pending[key] = index
+            for wire in (*(w for w, _ in key[0]), key[1]):
+                waiting.setdefault(wire, set()).add(key)
+    result = circuit.copy_empty_like()
+    for index, inst in enumerate(circuit.data):
+        if index not in opening and index not in closing:
+            result.append(inst.operation, inst.qubits, inst.clbits, copy=False)
+            continue
+        operation = inst.operation
+        opened = [
+            q
+            for i, q in enumerate(inst.qubits[:2])
+            if not (operation.ctrl_state >> i) & 1
+        ]
+        if opened:
+            result.x(opened)
+        gate = RCCXGate() if index in opening else RCCXGate().inverse()
+        result.append(gate, inst.qubits)
+        if opened:
+            result.x(opened)
+    return result
+
+
 def _ccz() -> QuantumCircuit:
     """Exact CCZ with seven T gates in three T layers."""
     qc = QuantumCircuit(3)

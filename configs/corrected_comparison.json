@@ -36,6 +36,7 @@
   "iterations": "optimal",
   "seeds": [11, 23, 37, 41, 53],
   "relative_phase_mirrored": true,
+  "relative_phase_pairs": true,
   "drop_precolors": true,
   "seed": 7,
   "samples": 256,

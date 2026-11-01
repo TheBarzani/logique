@@ -41,6 +41,7 @@ DEFAULTS = {
     "iterations": "optimal",
     "seeds": [11, 23, 37, 41, 53],
     "relative_phase_mirrored": True,
+    "relative_phase_pairs": True,
     "drop_precolors": True,
     "samples": 256,
     "seed": 7,
@@ -240,6 +241,7 @@ def run_study(config: dict, *, executable=None) -> Path:
         decompose_mcx,
         grover_success,
         optimal_iterations,
+        paired_relative_phase_toffolis,
         rotation_t_count,
     )
     from .metrics import circuit_metrics
@@ -383,6 +385,9 @@ def run_study(config: dict, *, executable=None) -> Path:
                         diffusion, diffusion_info = decompose_mcx(
                             instance.diffusion, restoring, clean_wires=instance.clean
                         )
+                        if settings["relative_phase_pairs"]:
+                            oracle = paired_relative_phase_toffolis(oracle)
+                            diffusion = paired_relative_phase_toffolis(diffusion)
                         decomposition_s = time.perf_counter() - started
                         total_width = max(oracle.num_qubits, diffusion.num_qubits)
                         appended = list(range(width, total_width))

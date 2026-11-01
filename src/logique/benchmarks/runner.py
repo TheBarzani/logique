@@ -50,6 +50,7 @@ def load_config(path: str | Path, **overrides) -> dict:
         "seeds",
         "limits",
         "relative_phase_mirrored",
+        "relative_phase_pairs",
         "drop_precolors",
     }
     unknown = set(config) - allowed

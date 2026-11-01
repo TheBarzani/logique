@@ -46,6 +46,10 @@ Study fields:
   finishes within `limits.count_budget`), an integer, or a list of integers.
 - `relative_phase_mirrored`: give mirrored compute blocks relative-phase
   Toffoli gates, as the XAG flow already has.
+- `relative_phase_pairs` (default `true`): after decomposition, replace every
+  Toffoli gate and its matching uncomputation by RCCX and its inverse when no
+  gate in between changes their three wires, in the oracle and the diffusion
+  operator of every method. The unitary is unchanged.
 - `drop_precolors`: remove precolors so that every method solves the same
   problem.
 - `limits`: `exhaustive_inputs`, `witnesses` (proper colorings added to

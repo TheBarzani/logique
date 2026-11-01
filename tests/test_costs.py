@@ -171,6 +171,37 @@ def test_relative_phase_toffolis_cancel_only_in_mirrored_blocks():
     )
 
 
+def test_matched_toffoli_pairs_take_relative_phases():
+    circuit = QuantumCircuit(8)
+    circuit.ccx(0, 1, 4)  # paired: its wires are only read in between
+    circuit.ccx(2, 3, 5, ctrl_state=1)  # paired despite its open control
+    circuit.cx(4, 6)
+    circuit.ccx(4, 5, 7)  # unpaired: its partner comes after a write to 7
+    circuit.h(7)
+    circuit.ccx(4, 5, 7)  # unpaired: the closing gate of B writes 5
+    circuit.cx(4, 6)
+    circuit.cz(0, 4)
+    circuit.ccx(2, 3, 5, ctrl_state=1)
+    circuit.ccx(0, 1, 4)
+    circuit.ccx(0, 1, 4)  # a third gate starts a new, unmatched compute
+    paired = costs.paired_relative_phase_toffolis(circuit)
+    ops = paired.count_ops()
+    assert (ops["rccx"], ops["rccx_dg"], ops["ccx"], ops["x"]) == (2, 2, 3, 4)
+    assert "ccx_o1" not in ops
+    np.testing.assert_allclose(Operator(paired).data, Operator(circuit).data, atol=1e-9)
+    assert (
+        costs.ft_counts(paired)["t_count"] == costs.ft_counts(circuit)["t_count"] - 12
+    )
+
+
+def test_pairs_need_their_wires_intact():
+    circuit = QuantumCircuit(4)
+    circuit.ccx(0, 1, 2)
+    circuit.cx(3, 0)  # changes a control
+    circuit.ccx(0, 1, 2)
+    assert costs.paired_relative_phase_toffolis(circuit) == circuit
+
+
 @pytest.mark.parametrize("controls", [3, 6, 20])
 def test_isolated_costs_of_restoring_trees(controls):
     row = costs.isolated_mcx_costs("clean_tree", controls)

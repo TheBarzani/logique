@@ -16,6 +16,7 @@ from dataclasses import dataclass, field, replace
 import time
 
 from qiskit import QuantumCircuit
+from qiskit.circuit import ControlledGate
 from qiskit.circuit.library.data_preparation.state_preparation import (
     UniformSuperpositionGate,
 )
@@ -34,7 +35,8 @@ class SearchInstance:
     ``clean`` lists qubits in |0> before and after every oracle call, which
     MCX decompositions and measurement-based uncomputation may rely on.
     ``mirrored`` is the instruction span of an oracle's compute block whose
-    exact inverse follows a kick-back gate, when the oracle has that structure.
+    exact inverse follows a kick-back gate or a phase flip, when the oracle has
+    that structure.
     """
 
     method: str
@@ -111,6 +113,33 @@ def _assemble(problem, regime, data, width, target, kick_back):
         else problem.colors ** len(free)
     )
     return preparation, diffusion, domain
+
+
+def _mirror_span(circuit: QuantumCircuit) -> tuple[int, int] | None:
+    """Span of a compute block that the circuit undoes exactly around one gate.
+
+    The circuit must read B, G, B^-1, where the middle gate G changes no wire
+    of B (an X gate with any controls whose target lies outside B, or a Z
+    gate), so that relative phases inside B commute with G and cancel.
+    """
+    data = circuit.data
+    if len(data) % 2 == 0:
+        return None
+    half = len(data) // 2
+    for first, last in zip(data[:half], reversed(data[half + 1 :])):
+        if first.qubits != last.qubits or first.operation != last.operation.inverse():
+            return None
+    middle = data[half]
+    operation = middle.operation
+    if operation.name == "z":
+        written = set()
+    elif isinstance(operation, ControlledGate) and operation.base_gate.name == "x":
+        written = set(middle.qubits[operation.num_ctrl_qubits :])
+    else:
+        written = set(middle.qubits)
+    if any(written & set(inst.qubits) for inst in data[:half]):
+        return None
+    return (0, half)
 
 
 def _encoding(
@@ -212,6 +241,7 @@ def logique_instance(
         validation={**report, "coverage": coverage},
         timings=timings,
         structure=structure,
+        mirrored=_mirror_span(oracle),
     )
 
 

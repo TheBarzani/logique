@@ -42,6 +42,36 @@ def test_count_colorings_matches_enumeration(colors):
     assert count_colorings(fixed) == brute_force(fixed)
 
 
+def test_elimination_counts_match_enumeration_and_relabelling():
+    pytest.importorskip("numpy")
+    import random
+
+    from logique.coloring.counting import _eliminate
+
+    rng = random.Random(5)
+    for _ in range(20):
+        vertices = tuple(rng.sample(range(1, 30), 6))
+        pairs = list(itertools.combinations(vertices, 2))
+        problem = ColoringProblem(
+            vertices=vertices,
+            edges=tuple(rng.sample(pairs, rng.randint(0, len(pairs)))),
+            colors=rng.randint(2, 4),
+            precolored={vertices[0]: 1} if rng.random() < 0.3 else {},
+        )
+        assert _eliminate(problem, 10**6) == brute_force(problem)
+    source = unprecolored("2-Insertions_3")
+    shuffled = list(source.vertices)
+    rng.shuffle(shuffled)
+    relabel = dict(zip(source.vertices, shuffled))
+    relabelled = ColoringProblem(
+        vertices=tuple(sorted(shuffled)),
+        edges=tuple((relabel[u], relabel[v]) for u, v in source.edges),
+        colors=source.colors,
+    )
+    assert _eliminate(source, 10**7) == _eliminate(relabelled, 10**7)
+    assert count_colorings(source) == 68_372_560_349_664
+
+
 def test_count_colorings_uses_the_complete_graph_formula_and_budget():
     assert count_colorings(unprecolored("K10")) == 3628800
     assert count_colorings(unprecolored("K5")) == 120

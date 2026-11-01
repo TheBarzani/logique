@@ -7,9 +7,15 @@ from .model import ColoringProblem
 
 @dataclass(frozen=True)
 class ColoringEncoding:
-    """Consecutive vertex inputs, least-significant color bit first."""
+    """Consecutive vertex inputs, least-significant color bit first.
+
+    Conjunctions and disjunctions are left-deep chains unless ``balanced``,
+    which builds them as balanced trees of the same gates, so the predicate's
+    multiplicative depth grows with the logarithm of the number of constraints.
+    """
 
     problem: ColoringProblem
+    balanced: bool = False
 
     @property
     def bits_per_color(self) -> int:
@@ -49,6 +55,11 @@ class ColoringEncoding:
         def combine(items: list[str], op: str, identity: str) -> str:
             if not items:
                 return identity
+            if self.balanced:
+                while len(items) > 1:
+                    paired = [gate(a, op, b) for a, b in zip(items[::2], items[1::2])]
+                    items = paired + items[len(paired) * 2 :]
+                return items[0]
             result = items[0]
             for item in items[1:]:
                 result = gate(result, op, item)
@@ -110,9 +121,11 @@ class ColoringEncoding:
         return path
 
 
-def encode_coloring(problem: ColoringProblem) -> ColoringEncoding:
+def encode_coloring(
+    problem: ColoringProblem, *, balanced: bool = False
+) -> ColoringEncoding:
     """Encode all vertices, valid colors, precolors, and edge inequalities."""
-    return ColoringEncoding(problem)
+    return ColoringEncoding(problem, balanced)
 
 
 def edge_coloring_expression(problem: ColoringProblem) -> tuple[str, list[str]]:

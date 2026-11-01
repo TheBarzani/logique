@@ -66,3 +66,52 @@ def test_classical_checker_checks_all_constraints():
         assert not problem.is_valid(assignment)
     with pytest.raises(TypeError):
         problem.precolored[1] = 1
+
+
+def _evaluate(verilog: str, bits: list[int]) -> tuple[int, int]:
+    """Value and AND/OR depth of y0 for one input assignment."""
+    values = {f"x{i}": (b, 0) for i, b in enumerate(bits)}
+    values.update({"1'b0": (0, 0), "1'b1": (1, 0)})
+
+    def term(t):
+        value, depth = values[t.lstrip("~")]
+        return (1 - value if t.startswith("~") else value), depth
+
+    for line in verilog.splitlines():
+        if not line.startswith("assign "):
+            continue
+        name, expression = line[len("assign ") : -1].split(" = ")
+        parts = expression.split()
+        if len(parts) == 1:
+            values[name] = term(parts[0])
+            continue
+        (a, da), op, (b, db) = term(parts[0]), parts[1], term(parts[2])
+        value = {"&": a & b, "|": a | b, "^": a ^ b}[op]
+        values[name] = value, max(da, db) + (op != "^")
+    return values["y0"]
+
+
+@pytest.mark.parametrize(
+    "problem",
+    [
+        ColoringProblem((1, 2, 3), ((1, 2), (2, 3), (1, 3)), 3),
+        ColoringProblem((1, 2, 3, 4), ((1, 2), (2, 3), (3, 4), (4, 1)), 5, {2: 4}),
+        ColoringProblem((1, 2, 3, 4, 5), ((1, 2), (2, 3), (3, 4), (4, 5)), 2),
+        ColoringProblem((), (), 2),
+    ],
+)
+def test_balanced_encoding_keeps_the_predicate_and_its_gates(problem):
+    chain = encode_coloring(problem)
+    balanced = encode_coloring(problem, balanced=True)
+    assert balanced.verilog().count("assign") == chain.verilog().count("assign")
+    depths = {}
+    for basis in range(1 << chain.input_count):
+        bits = [(basis >> i) & 1 for i in range(chain.input_count)]
+        expected = problem.is_valid(chain.decode(basis))
+        for encoding in (chain, balanced):
+            value, depth = _evaluate(encoding.verilog(), bits)
+            assert value == expected
+            depths[encoding.balanced] = depth
+    assert depths[True] <= depths[False]
+    if len(problem.edges) >= 4:
+        assert depths[True] < depths[False]

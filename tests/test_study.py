@@ -251,6 +251,35 @@ def test_study_runner_exports_every_level(native, tmp_path):
     assert set(rows.component) >= {"preparation", "oracle", "diffusion", "search"}
 
 
+@pytest.mark.integration
+def test_optimization_profiles_are_applied_and_recorded(native, tmp_path):
+    import pandas as pd
+
+    from logique.benchmarks.study import run_study
+
+    def study(profile):
+        run = run_study(
+            {
+                "inputs": [str(GRAPHS / "K3.col")],
+                "methods": ["xag"],
+                "regimes": ["R1"],
+                "optimization_profile": profile,
+                "targets": ["logical"],
+                "output": str(tmp_path / f"1030000000-{profile}"),
+            },
+            executable=native,
+        )
+        (case,) = json.loads((run / "run.json").read_text())["cases"]
+        assert case["validation"]["status"] == "exhaustive"
+        assert set(pd.read_csv(run / "summary.csv").optimization_profile) == {profile}
+        return case["structure"]
+
+    plain, reduced = study("refactor"), study("balanced_mc")
+    # K3 has one unused code per vertex; the MC pass shrinks its domain checks.
+    assert reduced["AND"] < plain["AND"]
+    assert reduced["multiplicative_depth"] < plain["multiplicative_depth"]
+
+
 def test_iterations_beyond_the_routing_limit_are_recorded(tmp_path):
     pytest.importorskip("qiskit_ibm_runtime")
     pytest.importorskip("saha_belletti")

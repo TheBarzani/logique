@@ -113,12 +113,14 @@ def _assemble(problem, regime, data, width, target, kick_back):
     return preparation, diffusion, domain
 
 
-def _encoding(problem: ColoringProblem, regime: str) -> ColoringEncoding:
+def _encoding(
+    problem: ColoringProblem, regime: str, balanced: bool = False
+) -> ColoringEncoding:
     _, complete = REGIMES[regime]
     if complete:
-        return encode_coloring(problem)
+        return encode_coloring(problem, balanced=balanced)
     bits = max(1, (problem.colors - 1).bit_length())
-    return encode_coloring(replace(problem, colors=1 << bits))
+    return encode_coloring(replace(problem, colors=1 << bits), balanced=balanced)
 
 
 def logique_instance(
@@ -130,13 +132,16 @@ def logique_instance(
     parameters: dict | None = None,
     verification: dict | None = None,
     timeout: float = 180,
+    balanced: bool = False,
+    mc_reduction: bool = False,
 ) -> SearchInstance:
     """Synthesize the regime's predicate and wrap it as a verified oracle.
 
     The raw circuit is used directly with its output in |-> when it passes the
     kick-back check for both target values; otherwise the oracle is
     compute–phase–uncompute. ``verification`` holds keyword arguments for
-    ``verification_assignments``.
+    ``verification_assignments``; ``balanced`` and ``mc_reduction`` select the
+    encoder structure and the multiplicative-complexity pass.
     """
     from logique.synthesis import synthesize
     from logique.verification import (
@@ -149,9 +154,14 @@ def logique_instance(
         raise ValueError(f"regime must be one of {sorted(REGIMES)}")
     timings = {}
     started = time.perf_counter()
-    encoding = _encoding(problem, regime)
+    encoding = _encoding(problem, regime, balanced)
     result = synthesize(
-        encoding, method, executable=executable, timeout=timeout, **(parameters or {})
+        encoding,
+        method,
+        executable=executable,
+        timeout=timeout,
+        mc_reduction=mc_reduction,
+        **(parameters or {}),
     )
     timings["synthesis_s"] = time.perf_counter() - started
     timings["native_s"] = result.metadata.get("native_seconds")

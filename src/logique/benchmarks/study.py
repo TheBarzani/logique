@@ -22,7 +22,14 @@ from .runner import new_run_directory
 REGIMES = ("R1", "R2", "R3")
 PRICING = ("static", "measurement")
 TARGETS = ("logical", "toffoli", "fault-tolerant", "routed")
-PROFILES = ("refactor",)
+# Encoder structure and multiplicative-complexity pass of each profile; the
+# native bridge refactors every network afterwards.
+PROFILES = {
+    "refactor": {"balanced": False, "mc_reduction": False},
+    "balanced": {"balanced": True, "mc_reduction": False},
+    "mc": {"balanced": False, "mc_reduction": True},
+    "balanced_mc": {"balanced": True, "mc_reduction": True},
+}
 DEFAULTS = {
     "regimes": list(REGIMES),
     "mcx_policies": ["clean_tree"],
@@ -262,6 +269,7 @@ def run_study(config: dict, *, executable=None) -> Path:
                 "vertices": len(problem.vertices),
                 "edges": len(problem.edges),
                 "colors": problem.colors,
+                "optimization_profile": settings["optimization_profile"],
             }
             for method in methods:
                 for regime in settings["regimes"]:
@@ -284,6 +292,7 @@ def run_study(config: dict, *, executable=None) -> Path:
                                 parameters=settings.get("parameters", {}),
                                 verification=verification,
                                 timeout=limits["synthesis_timeout_s"],
+                                **PROFILES[settings["optimization_profile"]],
                             )
                     except subprocess.TimeoutExpired:
                         case["status"] = "timeout"

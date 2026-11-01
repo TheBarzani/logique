@@ -158,6 +158,32 @@ def expand_oracle(instance, policy: str, *, relative_phase: bool = True):
     return full, [compute_info, kick_info]
 
 
+def _save_components(stem: Path, circuits) -> str:
+    """Save circuits as QPY, or pickle them when QPY cannot hold a gate.
+
+    QPY stores control states in 32 bits, so circuits with a gate of more than
+    32 controls (the diffusion operator of a large register, the conjunction
+    of a baseline) are pickled. Returns the file name.
+    """
+    import pickle
+
+    from qiskit import qpy
+
+    if all(
+        getattr(inst.operation, "num_ctrl_qubits", 0) <= 32
+        for circuit in circuits
+        for inst in circuit.data
+    ):
+        path = stem.parent / f"{stem.name}.qpy"
+        with path.open("wb") as stream:
+            qpy.dump(circuits, stream)
+    else:
+        path = stem.parent / f"{stem.name}.pickle"
+        with path.open("wb") as stream:
+            pickle.dump(circuits, stream)
+    return path.name
+
+
 def _component_metrics(decomposed, clean, pricing, targets, max_gates=None):
     """Metrics of one expanded component, keyed by metric level.
 
@@ -208,7 +234,6 @@ def _lowered_cx(iteration, parts, limit):
 def run_study(config: dict, *, executable=None) -> Path:
     """Run a controlled comparison and export one long-form row per measurement."""
     import pandas as pd
-    from qiskit import qpy
     from logique.circuits.search import baseline_instance, logique_instance
     from .costs import (
         decompose_mcx,
@@ -315,11 +340,10 @@ def run_study(config: dict, *, executable=None) -> Path:
                         domain=instance.domain,
                         solutions=solutions,
                     )
-                    with (output / f"{name}.qpy").open("wb") as stream:
-                        qpy.dump(
-                            [instance.preparation, instance.oracle, instance.diffusion],
-                            stream,
-                        )
+                    case["circuits"] = _save_components(
+                        output / name,
+                        [instance.preparation, instance.oracle, instance.diffusion],
+                    )
                     coverage = instance.validation["coverage"]
                     common = {
                         **graph,

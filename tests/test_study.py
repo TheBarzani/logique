@@ -361,6 +361,25 @@ def test_priced_components_give_the_lowered_cnot_count():
     assert lowered > _lowered_cx(iteration, {}, 1) > 1
 
 
+def test_components_with_wide_controls_are_pickled(tmp_path):
+    import pickle
+
+    from qiskit import QuantumCircuit, qpy
+
+    from logique.benchmarks.study import _save_components
+
+    narrow, wide = QuantumCircuit(33), QuantumCircuit(34)
+    narrow.mcx(list(range(32)), 32)
+    wide.mcx(list(range(33)), 33)
+    assert _save_components(tmp_path / "G.v1_narrow", [narrow]) == "G.v1_narrow.qpy"
+    with (tmp_path / "G.v1_narrow.qpy").open("rb") as stream:
+        assert qpy.load(stream)[0] == narrow
+    # QPY stores control states in 32 bits.
+    assert _save_components(tmp_path / "G.v1_wide", [wide]) == "G.v1_wide.pickle"
+    with (tmp_path / "G.v1_wide.pickle").open("rb") as stream:
+        assert pickle.load(stream)[0] == wide
+
+
 def test_study_settings_reject_unknown_values():
     pytest.importorskip("qiskit")
     from logique.benchmarks.study import study_settings

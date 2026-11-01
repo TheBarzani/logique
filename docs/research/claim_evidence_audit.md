@@ -199,3 +199,25 @@ excluded. A new iteration-only API needs separate implementation and exact revie
 before the existing remaining-noise chain can retry seed37/j2. Claims4/11/21,
 full five-seed/family/C5, superiority, FT/RUS and paper approval remain unsupported
 beyond prior narrow admissions. The full evidence gate remains BLOCKED.
+
+## 1 November: exact comparison intersection and C5 presentation
+
+The [new successor admission and full matrix](full_research_successor_20261101.md)
+incorporates exact review0620e7e:230 shared preparation/diffusion rows,492 matched
+metric details/378 summaries,all ties. Zero all-input oracle/search comparative
+rows are admitted; finite witness checks retain their qualification,84 descriptive
+wins and408 losses remain outside unrestricted comparison admission. Fresh checks
+verify4082 execution and58 review inventory hashes. No broad savings follow.
+
+The ten ideal C5 best-fit rows are independently admitted by4fbf3d0 and integrated
+as2fff3ea. New reproducible figure data retain R1 j4 peak0.999484622397 versus
+R2 j2 peak0.950509084831,and next-row declines0.900260183699/0.345567160993.
+This supersedes older “no C5 execution” status only for that exact11-wire ideal
+construction. Its84441-instruction phase oracle demonstrates no low-cost claim.
+New figure/manuscript presentation still needs separate review. Structure22
+pilot lowered-oracle admission remains pending;28 conditional noisy observations
+are unchanged. Production native certificate/profile source blocks,zero selected
+scaling invocations/220 pending slots,and broader MCX/FT/RUS/native/noise gates
+remain explicit. Forty-six new bounded tasks include actual corrections,proofs,
+execution,scoped writing,final isolated checks and final Astra review; scheduling
+establishes no scientific admission or full-paper completion.

@@ -777,3 +777,22 @@ Pilot outcome: both22-wire R1/R2 j=0,1 runs passed, ~50.5/51.1seconds and
 Current shared launch context links `docs/research/c5_22_qubit_pilot_20261031.md`
 for older worktrees. Dispatcher restored; included-usage gate still applies.
 Related422 regression tests and selected Black/Ruff passed.
+
+## 1 November full research successor and exact intersection
+
+Checkpoint: `dump/1101052342-full-research-successor/checkpoint.json`.
+The [new full matrix and concrete continuation](research/full_research_successor_20261101.md)
+incorporates byte-exact comparison review0620e7e:230 preparation/diffusion rows,
+492 matched metric details all ties;zero all-input oracle/search comparison rows.
+Fresh inventories4082+58 match. A new reproducible C5 figure uses the ten already
+admitted best-fit ideal rows and retains overshoot/lower valid-domain peak;
+no scientific simulation was repeated. Structure22 independent lowering proof,
+production native/profile blocks,zero selected scaling invocations/220slots and
+all restrictive SAT/MCX/graphFT/dynamicRUS/noise admissions remain binding.
+Forty-six bounded implementation/proof/execution/review/integration/manuscript/
+final-check/claim-review/coordinator jobs were appended atomically48→94 at55
+consumed batches,unchanged128-additional ceiling/deadline/headers/prior jobs.
+Fresh worker branches and dependency DAG validate;dispatcher alone launches and
+pushes. The last new coordinator follows mandatory final Astrahigh review and
+owns concrete remaining scope within the existing bound. This assigned batch
+completes;the full research/manuscript evidence gate remains BLOCKED.

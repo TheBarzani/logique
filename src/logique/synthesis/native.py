@@ -6,7 +6,18 @@ import subprocess
 from logique.paths import native_executable
 
 REFERENCE_REVISION = "4c6f766cd0ffc62d37ab45edfe80c9f1eae44764"
-METHODS = ("xag", "aig_bennett", "xag_bennett", "klut_bennett", "best_fit")
+METHODS = (
+    "xag",
+    "aig_bennett",
+    "xag_bennett",
+    "klut_bennett",
+    "best_fit",
+    "xag_lowt",
+    "xag_fast_lowt",
+    "xag_lowdepth",
+    "xag_eager",
+)
+OPTIMIZATIONS = ("refactor", "none")
 
 
 def build_native(

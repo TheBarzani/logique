@@ -99,3 +99,19 @@ def test_mc_reduction_removes_and_gates_from_domain_checks():
     plain = synthesize(encoding).summary()["AND"]
     reduced = synthesize(encoding, mc_reduction=True).summary()["AND"]
     assert reduced < plain
+
+
+def test_unoptimized_mapping_and_step_labels():
+    encoding = encode_coloring(ColoringProblem((1, 2, 3), ((1, 2), (2, 3), (1, 3)), 3))
+    refactored = synthesize(encoding, "xag_bennett")
+    plain = synthesize(encoding, "xag_bennett", optimization="none")
+    assert plain.metadata["parameters"]["optimization"] == "none"
+    assert "optimization" not in refactored.metadata["parameters"]
+    assert plain.summary()["AND"] >= refactored.summary()["AND"]
+    with pytest.raises(ValueError, match="optimization"):
+        synthesize(encoding, optimization="balance")
+    actions = {
+        step["action"]
+        for step in synthesize(encoding, "xag_fast_lowt").metadata["steps"]
+    }
+    assert actions == {"compute_level", "uncompute_level"}

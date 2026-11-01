@@ -7,7 +7,7 @@ import time
 from logique.coloring import ColoringEncoding
 from logique.benchmarks.provenance import environment
 from logique.circuits.records import records_to_qiskit
-from .native import METHODS, run_native
+from .native import METHODS, OPTIMIZATIONS, run_native
 from .tweedledum import (
     _network_records,
     _reduce_multiplicative_complexity,
@@ -27,15 +27,20 @@ def synthesize(
     executable=None,
     timeout: float = 180,
     mc_reduction: bool = False,
+    optimization: str = "refactor",
 ) -> SynthesisResult:
     """Synthesize a raw computation; oracle wrappers explicitly restore workspace.
 
     ``timeout`` bounds the native bridge call in seconds. ``mc_reduction``
     first rewrites the source with tweedledum's multiplicative-complexity
-    flow, before the backend's own refactoring.
+    flow. ``optimization`` is the bridge's own pass: ``refactor`` refactors
+    the XAG for every method except ``aig_bennett``, and ``none`` maps the
+    network as read for every method.
     """
     if method not in METHODS:
         raise ValueError(f"method must be one of {METHODS}")
+    if optimization not in OPTIMIZATIONS:
+        raise ValueError(f"optimization must be one of {OPTIMIZATIONS}")
     if isinstance(source, ColoringEncoding):
         with tempfile.TemporaryDirectory(prefix="logique-coloring-") as directory:
             path = source.write_verilog(Path(directory) / "coloring.v")
@@ -49,6 +54,7 @@ def synthesize(
                 executable=executable,
                 timeout=timeout,
                 mc_reduction=mc_reduction,
+                optimization=optimization,
             )
         result.metadata.update(
             source="coloring predicate",
@@ -80,6 +86,7 @@ def synthesize(
                 inner_cut=inner_cut,
                 executable=executable,
                 timeout=timeout,
+                optimization=optimization,
             )
         result.metadata.update(
             source=str(Path(source).resolve()),
@@ -93,6 +100,8 @@ def synthesize(
         params.update(outer_cut=outer_cut, inner_cut=inner_cut)
     if outputs is not None:
         params["outputs"] = list(outputs)
+    if optimization != "refactor":
+        params["optimization"] = optimization
     start = time.perf_counter()
     md = run_native(source, method, executable=executable, timeout=timeout, **params)
     if method == "xag":

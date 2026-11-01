@@ -33,11 +33,12 @@ Study fields:
   mirror use the restoring tree.
 - `pricing`: `static` and/or `measurement` (measurement-based uncomputation of
   logical-AND pairs, reported as a separate metric level).
-- `optimization_profile`: how Logique predicates are prepared before the native
-  bridge's refactoring pass: `refactor` (left-deep conjunctions, no further
-  pass), `balanced` (balanced conjunction and disjunction trees in the
-  encoder), `mc` (tweedledum's multiplicative-complexity reduction) or
-  `balanced_mc` (both). Baselines are unaffected.
+- `optimization_profile`: how Logique predicates are optimized: `none` (the
+  encoded network as read, for every method), `refactor` (the native bridge's
+  refactoring, which `aig_bennett` skips), `balanced` (balanced conjunction and
+  disjunction trees in the encoder), `mc` (tweedledum's multiplicative-complexity
+  reduction) or `balanced_mc` (both); the last three also refactor. Baselines
+  are unaffected.
 - `targets`: any of `logical`, `toffoli`, `fault-tolerant`, `routed`
   (FakeTorino, with the fixed `seeds`).
 - `rotation_budget`: whole-algorithm error budget shared by all rotations.

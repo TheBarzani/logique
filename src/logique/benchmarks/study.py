@@ -22,13 +22,14 @@ from .runner import new_run_directory
 REGIMES = ("R1", "R2", "R3")
 PRICING = ("static", "measurement")
 TARGETS = ("logical", "toffoli", "fault-tolerant", "routed")
-# Encoder structure and multiplicative-complexity pass of each profile; the
-# native bridge refactors every network afterwards.
+# Encoder structure, multiplicative-complexity pass and native optimization of
+# each profile.
 PROFILES = {
-    "refactor": {"balanced": False, "mc_reduction": False},
-    "balanced": {"balanced": True, "mc_reduction": False},
-    "mc": {"balanced": False, "mc_reduction": True},
-    "balanced_mc": {"balanced": True, "mc_reduction": True},
+    "none": {"balanced": False, "mc_reduction": False, "optimization": "none"},
+    "refactor": {"balanced": False, "mc_reduction": False, "optimization": "refactor"},
+    "balanced": {"balanced": True, "mc_reduction": False, "optimization": "refactor"},
+    "mc": {"balanced": False, "mc_reduction": True, "optimization": "refactor"},
+    "balanced_mc": {"balanced": True, "mc_reduction": True, "optimization": "refactor"},
 }
 DEFAULTS = {
     "regimes": list(REGIMES),

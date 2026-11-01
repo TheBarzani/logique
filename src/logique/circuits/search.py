@@ -134,14 +134,16 @@ def logique_instance(
     timeout: float = 180,
     balanced: bool = False,
     mc_reduction: bool = False,
+    optimization: str = "refactor",
 ) -> SearchInstance:
     """Synthesize the regime's predicate and wrap it as a verified oracle.
 
     The raw circuit is used directly with its output in |-> when it passes the
     kick-back check for both target values; otherwise the oracle is
     compute–phase–uncompute. ``verification`` holds keyword arguments for
-    ``verification_assignments``; ``balanced`` and ``mc_reduction`` select the
-    encoder structure and the multiplicative-complexity pass.
+    ``verification_assignments``; ``balanced``, ``mc_reduction`` and
+    ``optimization`` select the encoder structure, the multiplicative-complexity
+    pass and the native bridge's optimization.
     """
     from logique.synthesis import synthesize
     from logique.verification import (
@@ -161,6 +163,7 @@ def logique_instance(
         executable=executable,
         timeout=timeout,
         mc_reduction=mc_reduction,
+        optimization=optimization,
         **(parameters or {}),
     )
     timings["synthesis_s"] = time.perf_counter() - started

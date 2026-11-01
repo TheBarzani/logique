@@ -47,7 +47,7 @@ def _integer(value, name: str, low: int, high: int) -> int:
 
 def validate_config(config: dict) -> None:
     """Reject unsupported controls and budgets before launching numerical work."""
-    if set(config) != {
+    if set(config) - {"iteration_limit"} != {
         "cases",
         "regimes",
         "max_qubits",
@@ -57,7 +57,9 @@ def validate_config(config: dict) -> None:
         "seed",
     }:
         raise ValueError("Unknown or missing iteration-study config fields")
-    _integer(config["max_qubits"], "max_qubits", 1, 18)
+    _integer(config["max_qubits"], "max_qubits", 1, 22)
+    if "iteration_limit" in config:
+        _integer(config["iteration_limit"], "iteration_limit", 0, 129)
     _integer(config["timeout_seconds"], "timeout_seconds", 1, 180)
     _integer(config["budget_seconds"], "budget_seconds", 1, 900)
     _integer(config["seed"], "seed", 0, 2**32 - 1)
@@ -168,7 +170,7 @@ def _check_phase(oracle, problem: ColoringProblem, regime: str) -> dict:
 
 
 def simulate_case(case: dict, regime: str, config: dict, output: Path) -> dict:
-    """Execute j=0 through first peak+1, or retain a preallocation exclusion.
+    """Execute a full or explicitly limited sweep, retaining exclusions.
 
     Data occupies the low contiguous wires; all non-data wires start zero.
     Signed full-vector residuals compare to an independent exact rational
@@ -281,6 +283,12 @@ def simulate_case(case: dict, regime: str, config: dict, output: Path) -> dict:
     result["replay"] = (
         "zero full register; preparation on data; row j after j repetitions of oracle then diffusion on data; components loaded from QPY"
     )
+    limit = config.get("iteration_limit", 129)
+    result["unexecuted_iterations"] = [
+        row.iterations for row in ledger.rows if row.iterations > limit
+    ]
+    result["status"] = "running"
+    _write(output / "progress.json", result)
     good, valid = _word_classes(problem)
     good = np.asarray(good, dtype=bool)
     valid = np.asarray(valid, dtype=bool)
@@ -294,6 +302,8 @@ def simulate_case(case: dict, regime: str, config: dict, output: Path) -> dict:
     u = v = Fraction(1)
     passed = True
     for row in ledger.rows:
+        if row.iterations > limit:
+            break
         if row.iterations:
             state = state.evolve(components["oracle"])
             if n:
@@ -350,7 +360,13 @@ def simulate_case(case: dict, regime: str, config: dict, output: Path) -> dict:
                 ),
             }
         )
-    result["status"] = "complete" if passed else "failed_comparison"
+        # Retain executed evidence even if the supervised child later times out.
+        _write(output / "progress.json", result)
+    result["status"] = (
+        "partial_sweep"
+        if passed and result["unexecuted_iterations"]
+        else "complete" if passed else "failed_comparison"
+    )
     _write(output / "result.json", result)
     return result
 

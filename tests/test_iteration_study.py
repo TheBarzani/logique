@@ -101,7 +101,9 @@ def test_signed_diffusion_error_cannot_hide_in_probabilities(
 @pytest.mark.parametrize(
     "field,value",
     [
-        ("max_qubits", 19),
+        ("max_qubits", 23),
+        ("iteration_limit", -1),
+        ("iteration_limit", True),
         ("timeout_seconds", 181),
         ("budget_seconds", 901),
         ("tolerance", float("nan")),
@@ -147,3 +149,21 @@ def test_unknown_supplied_count_rejects(config):
     config["marked"] = None
     with pytest.raises(ValueError, match="Unknown or missing"):
         validate_config(config)
+
+
+def test_extended_width_and_partial_sweep(config, tmp_path):
+    config["max_qubits"] = 22
+    config["iteration_limit"] = 0
+    case = {"name": "edge", "vertices": [0, 1], "edges": [[0, 1]], "colors": 3}
+    result = simulate_case(case, "R1", config, tmp_path / "limited")
+    assert result["status"] == "partial_sweep"
+    assert [row["iterations"] for row in result["rows"]] == [0]
+    assert result["rows"][0]["comparison_passed"]
+    assert result["unexecuted_iterations"] == [
+        row["iterations"]
+        for row in result["analytical_ledger"]["rows"]
+        if row["iterations"] > 0
+    ]
+    progress = json.loads((tmp_path / "limited" / "progress.json").read_text())
+    assert progress["rows"] == result["rows"]
+    assert progress["status"] == "running"

@@ -1,0 +1,47 @@
+{
+  "cases": [
+    {
+      "name": "C5_k3",
+      "vertices": [
+        0,
+        1,
+        2,
+        3,
+        4
+      ],
+      "edges": [
+        [
+          0,
+          1
+        ],
+        [
+          1,
+          2
+        ],
+        [
+          2,
+          3
+        ],
+        [
+          3,
+          4
+        ],
+        [
+          4,
+          0
+        ]
+      ],
+      "colors": 3
+    }
+  ],
+  "regimes": [
+    "R1",
+    "R2"
+  ],
+  "max_qubits": 22,
+  "timeout_seconds": 180,
+  "budget_seconds": 400,
+  "tolerance": 1e-10,
+  "seed": 7,
+  "iteration_limit": 1
+}

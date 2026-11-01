@@ -121,3 +121,23 @@ re-executed via the internal `--child` interface with a **new** output directory
 under an external <=180-second supervisor; prefer a new configured run. Never
 overwrite old outputs. Verify saved evidence hashes before independent replay.
 Scientific admission requires a separate explicit review of exact file hashes.
+
+## Separately authorized 22-qubit C5 pilot
+
+On 31 October the user authorized testing the original complete-predicate C5
+structure construction at 22 qubits on this 8 GiB server. The original
+`iteration_pilot.json` remains capped at18; its historical exclusions are unchanged.
+`configs/iteration_c5_22_qubit_pilot.json` requests R1/R2 at22 qubits, j=0,1,
+180 seconds per child and400 seconds total, serially with one numerical thread.
+A single complex128 statevector at22 wires occupies64 MiB; temporary arrays and
+simulation overhead are additional. Measured child peak RSS is recorded by wait4,
+not enforced as a hard RAM limit. This authorization does not raise noise, dense
+Operator, fault-tolerant compiler or other experiment caps.
+
+The optional `iteration_limit` stops after the named j. Omitted means the
+original full first-peak-plus-one sweep. A deliberately shortened successful
+sweep is `partial_sweep`, with omitted iteration indices recorded; it is not a
+completed full study. `progress.json` retains rows after each completed iteration
+when a later iteration times out. A supervisor timeout remains a timeout, even
+if progress exists. All existing signed-amplitude, predicate, restored-workspace
+and QPY checks remain in place. Independent scientific review remains required.

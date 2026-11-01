@@ -754,3 +754,20 @@ observations remain admitted; no noisy rerun occurred. Existing remaining-noise
 chain owns a separately implemented/reviewed iteration-only API before any
 K3 R2/seed37/j2 retry. Seed23/j2 stays21-wire excluded. This assigned integration
 is COMPLETE; full study/paper evidence gate stays BLOCKED. Dispatcher publishes HEAD.
+
+## 31 October user-authorized 22-qubit C5 resource pilot
+
+The user explicitly authorized a separate bounded22-qubit ideal statevector
+pilot of the original complete-predicate C5 structure oracle, beginning at
+j=0,1 with measured memory/time. Checkpoint:
+`dump/1031221547-c5-22-qubit-resource-pilot/checkpoint.json`. Configuration:
+`configs/iteration_c5_22_qubit_pilot.json`. This scoped authorization supersedes
+the18-wire ceiling only for this pilot; historical18-wire results/exclusions,
+other simulation caps and all spending/review rules remain unchanged. The
+existing lower-width best_fit C5 chain is still required: it tests a different
+construction. C5 execution/review/integration workers MUST read the checkpoint
+and pilot report before launching work, reuse saved evidence rather than rerun
+the structure pilot, and independently review any new results before scientific
+admission. Queue completion and resource feasibility do not establish admission.
+The dispatcher is temporarily operator-paused to prevent numerical overlap and
+will be restored after this bounded run. No new model calls are needed to run it.

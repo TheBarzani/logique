@@ -536,6 +536,56 @@ def ft_metrics(circuit: QuantumCircuit, *, rotation_t: int | None = None) -> dic
     return metrics
 
 
+_COUNT_KEYS = ("t_count", "rotation_count", "cx_count", "gates")
+_LOWERED_COUNTS: dict = {}
+
+
+def _lowered_counts(operation) -> dict:
+    """Clifford+T counts of one operation, cached by its name and parameters."""
+    try:
+        params = tuple(float(p) for p in operation.params)
+    except (TypeError, ValueError):
+        params = None
+    key = (
+        operation.name,
+        operation.num_qubits,
+        params,
+        getattr(operation, "ctrl_state", None),
+    )
+    if params is not None and key in _LOWERED_COUNTS:
+        return _LOWERED_COUNTS[key]
+    single = QuantumCircuit(operation.num_qubits)
+    single.append(operation, range(operation.num_qubits))
+    metrics = ft_metrics(clifford_t(single))
+    counts = {name: metrics[name] for name in _COUNT_KEYS}
+    if params is not None:
+        _LOWERED_COUNTS[key] = counts
+    return counts
+
+
+def ft_counts(circuit: QuantumCircuit) -> dict:
+    """Exact Clifford+T counts of a circuit without building its lowering.
+
+    clifford_t() lowers gate by gate, so T gates, rotations, CNOTs and gates add
+    up over instructions, and each distinct operation is lowered once. Depths
+    need the lowered circuit and are reported as None.
+    """
+    totals = dict.fromkeys(_COUNT_KEYS, 0)
+    for inst in circuit.data:
+        if inst.operation.name in _DIRECTIVES:
+            continue
+        for name, value in _lowered_counts(inst.operation).items():
+            totals[name] += value
+    return {
+        "qubits": circuit.num_qubits,
+        **totals,
+        "t_depth": None,
+        "rotation_depth": None,
+        "depth": None,
+        "metric_level": "fault-tolerant",
+    }
+
+
 def isolated_mcx_costs(method: str, controls: int) -> dict:
     """Cost one MCX gate whose spare wires can be borrowed but are not clean.
 

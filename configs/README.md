@@ -47,7 +47,11 @@ Study fields:
   `count_budget`, `route_qubits` (defaults to the device size), and
   `route_cx` (CNOTs of an iteration's Clifford+T lowering, 50,000 by default;
   routing five seeds takes about 3 ms per CNOT). Iterations beyond either
-  routing limit are recorded as not routed, with the reason.
+  routing limit are recorded as not routed, with the reason. `price_gates`
+  (3,000,000 by default) bounds the Clifford+T gates of a component that is
+  priced in full; larger components receive exact T, rotation, CNOT and gate
+  counts without depths or measurement-assisted pricing, marked
+  `priced: counts only`.
 
 A study writes `summary.csv` with one row per measurement: `component` is
 `preparation`, `oracle`, `diffusion`, `search` (complete search at the stated

@@ -272,6 +272,37 @@ def test_iterations_beyond_the_routing_limit_are_recorded(tmp_path):
     assert not row["routed"] and "lowering; limit 10" in row["reason"]
 
 
+def test_components_beyond_the_pricing_limit_get_exact_counts(tmp_path):
+    pytest.importorskip("saha_belletti")
+    import pandas as pd
+
+    from logique.benchmarks.study import run_study
+
+    def search_rows(limits, name):
+        run = run_study(
+            {
+                "inputs": [str(GRAPHS / "K3.col")],
+                "methods": ["sb_balanced"],
+                "regimes": ["R3"],
+                "pricing": ["static", "measurement"],
+                "limits": limits,
+                "output": str(tmp_path / name),
+            }
+        )
+        rows = pd.read_csv(run / "summary.csv")
+        return rows[rows.component == "search"].set_index("metric_level")
+
+    full = search_rows({}, "1030000000-full")
+    counted = search_rows({"price_gates": 10}, "1030000001-counted")
+    assert list(counted.index) == ["fault-tolerant"]
+    assert counted.loc["fault-tolerant", "priced"] == "counts only"
+    assert full.loc["fault-tolerant", "priced"] == "full"
+    for column in ("t_exact", "rotation_count", "t_count"):
+        assert (
+            counted.loc["fault-tolerant", column] == full.loc["fault-tolerant", column]
+        )
+
+
 def test_priced_components_give_the_lowered_cnot_count():
     pytest.importorskip("saha_belletti")
     from logique.benchmarks.costs import clifford_t, decompose_mcx, ft_metrics

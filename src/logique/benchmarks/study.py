@@ -45,6 +45,8 @@ LIMITS = {
     "route_qubits": None,
     # Routing five seeds takes about 3 ms per CNOT of the Clifford+T lowering.
     "route_cx": 50_000,
+    # Beyond this many Clifford+T gates, components get exact counts only.
+    "price_gates": 3_000_000,
 }
 
 
@@ -149,18 +151,27 @@ def expand_oracle(instance, policy: str, *, relative_phase: bool = True):
     return full, [compute_info, kick_info]
 
 
-def _component_metrics(decomposed, clean, pricing, targets):
-    """Metrics of one expanded component, keyed by metric level."""
-    from .costs import clifford_t, ft_metrics, toffoli_metrics
+def _component_metrics(decomposed, clean, pricing, targets, max_gates=None):
+    """Metrics of one expanded component, keyed by metric level.
+
+    A component whose Clifford+T lowering exceeds ``max_gates`` gates receives
+    exact static counts without depths and no measurement-assisted pricing.
+    """
+    from .costs import clifford_t, ft_counts, ft_metrics, toffoli_metrics
     from .logical_and import measurement_assisted_metrics
 
     levels = {}
     if "toffoli" in targets:
         levels["toffoli"] = toffoli_metrics(decomposed)
     if "fault-tolerant" in targets:
+        counts = ft_counts(decomposed)
+        full = max_gates is None or counts["gates"] <= max_gates
         if "static" in pricing:
-            levels["fault-tolerant"] = ft_metrics(clifford_t(decomposed))
-        if "measurement" in pricing:
+            levels["fault-tolerant"] = {
+                **(ft_metrics(clifford_t(decomposed)) if full else counts),
+                "priced": "full" if full else "counts only",
+            }
+        if "measurement" in pricing and full:
             levels["fault-tolerant, measurement-assisted"] = (
                 measurement_assisted_metrics(decomposed, clean_wires=clean)
             )
@@ -344,21 +355,18 @@ def run_study(config: dict, *, executable=None) -> Path:
                         clean = [*instance.clean, *appended]
                         started = time.perf_counter()
                         parts = {
-                            "preparation": _component_metrics(
-                                instance.preparation,
-                                [],
+                            name: _component_metrics(
+                                circuit,
+                                wires,
                                 settings["pricing"],
                                 settings["targets"],
-                            ),
-                            "oracle": _component_metrics(
-                                oracle, clean, settings["pricing"], settings["targets"]
-                            ),
-                            "diffusion": _component_metrics(
-                                diffusion,
-                                clean,
-                                settings["pricing"],
-                                settings["targets"],
-                            ),
+                                limits["price_gates"],
+                            )
+                            for name, circuit, wires in (
+                                ("preparation", instance.preparation, []),
+                                ("oracle", oracle, clean),
+                                ("diffusion", diffusion, clean),
+                            )
                         }
                         pricing_s = time.perf_counter() - started
                         policy_common = {
@@ -399,7 +407,7 @@ def run_study(config: dict, *, executable=None) -> Path:
                             "fault-tolerant",
                             "fault-tolerant, measurement-assisted",
                         ):
-                            if level not in parts["oracle"]:
+                            if any(level not in levels for levels in parts.values()):
                                 continue
                             for j in sweep:
                                 prep = parts["preparation"][level]
@@ -431,6 +439,15 @@ def run_study(config: dict, *, executable=None) -> Path:
                                         **policy_common,
                                         "component": "search",
                                         "metric_level": level,
+                                        "priced": (
+                                            "counts only"
+                                            if any(
+                                                levels[level].get("priced")
+                                                == "counts only"
+                                                for levels in parts.values()
+                                            )
+                                            else "full"
+                                        ),
                                         "iterations": j,
                                         "t_exact": exact,
                                         "rotation_count": rotations,

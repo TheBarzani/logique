@@ -271,3 +271,20 @@ def test_xag_oracle_t_count_follows_its_and_gates():
     assert (
         metrics["t_count"] == 7 * summary["exact_ccx"] + 4 * summary["controlled_rx_pi"]
     )
+
+
+@pytest.mark.parametrize("method", ["clean_tree", "noaux_v24", "1_clean_b95"])
+def test_additive_counts_equal_the_full_lowering(method):
+    circuit = QuantumCircuit(9)
+    circuit.mcx([0, 1, 2, 3, 4], 5)
+    circuit.append(RXGate(math.pi).control(2, ctrl_state=1), [0, 1, 6])
+    circuit.append(CHGate(), [2, 7])
+    circuit.ry(0.3, 8)
+    circuit.barrier()
+    circuit.mcx([5, 6, 7], 8)
+    decomposed, _ = costs.decompose_mcx(circuit, method)
+    counts = costs.ft_counts(decomposed)
+    full = costs.ft_metrics(costs.clifford_t(decomposed))
+    for key in ("t_count", "rotation_count", "cx_count", "gates"):
+        assert counts[key] == full[key]
+    assert counts["t_depth"] is None

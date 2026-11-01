@@ -7,7 +7,18 @@ template<class Ntk, class Strategy> json compile(Ntk const& ntk, Strategy& strat
         throw std::runtime_error("Mapping strategy failed");
     json steps = json::array();
     strategy.foreach_step([&](auto n, auto const& a) {
-        std::string action = std::holds_alternative<cp::compute_action>(a) ? "compute" : "uncompute";
+        const std::string action = std::visit(
+            [](auto const& step) -> std::string {
+                using T = std::decay_t<decltype(step)>;
+                if constexpr (std::is_same_v<T, cp::compute_action>) return "compute";
+                else if constexpr (std::is_same_v<T, cp::uncompute_action>) return "uncompute";
+                else if constexpr (std::is_same_v<T, cp::compute_inplace_action>) return "compute_inplace";
+                else if constexpr (std::is_same_v<T, cp::uncompute_inplace_action>) return "uncompute_inplace";
+                else if constexpr (std::is_same_v<T, cp::buffer_action>) return "buffer";
+                else if constexpr (std::is_same_v<T, cp::compute_level_action>) return "compute_level";
+                else return "uncompute_level";
+            },
+            a);
         json row = {{"node", ntk.node_to_index(n)}, {"action", action}};
         auto add_cell = [&](auto const& step) {
             if (step.cell_override) {
@@ -25,10 +36,17 @@ template<class Ntk, class Strategy> json compile(Ntk const& ntk, Strategy& strat
 
 
 inline json map_network(mt::xag_network const& selected, json const& request) {
+        // "refactor" refactors the XAG for every method except aig_bennett, which maps
+        // the selected network; "none" maps the selected network for every method.
+        const auto optimization = request.value("optimization", std::string("refactor"));
+        if (optimization != "refactor" && optimization != "none")
+            throw std::runtime_error("optimization must be refactor or none");
         auto xag = mt::cleanup_dangling(selected);
-        mt::bidecomposition_resynthesis<mt::xag_network> resyn;
-        mt::refactoring(xag, resyn);
-        xag = mt::cleanup_dangling(xag);
+        if (optimization == "refactor") {
+            mt::bidecomposition_resynthesis<mt::xag_network> resyn;
+            mt::refactoring(xag, resyn);
+            xag = mt::cleanup_dangling(xag);
+        }
         const auto method = request.value("method", std::string("xag"));
         json result;
         if (method == "xag") result = {{"network", graph_json(xag)}};
@@ -59,6 +77,21 @@ inline json map_network(mt::xag_network const& selected, json const& request) {
             if (ps.cut_lower_bound < 2 || ps.cut_size > 16 || ps.cut_lower_bound > ps.cut_size)
                 throw std::runtime_error("Require 2 <= inner_cut <= outer_cut <= 16");
             cp::best_fit_mapping_strategy<decltype(ntk)> strategy(ps);
+            result = compile(ntk, strategy);
+        } else if (method == "xag_lowt") {
+            // Meuli et al. (ICCAD 2019): linear cones in place, AND nodes on fresh qubits.
+            cp::xag_mapping_strategy strategy;
+            result = compile(xag, strategy);
+        } else if (method == "xag_fast_lowt") {
+            cp::xag_fast_lowt_mapping_strategy strategy;
+            result = compile(xag, strategy);
+        } else if (method == "xag_lowdepth") {
+            // Level by level, copying shared AND inputs to lower the T-depth.
+            cp::xag_low_depth_mapping_strategy strategy;
+            result = compile(xag, strategy);
+        } else if (method == "xag_eager") {
+            Network<mt::xag_network> ntk(xag);
+            cp::eager_mapping_strategy<decltype(ntk)> strategy;
             result = compile(ntk, strategy);
         } else throw std::runtime_error("Unknown synthesis method");
         return result;

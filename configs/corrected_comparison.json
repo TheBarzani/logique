@@ -1,0 +1,48 @@
+{
+  "kind": "study",
+  "inputs": [
+    "../datasets/graphs/benchmarks/K3.col",
+    "../datasets/graphs/benchmarks/K5.col",
+    "../datasets/graphs/benchmarks/K10.col",
+    "../datasets/graphs/benchmarks/K20.col",
+    "../datasets/graphs/benchmarks/myciel3.col",
+    "../datasets/graphs/benchmarks/myciel4.col",
+    "../datasets/graphs/benchmarks/myciel5.col",
+    "../datasets/graphs/benchmarks/2-Insertions_3.col",
+    "../datasets/graphs/benchmarks/zed-city_2019.col"
+  ],
+  "methods": [
+    "xag",
+    "aig_bennett",
+    "xag_bennett",
+    "klut_bennett",
+    "best_fit",
+    "sb_original",
+    "sb_simple",
+    "sb_minimal",
+    "sb_balanced"
+  ],
+  "parameters": {
+    "k": 4,
+    "outer_cut": 16,
+    "inner_cut": 4
+  },
+  "regimes": ["R1", "R2", "R3"],
+  "mcx_policies": ["clean_tree", "2_clean_kg24", "n_dirty_i15", "noaux_v24", "throwaway_tree"],
+  "pricing": ["static", "measurement"],
+  "optimization_profile": "refactor",
+  "targets": ["logical", "toffoli", "fault-tolerant", "routed"],
+  "rotation_budget": 0.001,
+  "iterations": "optimal",
+  "seeds": [11, 23, 37, 41, 53],
+  "relative_phase_mirrored": true,
+  "drop_precolors": true,
+  "seed": 7,
+  "samples": 256,
+  "limits": {
+    "exhaustive_inputs": 12,
+    "witnesses": 16,
+    "synthesis_timeout_s": 180,
+    "count_budget": 300000000
+  }
+}

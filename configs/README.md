@@ -23,6 +23,8 @@ K3, K5 and myciel3, the pilot graphs of the revision protocol. Every method,
 including the Saha–Belletti variants, is evaluated under three regimes: `R1`
 (Hadamard preparation, complete predicate), `R2` (valid-color preparation,
 complete predicate) and `R3` (valid-color preparation without domain checks).
+`corrected_comparison.json` applies the same settings to the nine graphs of
+the manuscript, with a count budget large enough for myciel4.
 Study fields:
 
 - `regimes`: any of `R1`, `R2`, `R3`.

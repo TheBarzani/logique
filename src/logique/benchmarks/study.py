@@ -43,8 +43,8 @@ LIMITS = {
     "synthesis_timeout_s": 180,
     "count_budget": 10_000_000,
     "route_qubits": None,
-    # Routing takes about 2.5 ms per two-qubit gate over five seeds.
-    "route_operations": 20_000,
+    # Routing five seeds takes about 3 ms per CNOT of the Clifford+T lowering.
+    "route_cx": 50_000,
 }
 
 
@@ -165,6 +165,26 @@ def _component_metrics(decomposed, clean, pricing, targets):
                 measurement_assisted_metrics(decomposed, clean_wires=clean)
             )
     return levels
+
+
+def _lowered_cx(iteration, parts, limit):
+    """CNOTs of an iteration's Clifford+T lowering, or a lower bound above limit.
+
+    Every multi-qubit operation lowers to at least one CNOT, so counting them
+    avoids lowering circuits that already exceed the limit. Static
+    fault-tolerant pricing supplies the exact count when it was computed.
+    """
+    from .costs import clifford_t, ft_metrics
+
+    operations = sum(
+        len(inst.qubits) > 1 and inst.operation.name != "barrier"
+        for inst in iteration.data
+    )
+    if operations > limit:
+        return operations
+    if parts and all("fault-tolerant" in levels for levels in parts.values()):
+        return sum(levels["fault-tolerant"]["cx_count"] for levels in parts.values())
+    return ft_metrics(clifford_t(iteration))["cx_count"]
 
 
 def run_study(config: dict, *, executable=None) -> Path:
@@ -438,20 +458,18 @@ def run_study(config: dict, *, executable=None) -> Path:
                                 diffusion, range(diffusion.num_qubits), inplace=True
                             )
                             started = time.perf_counter()
-                            operations = sum(
-                                len(inst.qubits) > 1 for inst in iteration.data
-                            )
+                            cx = _lowered_cx(iteration, parts, limits["route_cx"])
                             if total_width > route_qubits:
                                 record = {
                                     "routed": False,
                                     "reason": f"needs {total_width} qubits; limit {route_qubits}",
                                 }
-                            elif operations > limits["route_operations"]:
+                            elif cx > limits["route_cx"]:
                                 record = {
                                     "routed": False,
                                     "reason": (
-                                        f"has {operations} multi-qubit operations; "
-                                        f"limit {limits['route_operations']}"
+                                        f"needs at least {cx} CNOTs after Clifford+T "
+                                        f"lowering; limit {limits['route_cx']}"
                                     ),
                                 }
                             else:

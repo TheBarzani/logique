@@ -234,12 +234,41 @@ def test_iterations_beyond_the_routing_limit_are_recorded(tmp_path):
             "methods": ["sb_balanced"],
             "regimes": ["R3"],
             "targets": ["routed"],
-            "limits": {"route_operations": 10},
+            "limits": {"route_cx": 10},
             "output": str(tmp_path / "1030000000-study"),
         }
     )
     row = pd.read_csv(run / "summary.csv").set_index("component").loc["iteration"]
-    assert not row["routed"] and "multi-qubit operations; limit 10" in row["reason"]
+    assert not row["routed"] and "lowering; limit 10" in row["reason"]
+
+
+def test_priced_components_give_the_lowered_cnot_count():
+    pytest.importorskip("saha_belletti")
+    from logique.benchmarks.costs import clifford_t, decompose_mcx, ft_metrics
+    from logique.benchmarks.study import _component_metrics, _lowered_cx, _pad
+    from logique.circuits.search import baseline_instance
+
+    instance = baseline_instance(unprecolored("K3"), "balanced", "R3")
+    oracle, _ = decompose_mcx(instance.oracle, "clean_tree")
+    diffusion, _ = decompose_mcx(
+        instance.diffusion, "clean_tree", clean_wires=instance.clean
+    )
+    width = max(oracle.num_qubits, diffusion.num_qubits)
+    iteration = _pad(instance.preparation, width)
+    iteration.compose(oracle, range(oracle.num_qubits), inplace=True)
+    iteration.compose(diffusion, range(diffusion.num_qubits), inplace=True)
+    priced = {
+        name: _component_metrics(part, [], ["static"], ["fault-tolerant"])
+        for name, part in (
+            ("preparation", instance.preparation),
+            ("oracle", oracle),
+            ("diffusion", diffusion),
+        )
+    }
+    lowered = ft_metrics(clifford_t(iteration))["cx_count"]
+    assert _lowered_cx(iteration, priced, 10**6) == lowered
+    assert _lowered_cx(iteration, {}, 10**6) == lowered
+    assert lowered > _lowered_cx(iteration, {}, 1) > 1
 
 
 def test_study_settings_reject_unknown_values():

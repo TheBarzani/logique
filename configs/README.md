@@ -45,9 +45,9 @@ Study fields:
 - `limits`: `exhaustive_inputs`, `witnesses` (proper colorings added to
   verification inputs beyond the exhaustive limit), `synthesis_timeout_s`,
   `count_budget`, `route_qubits` (defaults to the device size), and
-  `route_operations` (multi-qubit operations in an expanded iteration, 20,000
-  by default). Iterations beyond either routing limit are recorded as not
-  routed, with the reason.
+  `route_cx` (CNOTs of an iteration's Clifford+T lowering, 50,000 by default;
+  routing five seeds takes about 3 ms per CNOT). Iterations beyond either
+  routing limit are recorded as not routed, with the reason.
 
 A study writes `summary.csv` with one row per measurement: `component` is
 `preparation`, `oracle`, `diffusion`, `search` (complete search at the stated

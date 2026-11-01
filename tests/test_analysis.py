@@ -60,3 +60,31 @@ def test_pareto_front_keeps_undominated_points():
     points = pd.DataFrame({"q": [10, 12, 12, 20, 30], "t": [100, 90, 95, 90, 50]})
     front = analysis.pareto_front(points, "q", "t")
     assert list(front.index) == [0, 1, 4]
+
+
+def test_iteration_costs_add_the_oracle_and_diffusion():
+    rows = pd.DataFrame(
+        [
+            dict(
+                benchmark="G",
+                regime="R2",
+                method="xag",
+                mcx_policy="clean_tree",
+                component=component,
+                metric_level="fault-tolerant",
+                t_count=t,
+                rotation_count=r,
+                qubits_total=12,
+            )
+            for component, t, r in (
+                ("preparation", 0, 6),
+                ("oracle", 40, 0),
+                ("diffusion", 20, 12),
+            )
+        ]
+    )
+    (row,) = analysis.iteration_costs(rows).to_dict("records")
+    # Twelve rotations share 1e-3, so each costs ceil(3 log2(12000)) = 41 T.
+    assert (row["t_exact"], row["rotation_count"], row["rotation_t"]) == (60, 12, 41)
+    assert row["t_count"] == 60 + 12 * 41
+    assert row["qubits_total"] == 12

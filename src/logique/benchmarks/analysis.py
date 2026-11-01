@@ -48,6 +48,34 @@ def search_costs(rows: pd.DataFrame, level: str = "fault-tolerant") -> pd.DataFr
     return search[columns].reset_index(drop=True)
 
 
+def iteration_costs(
+    rows: pd.DataFrame, level: str = "fault-tolerant", budget: float = 1e-3
+) -> pd.DataFrame:
+    """Cost of one Grover iteration (oracle and diffusion operator).
+
+    Graphs whose number of solutions is unknown have no complete-search rows;
+    every method shares the iteration count within a regime, so one iteration
+    ranks them in the same way. The iteration's rotations share ``budget``,
+    and rows lacking either component are left out.
+    """
+    from .costs import rotation_t_count
+
+    keys = ["benchmark", "regime", "method", "mcx_policy"]
+    parts = rows[
+        rows.component.isin(["oracle", "diffusion"]) & (rows.metric_level == level)
+    ]
+    grouped = parts.groupby(keys)
+    table = grouped[["t_count", "rotation_count"]].sum()
+    table = table[grouped.size() == 2].rename(columns={"t_count": "t_exact"})
+    table["qubits_total"] = grouped.qubits_total.max()
+    table["rotation_t"] = [
+        rotation_t_count(budget / r) if r else 0 for r in table.rotation_count
+    ]
+    table["t_count"] = table.t_exact + table.rotation_count * table.rotation_t
+    table["iterations"] = 1
+    return table.reset_index()
+
+
 def compare_with_baselines(
     costs: pd.DataFrame,
     metric: str = "t_count",

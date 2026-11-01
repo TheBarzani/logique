@@ -8,7 +8,11 @@ from logique.coloring import ColoringEncoding
 from logique.benchmarks.provenance import environment
 from logique.circuits.records import records_to_qiskit
 from .native import METHODS, run_native
-from .tweedledum import _network_records, _xag_records
+from .tweedledum import (
+    _network_records,
+    _reduce_multiplicative_complexity,
+    _xag_records,
+)
 from .result import SynthesisResult
 
 
@@ -22,10 +26,13 @@ def synthesize(
     inner_cut: int = 4,
     executable=None,
     timeout: float = 180,
+    mc_reduction: bool = False,
 ) -> SynthesisResult:
     """Synthesize a raw computation; oracle wrappers explicitly restore workspace.
 
-    ``timeout`` bounds the native bridge call in seconds.
+    ``timeout`` bounds the native bridge call in seconds. ``mc_reduction``
+    first rewrites the source with tweedledum's multiplicative-complexity
+    flow, before the backend's own refactoring.
     """
     if method not in METHODS:
         raise ValueError(f"method must be one of {METHODS}")
@@ -41,6 +48,7 @@ def synthesize(
                 inner_cut=inner_cut,
                 executable=executable,
                 timeout=timeout,
+                mc_reduction=mc_reduction,
             )
         result.metadata.update(
             source="coloring predicate",
@@ -55,6 +63,30 @@ def synthesize(
         )
         if len(result.metadata["input_qubits"]) != source.input_count:
             raise RuntimeError("Backend changed the declared coloring input order")
+        return result
+    if mc_reduction:
+        start = time.perf_counter()
+        with tempfile.TemporaryDirectory(prefix="logique-mc-") as directory:
+            reduced = _reduce_multiplicative_complexity(
+                source, Path(directory) / "reduced.v"
+            )
+            reduction_seconds = time.perf_counter() - start
+            result = synthesize(
+                reduced,
+                method,
+                k=k,
+                outputs=outputs,
+                outer_cut=outer_cut,
+                inner_cut=inner_cut,
+                executable=executable,
+                timeout=timeout,
+            )
+        result.metadata.update(
+            source=str(Path(source).resolve()),
+            source_sha256=hashlib.sha256(Path(source).read_bytes()).hexdigest(),
+            mc_reduction_seconds=reduction_seconds,
+        )
+        result.metadata["parameters"]["mc_reduction"] = True
         return result
     params = {"k": k} if method == "klut_bennett" else {}
     if method == "best_fit":

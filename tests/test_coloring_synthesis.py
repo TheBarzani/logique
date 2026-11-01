@@ -68,3 +68,34 @@ def test_grover_matches_independent_amplitude_amplification(iterations):
     actual = Statevector.from_instruction(circuit).data
     np.testing.assert_allclose(actual[: len(initial)], expected, atol=1e-9)
     np.testing.assert_allclose(actual[len(initial) :], 0, atol=1e-9)
+
+
+@pytest.mark.parametrize("method", METHODS)
+@pytest.mark.parametrize(
+    "problem",
+    [
+        ColoringProblem((1, 2, 3), ((1, 2), (2, 3), (1, 3)), 3),
+        ColoringProblem((1, 2, 3), ((1, 2), (2, 3)), 5, {3: 1}),
+        ColoringProblem((), (), 2),
+    ],
+)
+def test_optimization_profiles_keep_the_predicate(problem, method):
+    encoding = encode_coloring(problem, balanced=True)
+    result = synthesize(encoding, method, mc_reduction=True)
+    assignments = input_assignments(encoding.input_count)
+    actual = truth_outputs(result.metadata["source_network"], assignments)[0]
+    expected = [
+        problem.is_valid(encoding.decode(i)) for i in range(1 << encoding.input_count)
+    ]
+    np.testing.assert_array_equal(actual, expected)
+    assert result.metadata["parameters"]["mc_reduction"]
+    assert result.metadata["source"] == "coloring predicate"
+    assert validate(result)["wrapped_restoration"]
+
+
+def test_mc_reduction_removes_and_gates_from_domain_checks():
+    # Three colors leave one unused code per vertex, which the comparator rejects.
+    encoding = encode_coloring(ColoringProblem((1, 2, 3), ((1, 2), (2, 3), (1, 3)), 3))
+    plain = synthesize(encoding).summary()["AND"]
+    reduced = synthesize(encoding, mc_reduction=True).summary()["AND"]
+    assert reduced < plain

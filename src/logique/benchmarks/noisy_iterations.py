@@ -217,6 +217,31 @@ def finalize_result(record: dict, status: str, shots: int) -> None:
     )
 
 
+def selected_iterations(request: dict, reference: dict) -> list[int]:
+    """Validate a nonempty iteration subset before any child setup or sampling.
+
+    A subset still builds every preceding coherent Grover step. Only selected
+    iterations may be routed, validated, randomly trialled or sampled. This is
+    not permission to reuse arbitrary ideal evidence: the parent verifies it.
+    """
+    full = [row["iterations"] for row in reference["analytical_ledger"]["rows"]]
+    if "iterations" not in request:
+        return full
+    chosen = request["iterations"]
+    if (
+        not isinstance(chosen, list)
+        or not chosen
+        or any(type(j) is not int for j in chosen)
+        or chosen != sorted(set(chosen))
+        or not set(chosen) <= set(full)
+    ):
+        raise ValueError("Expected sorted unique requested iteration subset")
+    executed = [row["iterations"] for row in reference["rows"]]
+    if full != list(range(len(full))) or executed != full:
+        raise ValueError("Iteration selection requires complete ordered ideal rows")
+    return chosen
+
+
 def execute_seed(request: dict) -> dict:
     """Persist all requested rows before setup and retain failure/interruption."""
     config = request["config"]
@@ -225,16 +250,16 @@ def execute_seed(request: dict) -> dict:
     reference = json.loads(
         (Path(config["ideal_pilot"]) / request["name"] / "result.json").read_text()
     )
+    chosen = selected_iterations(request, reference)
     output.mkdir(exist_ok=False)
     record = {
         "name": request["name"],
         "seed_transpiler": request["seed"],
         "status": "running",
         "owner_pid": os.getpid(),
-        "rows": [
-            {"iterations": row["iterations"], "status": "not_started"}
-            for row in reference["analytical_ledger"]["rows"]
-        ],
+        "rows": [{"iterations": j, "status": "not_started"} for j in chosen],
+        "requested_iterations": chosen,
+        "selection_scope": "only selected rows routed/sampled; preceding coherent steps built",
     }
     _write(output / "result.json", record)
     status = "not_executed_after_failure"
@@ -458,6 +483,7 @@ def _execute_seed(request: dict, record: dict) -> dict:
     output = Path(request["output"])
     pilot = Path(config["ideal_pilot"])
     reference = json.loads((pilot / request["name"] / "result.json").read_text())
+    selected_iterations(request, reference)
     case, regime, seed = reference["case"], reference["regime"], request["seed"]
     problem = _problem(case)
     width = reference["construction"]["width"]
@@ -532,15 +558,19 @@ def _execute_seed(request: dict, record: dict) -> dict:
     requested = {row["iterations"]: row for row in record["rows"]}
     for old in reference["rows"]:
         j = old["iterations"]
-        row = requested[j]
-        row["status"] = "running"
-        _write(output / "result.json", record)
+        if j > max(requested):
+            break
         if j:
             logical.compose(parts[1], inplace=True)
             logical.compose(parts[2], range(n), inplace=True)
             ideal_state = ideal_state.evolve(ideal_parts[1]).evolve(
                 ideal_parts[2], list(range(n))
             )
+        if j not in requested:
+            continue
+        row = requested[j]
+        row["status"] = "running"
+        _write(output / "result.json", record)
         expected = ideal_state.probabilities(list(range(n)))
         circuit = logical.copy()
         circuit.measure(range(n), range(n))

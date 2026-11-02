@@ -156,3 +156,21 @@ subprocesses, API/paid fallback/purchase, sync, hardware, physicalQEC, precolore
 or conditional-workspace research occurred. Required narrative/checkpoint bind
 commands/exits/time/RSS scopes, source/evidence hashes, task/session and commits.
 **Full research continues through the concrete source/evidence gates above.**
+
+## Coordinator release after repeated dispatch — 1 November
+
+The exact admission above is committed as `80d8db3`; its bounded assignment has
+no remaining own work. A `continue` result caused the dispatcher to resume this
+same coordinator rather than advance its pending successors. Attempts2/3 added
+no scientific evidence. At the release check,64 batches are consumed,100 job
+definitions remain intact, and all52 jobs after this coordinator are pending.
+No duplicate jobs, source changes, numerical checks or scientific reruns occur.
+The coordinator returns **bounded task COMPLETE**, with full research/manuscript
+scientifically **BLOCKED** and28 observations/777 outstanding unchanged. This
+completion releases the already assigned implementation/review/execution jobs;
+it does not admit any pending science or mark the paper complete.
+
+Release checkpoint: `dump/1101195254-noisy-coordinator-release-checkpoint/checkpoint.json`.
+Existing full-research-final and noisy-extended-final coordinators own the
+remaining full scope after their dependencies. Headers, previous definitions,
+state/history, deadline and128-additional-batch ceiling remain unchanged.

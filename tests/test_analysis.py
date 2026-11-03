@@ -88,3 +88,23 @@ def test_iteration_costs_add_the_oracle_and_diffusion():
     assert (row["t_exact"], row["rotation_count"], row["rotation_t"]) == (60, 12, 41)
     assert row["t_count"] == 60 + 12 * 41
     assert row["qubits_total"] == 12
+
+
+def test_load_study_reads_domains_beyond_64_bits_exactly(tmp_path):
+    import json
+
+    domain = 2**100
+    (tmp_path / "run.json").write_text(json.dumps({"status": "complete"}))
+    pd.DataFrame(
+        {
+            "benchmark": ["K20", "K20", "K3"],
+            "domain": [domain, None, 27],
+            "solutions": [2432902008176640000, None, 6],
+        },
+        dtype=object,
+    ).to_csv(tmp_path / "summary.csv", index=False)
+    rows, _ = analysis.load_study(tmp_path)
+    assert rows["domain"].iloc[0] == domain
+    assert pd.isna(rows["domain"].iloc[1])
+    assert rows["domain"].iloc[2] == 27
+    assert rows["solutions"].iloc[2] / rows["domain"].iloc[2] == pytest.approx(6 / 27)

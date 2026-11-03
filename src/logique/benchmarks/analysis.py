@@ -7,6 +7,7 @@ comparison by geometric means and win, tie and loss counts, and break widths
 down by qubit role, as the experimental protocol prescribes.
 """
 
+from decimal import Decimal
 import json
 from pathlib import Path
 
@@ -33,12 +34,21 @@ ROLES = ["data_qubits", "output_qubits", "oracle_workspace", "mcx_ancillas"]
 
 
 def load_study(run: str | Path) -> tuple[pd.DataFrame, dict]:
-    """Read a completed study's rows and manifest."""
+    """Read a completed study's rows and manifest.
+
+    Domains beyond 64 bits are exported as exact integers, which pandas reads
+    as text; they are returned as Python integers.
+    """
     run = Path(run)
     manifest = json.loads((run / "run.json").read_text())
     if manifest.get("status") != "complete":
         raise ValueError(f"{run} is not a completed study")
-    return pd.read_csv(run / "summary.csv", low_memory=False), manifest
+    rows = pd.read_csv(run / "summary.csv", low_memory=False)
+    if "domain" in rows and rows["domain"].dtype == object:
+        rows["domain"] = rows["domain"].map(
+            lambda value: value if pd.isna(value) else int(Decimal(value))
+        )
+    return rows, manifest
 
 
 def search_costs(rows: pd.DataFrame, level: str = "fault-tolerant") -> pd.DataFrame:

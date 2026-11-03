@@ -64,3 +64,13 @@ additional evidence awaiting independent review, not scientific admission.
 The existing lower-width best_fit execution/review chain remains in scope.
 C5 review must separately assess these new structure-pilot bytes/evidence,
 or record a precise pending review if its bounded budget cannot cover them.
+
+## Current deadline override — user authorization on 2 November
+
+The user resumed the full revision and extended the execution deadline by one
+week to **2026-11-09T00:00:00-05:00** (end8November EST). This overrides old
+Nov2/endNov1 dates in frozen task prompts and worktree plans. Read the CURRENT
+integration checkout plan and active queue for operational dates. The existing
+128-batch ceiling, all scientific/review gates, assigned task budgets and
+included-usage/no-credit/no-purchase rules are unchanged. Do not stop a task
+merely because its historical prompt names the superseded deadline.

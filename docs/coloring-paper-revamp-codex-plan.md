@@ -812,3 +812,20 @@ preserved. Existing full46job matrix retains ownership, including current-root
 scaling composition despite new old-candidate finalization ADMIT. No blind retry,
 C5noisy inference, structure22 proof or full-paper completion. Dispatcher alone
 launches models and publishes committed root HEAD.
+
+## 2 November user-authorized one-week resumption
+
+The user requested resuming the dispatcher with one additional week. The
+execution deadline is now **9 November2026 at00:00 EST**
+(`2026-11-09T00:00:00-05:00`), exactly seven days after the previous deadline.
+This supersedes every older deadline in this plan, queued prompts and worktree
+snapshots. All scientific scope, independent-review gates, model assignments,
+Standard speed, Plus included-only/no-purchase rules and publishing policy stay
+in force. The existing continuation queue remains active; its100 task definitions,
+completed results, attempts, sessions, reset ledger and70 consumed batches are
+preserved. The128-batch ceiling is unchanged (58 remaining at authorization).
+Checkpoint: `dump/1102200209-coloring-one-week-deadline-extension/checkpoint.json`, with immutable pre-change
+queue/state snapshots and the explicit authorized header-hash transition.
+Live metadata before restart: primary1% used, weekly17% used, ordinary included
+usage allowed. The dispatcher must keep checking live metadata before launches;
+these numbers are an observation, not future authorization after exhaustion.

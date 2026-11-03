@@ -103,8 +103,8 @@ def optimize_verilog(
         or not isinstance(evidence, list)
         or any(not isinstance(p, dict) for p in evidence)
         or not isinstance(response.get("verilog"), str)
-        or not response.get("cleanup_equivalent")
-        or not response.get("serialization_equivalent")
+        or response.get("cleanup_equivalent") is not True
+        or response.get("serialization_equivalent") is not True
         or [p.get("name") for p in evidence] != list(passes)
         or any(p.get("equivalent") is not True for p in evidence)
     ):

@@ -276,6 +276,9 @@ def requested_ledger(manifest: dict) -> list[dict]:
                     )
             # Open axes are obligations, not an invented Cartesian experiment.
             for profile in ("mc_reduction", "cut_esop_balancing"):
+                # Missing field retains the original study's historical contract.
+                if profile in manifest.get("connected_profiles", ()):
+                    continue
                 rows.append(
                     {
                         **context,
@@ -427,16 +430,29 @@ def run(root: Path) -> Path:
                 root / "src/logique/circuits/structure.py",
                 root / "src/logique/synthesis/api.py",
                 root / "src/logique/synthesis/native.py",
+                root / "src/logique/synthesis/research_profiles.py",
+                root / "src/logique/synthesis/balancing.py",
+                root / "external/native/boolean_balance/main.cpp",
                 root / "src/logique/synthesis/saha_belletti.py",
                 root / "src/logique/coloring/encoding.py",
             )
         },
         "ledger": ledger,
+        "connected_profiles": list(OPTIMIZATION_PROFILES),
+        "bounded_profiles": {
+            "cut_esop_balancing": {
+                "inputs": 10,
+                "nodes": 4096,
+                "passes": ["xag_balance", "algebraic", "esop"],
+                "equivalence": "per-pass SAT plus independent exhaustive exported boundaries",
+                "scientific_admission": "requires exact independent review and separate study evidence",
+            },
+        },
         "full_study_open": {
-            "profiles": ["mc_reduction", "cut_esop_balancing"],
+            "profiles": ["mc_reduction"],
             "targets": ["FakeTorino_five_seeds"],
             "precision": [1e-2, 1e-3, 1e-4],
-            "reason": "not connected/admitted in this comparison; no substitute or default results",
+            "reason": "MC per-internal-pass CEC unavailable; full targets/precision/profile evidence unadmitted",
         },
     }
 
@@ -603,7 +619,7 @@ def run(root: Path) -> Path:
         manifest["recount"] = json.loads((recount_directory / "stdout.log").read_text())
     manifest["total_seconds"] = time.monotonic() - started
     manifest["next_action"] = (
-        "Independent exact-hash review; extend common lowering beyond admitted subset and connect CEC-checked optimization profiles before full freeze."
+        "Independent exact-hash review; extend common lowering and profile CEC beyond the admitted subset; MC and full profile evidence remain open before full freeze."
     )
     save()
     return output

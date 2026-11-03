@@ -26,6 +26,8 @@ def synthesize(
     sat_max_steps: int | None = None,
     sat_conflict_limit: int | None = None,
     sat_time_seconds: int | None = None,
+    optimization_profile: str | None = None,
+    balancer_executable=None,
     executable=None,
 ) -> SynthesisResult:
     """Synthesize a raw computation; oracle wrappers explicitly restore workspace.
@@ -33,6 +35,9 @@ def synthesize(
     Explicit ``preprocessing='none'`` or ``'refactoring'`` selects a common XAG
     before conversion to each representation. Omission preserves legacy defaults
     (unrefactored AIG Bennett, refactored XAG for the other methods).
+    ``optimization_profile='cut_esop_balancing'`` runs three CEC-checked
+    standalone passes before representation conversion (<=10 inputs/4096 nodes).
+    ``mc_reduction`` remains unsupported pending internal per-pass CEC.
     AIG/XAG Bennett additionally accept ``strategy='bennett'``,
     ``'bennett_inplace'``, ``'eager'`` or ``'sat_pebbling'``. SAT requires all
     four explicit budgets and supports only tiny binary AIG/XAGs (<=6 inputs,
@@ -46,6 +51,21 @@ def synthesize(
         raise ValueError(f"method must be one of {METHODS}")
     if preprocessing is not None and preprocessing not in ("none", "refactoring"):
         raise ValueError("preprocessing must be none or refactoring")
+    if optimization_profile is not None:
+        from .research_profiles import RESEARCH_PROFILES
+
+        if optimization_profile not in RESEARCH_PROFILES:
+            raise ValueError(f"optimization_profile must be one of {RESEARCH_PROFILES}")
+        if preprocessing is not None:
+            raise ValueError(
+                "optimization_profile selects preprocessing; do not supply both"
+            )
+        if method == "klut_bennett" and (type(k) is not int or not 2 <= k <= 6):
+            raise ValueError("k must be an integer between 2 and 6")
+        if outputs is not None:
+            outputs = list(outputs)
+            if any(type(index) is not int or index < 0 for index in outputs):
+                raise ValueError("outputs must contain nonnegative integer indices")
     if strategy is not None:
         if method not in ("aig_bennett", "xag_bennett"):
             raise ValueError("strategy is supported only for AIG/XAG Bennett methods")
@@ -64,35 +84,53 @@ def synthesize(
     elif any(value is not None for value in sat.values()):
         raise ValueError("SAT budgets require strategy='sat_pebbling'")
     if isinstance(source, ColoringEncoding):
-        with tempfile.TemporaryDirectory(prefix="logique-coloring-") as directory:
-            path = source.write_verilog(Path(directory) / "coloring.v")
-            result = synthesize(
-                path,
-                method,
-                k=k,
-                outputs=outputs,
-                outer_cut=outer_cut,
-                inner_cut=inner_cut,
-                preprocessing=preprocessing,
-                strategy=strategy,
-                **sat,
-                executable=executable,
+        result = None
+        try:
+            with tempfile.TemporaryDirectory(prefix="logique-coloring-") as directory:
+                path = source.write_verilog(Path(directory) / "coloring.v")
+                result = synthesize(
+                    path,
+                    method,
+                    k=k,
+                    outputs=outputs,
+                    outer_cut=outer_cut,
+                    inner_cut=inner_cut,
+                    preprocessing=preprocessing,
+                    strategy=strategy,
+                    **sat,
+                    optimization_profile=optimization_profile,
+                    balancer_executable=balancer_executable,
+                    executable=executable,
+                )
+            result.metadata.update(
+                source="coloring predicate",
+                coloring={
+                    "vertices": list(source.problem.vertices),
+                    "edges": list(source.problem.edges),
+                    "colors": source.problem.colors,
+                    "precolored": dict(source.problem.precolored),
+                    "bits_per_color": source.bits_per_color,
+                    "input_mapping": source.input_mapping,
+                    "balanced_encoder": source.balanced,
+                },
             )
-        result.metadata.update(
-            source="coloring predicate",
-            coloring={
-                "vertices": list(source.problem.vertices),
-                "edges": list(source.problem.edges),
-                "colors": source.problem.colors,
-                "precolored": dict(source.problem.precolored),
-                "bits_per_color": source.bits_per_color,
-                "input_mapping": source.input_mapping,
-                "balanced_encoder": source.balanced,
-            },
-        )
-        if len(result.metadata["input_qubits"]) != source.input_count:
-            raise RuntimeError("Backend changed the declared coloring input order")
-        return result
+            if len(result.metadata["input_qubits"]) != source.input_count:
+                raise RuntimeError("Backend changed the declared coloring input order")
+            return result
+        except Exception as error:
+            profile = (
+                result.metadata.get("research_profile") if result is not None else None
+            )
+            if profile is not None:
+                from .research_profiles import retain_profile_failure
+
+                retain_profile_failure(
+                    error,
+                    profile,
+                    "coloring_metadata",
+                    mapping_metadata=result.metadata,
+                )
+            raise
     params = {"k": k} if method == "klut_bennett" else {}
     if method == "best_fit":
         params.update(outer_cut=outer_cut, inner_cut=inner_cut)
@@ -104,23 +142,117 @@ def synthesize(
         params["strategy"] = strategy
     if strategy == "sat_pebbling":
         params.update(sat)
-    start = time.perf_counter()
-    md = run_native(source, method, executable=executable, **params)
-    if method == "xag":
-        md["gates"], md["num_qubits"] = _xag_records(md["network"])
-        n, m = len(md["network"]["inputs"]), len(md["network"]["outputs"])
-        md.update(
-            input_qubits=list(range(n)), output_qubits=list(range(n, n + m)), steps=[]
-        )
-    qc = records_to_qiskit(md["gates"], md["num_qubits"])
-    md.update(
-        parameters=params,
-        seconds=time.perf_counter() - start,
-        source=str(Path(source).resolve()),
-        source_sha256=hashlib.sha256(Path(source).read_bytes()).hexdigest(),
-        versions=environment(executable=executable),
+    if optimization_profile is None:
+        return _synthesize_file(source, method, params, executable)
+    from .research_profiles import (
+        preprocess_verilog,
+        retain_profile_failure,
+        verify_profile_mapping,
     )
-    return SynthesisResult(qc, md)
+
+    profile = preprocess_verilog(
+        source,
+        optimization_profile,
+        executable=executable,
+        balancer_executable=balancer_executable,
+    )
+    request = {
+        "method": method,
+        "outputs": outputs,
+        "k": k,
+        "outer_cut": outer_cut,
+        "inner_cut": inner_cut,
+        "strategy": strategy,
+        **sat,
+        "preprocessing": "none",
+        "optimization_profile": optimization_profile,
+    }
+    boundary = "mapping_output_controls"
+    result = None
+    try:
+        profile["mapping_request"] = request
+        if outputs is not None and any(
+            index >= len(profile["before_network"]["outputs"]) for index in outputs
+        ):
+            raise ValueError("Output index out of range")
+        params["preprocessing"] = "none"
+        boundary = "mapping_serialization"
+        with tempfile.TemporaryDirectory(
+            prefix="logique-profile-mapping-"
+        ) as directory:
+            path = Path(directory) / "optimized.v"
+            path.write_text(profile["verilog"])
+            boundary = "final_mapping"
+            result = _synthesize_file(
+                path, method, params, executable, profile=profile, request=request
+            )
+        boundary = "mapping_equivalence"
+        profile["mapping_equivalence"] = verify_profile_mapping(
+            profile, result.metadata, outputs
+        )
+        boundary = "profile_metadata"
+        result.metadata.update(
+            source=str(Path(source).resolve()),
+            source_sha256=profile["source_sha256"],
+            research_profile=profile,
+            preprocessing={
+                "common": True,
+                "policy": optimization_profile,
+                "before_network": profile["before_network"],
+                "after_network": profile["after_network"],
+            },
+        )
+        result.metadata["parameters"]["optimization_profile"] = optimization_profile
+        result.metadata["seconds"] += profile["seconds"]
+        return result
+    except Exception as error:
+        retain_profile_failure(
+            error,
+            profile,
+            boundary,
+            request=request,
+            mapping_metadata=result.metadata if result is not None else None,
+        )
+        raise
+
+
+def _synthesize_file(
+    source, method, params, executable, *, profile=None, request=None
+) -> SynthesisResult:
+    """Map one file, retaining returned networks if later circuit assembly fails."""
+    md = None
+    boundary = "mapping_native"
+    try:
+        start = time.perf_counter()
+        md = run_native(source, method, executable=executable, **params)
+        boundary = "mapping_circuit"
+        if method == "xag":
+            md["gates"], md["num_qubits"] = _xag_records(md["network"])
+            n, m = len(md["network"]["inputs"]), len(md["network"]["outputs"])
+            md.update(
+                input_qubits=list(range(n)),
+                output_qubits=list(range(n, n + m)),
+                steps=[],
+            )
+        qc = records_to_qiskit(md["gates"], md["num_qubits"])
+        boundary = "mapping_metadata"
+        md.update(
+            parameters=params,
+            seconds=time.perf_counter() - start,
+            source=str(Path(source).resolve()),
+            source_sha256=hashlib.sha256(Path(source).read_bytes()).hexdigest(),
+            versions=environment(executable=executable),
+        )
+        return SynthesisResult(qc, md)
+
+    except Exception as error:
+        if profile is not None:
+            from .research_profiles import retain_profile_failure
+
+            retain_profile_failure(
+                error, profile, boundary, request=request, mapping_metadata=md
+            )
+        raise
 
 
 def synthesize_expression(

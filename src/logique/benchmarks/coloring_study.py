@@ -26,7 +26,12 @@ if TYPE_CHECKING:
 
 STUDY_METHODS = (*METHODS, *(f"sb_{variant}" for variant in VARIANTS))
 STRUCTURE_METHODS = ("structure_sequential", "structure_parallel")
-OPTIMIZATION_PROFILES = ("none", "refactoring", "balanced")
+OPTIMIZATION_PROFILES = (
+    "none",
+    "refactoring",
+    "balanced",
+    "cut_esop_balancing",
+)
 REGIMES = ("R1", "R2", "R3")
 CONFIG_FIELDS = {
     "kind",
@@ -1022,15 +1027,19 @@ def assemble_case(
             method,
             executable=executable,
             **(
-                {
-                    "preprocessing": (
-                        "none"
-                        if optimization_profile == "balanced"
-                        else optimization_profile
-                    )
-                }
-                if optimization_profile is not None
-                else {}
+                {"optimization_profile": optimization_profile}
+                if optimization_profile in ("mc_reduction", "cut_esop_balancing")
+                else (
+                    {
+                        "preprocessing": (
+                            "none"
+                            if optimization_profile == "balanced"
+                            else optimization_profile
+                        )
+                    }
+                    if optimization_profile is not None
+                    else {}
+                )
             ),
         )
         construction = "compute_Z_inverse_compute"
@@ -1212,12 +1221,13 @@ def assemble_case(
                 "native_preprocessing": (
                     (
                         "none"
-                        if optimization_profile == "balanced"
+                        if optimization_profile in ("balanced", "cut_esop_balancing")
                         else optimization_profile
                     )
                     if method in METHODS
                     else None
                 ),
+                "research_profile": result.metadata.get("research_profile"),
                 "equivalence": (
                     _profile_equivalence(result, effective_encoding, options)
                     if method in METHODS
@@ -1752,6 +1762,8 @@ def run_coloring_study(config: dict, *, executable=None) -> Path:
                                     status="failed",
                                     reason=f"{type(error).__name__}: {error}",
                                 )
+                                if hasattr(error, "profile_evidence"):
+                                    case["profile_failure"] = error.profile_evidence
                             finally:
                                 case["total_seconds"] = time.perf_counter() - started
                                 case.setdefault("stage_timings", {})["case_total"] = {

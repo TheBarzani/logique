@@ -10,6 +10,7 @@
 | [Revision walkthrough](tutorials/revision_walkthrough.ipynb) | K3 from predicate to explicitly decomposed circuits and their costs |
 | [MCX decompositions](studies/mcx_decompositions.ipynb) | Multi-controlled X constructions for 3 to 20 controls |
 | [Corrected comparison](studies/corrected_comparison.ipynb) | Analysis of a controlled study against the strongest baseline |
+| [XAG and Belletti-Simple](studies/xag_belletti_equivalence.ipynb) | The XAG oracle and Belletti-Simple as one construction under the edge-only predicate |
 
 Use `logique notebook run PATH --offline` after setup and cache acquisition. The original VCGC notebook versions, including saved outputs, are retained on [`legacy/vcgc`](https://github.com/TheBarzani/logique/tree/legacy/vcgc). Older exploratory notebooks on that branch are not part of the maintained execution suite.
 

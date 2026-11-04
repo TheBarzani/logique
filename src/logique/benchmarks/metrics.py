@@ -20,7 +20,12 @@ def circuit_metrics(circuit) -> dict:
 def lower_circuit(
     circuit, *, basis_gates: list[str], seed: int = 7, optimization_level: int = 1
 ):
-    """Lower into an explicit basis without a hardware target or routing."""
+    """Lower a reusable component, preserving arbitrary input states.
+
+    Component entry is not program entry: data, targets and idle spectators
+    can be nonzero or entangled when the emitted circuit is composed later.
+    Explicit MCX clean-workspace promises belong to the construction layer.
+    """
     from qiskit import transpile
 
     return transpile(
@@ -28,6 +33,8 @@ def lower_circuit(
         basis_gates=basis_gates,
         seed_transpiler=seed,
         optimization_level=optimization_level,
+        qubits_initially_zero=False,
+        num_processes=1,
     )
 
 

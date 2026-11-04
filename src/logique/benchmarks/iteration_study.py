@@ -262,6 +262,8 @@ def simulate_case(case: dict, regime: str, config: dict, output: Path) -> dict:
             basis_gates=["u", "cx"],
             optimization_level=0,
             seed_transpiler=config["seed"],
+            qubits_initially_zero=False,
+            num_processes=1,
         )
         if any(item.operation.num_qubits > 2 for item in resolved.data):
             raise AssertionError("Simulation requires at most two-qubit gates")

@@ -455,7 +455,11 @@ def clifford_t(circuit: QuantumCircuit, *, tolerance: float = 0.0) -> QuantumCir
         if opened:
             staged.x(opened)
     lowered = transpile(
-        staged, basis_gates=[*CLIFFORD_T_BASIS, "rz"], optimization_level=0
+        staged,
+        basis_gates=[*CLIFFORD_T_BASIS, "rz"],
+        optimization_level=0,
+        qubits_initially_zero=False,
+        num_processes=1,
     )
     return _snap_rotations(lowered, tolerance)
 

@@ -463,7 +463,14 @@ def _components(problem, regime: str):
         expanded, policy = decompose_mcx(circuit, "noaux_v24")
         resolved, _ = _resolved_qpy_circuit(expanded)
         parts.append(
-            transpile(prelower(resolved), basis_gates=["u", "cx"], optimization_level=0)
+            transpile(
+                prelower(resolved),
+                basis_gates=["u", "cx"],
+                optimization_level=0,
+                seed_transpiler=7,
+                qubits_initially_zero=False,
+                num_processes=1,
+            )
         )
         policies.append(policy)
     return parts, policies
@@ -583,6 +590,8 @@ def _execute_seed(request: dict, record: dict) -> dict:
             seed_transpiler=seed,
             optimization_level=config["optimization_level"],
             scheduling_method="alap",
+            qubits_initially_zero=False,
+            num_processes=1,
         )
         routed = save_qpy(row_dir / "routed.qpy", routed)
         compact, physical = compact_circuit(routed)

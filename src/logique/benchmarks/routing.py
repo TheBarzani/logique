@@ -137,6 +137,8 @@ def routed_metrics(
             optimization_level=optimization_level,
             seed_transpiler=seed,
             scheduling_method="alap",
+            qubits_initially_zero=False,
+            num_processes=1,
         )
         per_seed.append({"seed": seed, **_seed_metrics(routed, backend.target)})
     summary = {

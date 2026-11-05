@@ -829,3 +829,18 @@ queue/state snapshots and the explicit authorized header-hash transition.
 Live metadata before restart: primary1% used, weekly17% used, ordinary included
 usage allowed. The dispatcher must keep checking live metadata before launches;
 these numbers are an observation, not future authorization after exhaustion.
+
+## 4 November user removed the calendar deadline
+
+The user explicitly requested removing the deadline. The active continuation
+queue now has `"deadline": null`: there is **no calendar stop date**. This
+supersedes9November and every earlier deadline in this plan, frozen queued
+prompts and worktree snapshots. Model dispatch resumes automatically when live
+included usage permits. Plus-only authentication, Standard speed, disabled
+credit continuation/purchases, serial workers, scientific review, per-task
+timeouts and the existing128-batch ceiling remain unchanged. At authorization
+99 batches had been consumed; completed/pending/blocked tasks, sessions, attempts
+and reset history are preserved. Deadline removal does not remove the29-batch
+remaining bound or admit blocked scientific results.
+Checkpoint: `dump/1104221425-coloring-remove-calendar-deadline/checkpoint.json`, including pre-change
+queue/state snapshots and the authorized header transition.

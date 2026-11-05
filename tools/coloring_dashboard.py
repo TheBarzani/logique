@@ -104,7 +104,7 @@ def render(queue: Path, *, now: float, width: int, height: int) -> str:
                 )
             ),
             f"Model batches: {state.get('batches', 0)}/{config.get('max_batches', '?')}"
-            f" | deadline {config.get('deadline', '?')}",
+            f" | deadline {config.get('deadline') or 'none'}",
         ]
         active = [
             j

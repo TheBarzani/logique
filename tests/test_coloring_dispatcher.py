@@ -228,6 +228,37 @@ def test_deadline_and_batch_bound_stop_without_metadata_or_models(
     )
 
 
+def test_no_deadline_dispatches_but_keeps_batch_bound(queue, monkeypatch):
+    config = json.loads(queue.read_text())
+    config["deadline"] = None
+    dispatch.atomic_json(queue, config)
+    assert dispatch.load_queue(queue)["deadline"] is None
+    assert not dispatch.deadline_reached(config)
+    d = runner(queue)
+    monkeypatch.setattr(d, "observe", lambda **kwargs: snapshot())
+    launched = []
+    monkeypatch.setattr(d, "launch", lambda *args: launched.append(args))
+    d.run(once=True)
+    assert len(launched) == 1
+    d.state["batches"] = config["max_batches"]
+    d.run(once=True)
+    assert len(launched) == 1
+    assert d.state["phase"] == "batch_limit_reached"
+
+
+def test_no_deadline_keeps_quota_gate(queue, monkeypatch):
+    config = json.loads(queue.read_text())
+    config["deadline"] = None
+    dispatch.atomic_json(queue, config)
+    d = runner(queue)
+    monkeypatch.setattr(d, "observe", lambda **kwargs: snapshot(weekly=100))
+    monkeypatch.setattr(d, "maybe_reset", lambda *args: False)
+    monkeypatch.setattr(d, "launch", lambda *args: pytest.fail("quota bypass"))
+    d.run(once=True)
+    assert d.state["phase"] == "waiting"
+    assert d.state["reason"] == "included_quota_exhausted"
+
+
 def test_duplicate_dispatchers_exclude_each_other(queue):
     lock = queue.parent / "test.lock"
     with dispatch.exclusive_lock(lock):

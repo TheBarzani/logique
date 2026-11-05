@@ -277,6 +277,15 @@ def usage_gate(snapshot: dict, spending: dict, model: str | None = None) -> str 
     return None
 
 
+def deadline_reached(config: dict) -> bool:
+    """Check an optional calendar deadline; None explicitly disables it."""
+    deadline = config["deadline"]
+    return (
+        deadline is not None
+        and time.time() >= datetime.fromisoformat(deadline).timestamp()
+    )
+
+
 def load_queue(path: Path) -> dict:
     """Validate a finite, appendable queue and the plan's model/effort table."""
     config = json.loads(path.read_text())
@@ -294,9 +303,10 @@ def load_queue(path: Path) -> dict:
     ):
         if type(config.get(key)) is not int or not low <= config[key] <= high:
             raise ValueError(f"{key} must be an integer in [{low}, {high}]")
-    deadline = datetime.fromisoformat(config["deadline"])
-    if deadline.tzinfo is None:
-        raise ValueError("deadline must include its time zone")
+    if config["deadline"] is not None:
+        deadline = datetime.fromisoformat(config["deadline"])
+        if deadline.tzinfo is None:
+            raise ValueError("deadline must include its time zone")
     jobs = config.get("jobs")
     if not isinstance(jobs, list) or not 1 <= len(jobs) <= 128:
         raise ValueError("Queue must contain 1..128 bounded jobs")
@@ -780,10 +790,7 @@ class Dispatcher:
                         record["session_id"] = session
                     if self.stop.wait(config["monitor_seconds"]):
                         interrupted = "dispatcher_stopped"
-                    elif (
-                        time.time()
-                        >= datetime.fromisoformat(config["deadline"]).timestamp()
-                    ):
+                    elif deadline_reached(config):
                         interrupted = "deadline_reached"
                     elif time.monotonic() - started >= job["max_seconds"]:
                         interrupted = "bounded_batch_timeout"
@@ -896,10 +903,7 @@ class Dispatcher:
                                 "reason": "publication_failed; inspect remote/auth/divergence",
                                 "checked_at": time.time(),
                             }
-                    if (
-                        time.time()
-                        >= datetime.fromisoformat(config["deadline"]).timestamp()
-                    ):
+                    if deadline_reached(config):
                         self.save("deadline_reached")
                         return
                     if self.state["batches"] >= config["max_batches"]:

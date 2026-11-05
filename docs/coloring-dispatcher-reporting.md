@@ -74,3 +74,13 @@ integration checkout plan and active queue for operational dates. The existing
 128-batch ceiling, all scientific/review gates, assigned task budgets and
 included-usage/no-credit/no-purchase rules are unchanged. Do not stop a task
 merely because its historical prompt names the superseded deadline.
+
+## Latest operating override — calendar deadline removed on 4 November
+
+The user explicitly removed the calendar deadline. The CURRENT active queue
+has `"deadline": null`; there is no calendar stop date. This supersedes all
+Nov9/Nov2/endNov1 dates and the earlier deadline override above, including dates
+in frozen task prompts/worktree plans. Continue assigned bounded work when
+included usage permits. Preserve the128-batch ceiling, task timeouts, attempts,
+scientific/review gates, model assignments and no-credit/no-purchase rules.
+Calendar removal alone does not unblock scientifically blocked tasks.

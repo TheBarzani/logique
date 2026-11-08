@@ -58,6 +58,8 @@ def main() -> int:
             p = p_of(regime, m, c * V, k, V)
             theta = math.asin(math.sqrt(p))
             rows = [(x["iterations"], x["simulated_valid_solution_probability"]) for x in r["rows"]]
+            if not rows:  # skipped case (width above cap): nothing simulated
+                continue
             maxdiff = max(abs(pj - success(j, theta)) for j, pj in rows)
             fm = first_max_in(rows)
             rj = rule(theta)

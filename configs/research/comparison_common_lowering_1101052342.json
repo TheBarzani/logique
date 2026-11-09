@@ -1,0 +1,23 @@
+{
+  "task": "comparison-common-lowering-1101052342",
+  "graphs": ["K3", "grid6"],
+  "requested_graphs": ["K3", "K5", "myciel3", "grid6", "K10", "K20", "myciel4", "myciel5", "2-Insertions_3"],
+  "methods": ["xag", "aig_bennett", "xag_bennett", "klut_bennett", "best_fit", "sb_simple", "sb_balanced", "sb_minimal", "structure_sequential", "structure_parallel"],
+  "regimes": ["R1", "R2", "R3"],
+  "profiles": ["none", "refactoring", "balanced", "mc_reduction", "cut_esop_balancing"],
+  "selected_profile": "none",
+  "iteration": 1,
+  "seed": 7,
+  "mcx_decomposition": "clean_tree",
+  "mcx_workspace": "fresh_zero",
+  "basis": ["u", "cx"],
+  "optimization_level": 0,
+  "target": "unrouted",
+  "precision": "native_float_no_rotation_synthesis",
+  "routing_seeds": [11, 23, 37, 41, 53],
+  "ft_precisions": [0.001, 0.01, 0.0001],
+  "budget": {"child_seconds": 60, "cumulative_seconds": 600, "process_bytes": 2147483648, "max_data_bits": 12, "max_vertices": 8, "max_edges": 16, "max_constraints": 20, "max_component_qubits": 128, "max_component_instructions": 50000, "max_component_depth": 50000},
+  "allocation": "Serial ordinary children; no statevectors or dense Operators in the scientific harness; classical verification <=4096 assignments. Tests <=7 vector wires and <=5 dense wires. Original staticFT dense4 unchanged. Sampled process-group RSS when available; terminal wait4 is not a hard cap. No OS hard memory enforcement.",
+  "parallelism": 1,
+  "scientific_status": "new evidence pending exact independent review; raw primitives diagnostic; sampled or unsupported equivalence excluded from headline"
+}

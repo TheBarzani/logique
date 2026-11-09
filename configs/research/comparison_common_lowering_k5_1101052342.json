@@ -1,0 +1,87 @@
+{
+  "task": "comparison-common-lowering-1101052342",
+  "graphs": [
+    "K5"
+  ],
+  "requested_graphs": [
+    "K3",
+    "K5",
+    "myciel3",
+    "grid6",
+    "K10",
+    "K20",
+    "myciel4",
+    "myciel5",
+    "2-Insertions_3"
+  ],
+  "methods": [
+    "xag",
+    "aig_bennett",
+    "xag_bennett",
+    "klut_bennett",
+    "best_fit",
+    "sb_simple",
+    "sb_balanced",
+    "sb_minimal",
+    "structure_sequential",
+    "structure_parallel"
+  ],
+  "regimes": [
+    "R1",
+    "R2",
+    "R3"
+  ],
+  "profiles": [
+    "none",
+    "refactoring",
+    "balanced",
+    "mc_reduction",
+    "cut_esop_balancing"
+  ],
+  "selected_profile": "none",
+  "iteration": 1,
+  "seed": 7,
+  "mcx_decomposition": "clean_tree",
+  "mcx_workspace": "fresh_zero",
+  "basis": [
+    "u",
+    "cx"
+  ],
+  "optimization_level": 0,
+  "target": "unrouted",
+  "precision": "native_float_no_rotation_synthesis",
+  "routing_seeds": [
+    11,
+    23,
+    37,
+    41,
+    53
+  ],
+  "ft_precisions": [
+    0.001,
+    0.01,
+    0.0001
+  ],
+  "budget": {
+    "child_seconds": 60,
+    "cumulative_seconds": 360,
+    "process_bytes": 2147483648,
+    "max_data_bits": 21,
+    "max_vertices": 8,
+    "max_edges": 16,
+    "max_constraints": 20,
+    "max_component_qubits": 128,
+    "max_component_instructions": 50000,
+    "max_component_depth": 50000
+  },
+  "allocation": "Serial ordinary children; no scientific statevectors/dense Operators/density. Classical verification 32 seeded assignments plus verified positive/negative witnesses per regime. Process2GiB,60s child,360s cumulative; no hard OS memory cap. All numerical/compiler/Qiskit parallelism1; staticFT dense4 unchanged.",
+  "parallelism": 1,
+  "scientific_status": "Sample-qualified diagnostics only; excluded from headline. Independent exact harness/evidence review pending.",
+  "validation": "sampled",
+  "previous_checkpoints": [
+    {
+      "path": "dump/1103211324-comparison-common-lowering/checkpoint.json",
+      "sha256": "dfe3439c37aa46b8a10fe8cad023e6421980eb1cd5561f248f77afe119356832"
+    }
+  ]
+}

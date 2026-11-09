@@ -5,6 +5,7 @@ import math
 from dataclasses import replace
 from pathlib import Path
 from unittest.mock import patch
+from types import SimpleNamespace
 
 import pytest
 
@@ -234,3 +235,93 @@ def test_invalid_request_rejects_before_native_or_arrays(tmp_path, bad_request):
         with pytest.raises(ValueError):
             ft.run_case(Path.cwd(), Path("unused"), **options)
     assert not list(tmp_path.iterdir())
+
+
+def test_stronger_sk_rejects_before_synthesis_when_work_exceeds_cap(tmp_path):
+    a = QuantumCircuit(4)
+    o = QuantumCircuit(13)
+    parts = dict(
+        preparation=a,
+        oracle=o,
+        zero_reflection=ft.zero_reflection(4, ft.GraphLimits()),
+        mapping=[0, 1, 2, 3],
+    )
+    with patch.object(
+        rotations, "compile_search", side_effect=AssertionError("synthesis")
+    ):
+        with pytest.raises(ValueError, match="estimated operation/statevector"):
+            ft.execute_case(
+                tmp_path,
+                parts,
+                "R1",
+                1,
+                1e-4,
+                ft.GraphLimits(),
+                rotations.SynthesisOptions(max_recursion=6),
+            )
+    assert not list(tmp_path.iterdir())
+
+
+@pytest.mark.parametrize("missing", ["preparation", "oracle", "zero_reflection"])
+def test_active_search_components_cannot_be_unused(tmp_path, missing):
+    circuit = QuantumCircuit(1)
+    compiled = SimpleNamespace(
+        preparation=rotations.CompiledComponent(circuit, {}),
+        oracle=rotations.CompiledComponent(circuit, {}),
+        zero_reflection=rotations.CompiledComponent(circuit, {}),
+        preparation_inverse=circuit.inverse(),
+        circuit=circuit,
+        metadata={},
+    )
+    getattr(compiled, missing).circuit = None
+    parts = dict(
+        preparation=circuit,
+        oracle=circuit,
+        original_oracle=circuit,
+        zero_reflection=circuit,
+        mapping=[0],
+    )
+    with (
+        patch.object(ft, "sk_preflight", return_value={}),
+        patch.object(ft, "save_circuit", return_value=(circuit, {})),
+        patch.object(rotations, "compile_search", return_value=compiled),
+    ):
+        with pytest.raises(ValueError, match="must emit|require emitted"):
+            ft.execute_case(
+                tmp_path,
+                parts,
+                "R1",
+                1,
+                1e-4,
+                ft.GraphLimits(),
+                rotations.SynthesisOptions(),
+            )
+
+
+@pytest.mark.parametrize("degree,depth", [(5, 12), (6, 11)])
+def test_cli_passes_explicit_sk_options(tmp_path, degree, depth):
+    (tmp_path / "result.json").write_text('{"status": "complete"}')
+    with (
+        patch(
+            "sys.argv",
+            [
+                "graph_ft",
+                "--executable",
+                "unused",
+                "--regime",
+                "R2",
+                "--error-budget",
+                "0.0001",
+                "--sk-max-recursion",
+                str(degree),
+                "--sk-basic-approximation-depth",
+                str(depth),
+            ],
+        ),
+        patch.object(ft, "run_case", return_value=tmp_path) as run,
+    ):
+        ft.main()
+    assert run.call_args.kwargs["options"] == rotations.SynthesisOptions(
+        max_recursion=degree, basic_approximation_depth=depth
+    )
+    assert run.call_args.kwargs["error_budget"] == 1e-4

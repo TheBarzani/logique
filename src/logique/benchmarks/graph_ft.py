@@ -419,20 +419,27 @@ def execute_case(
         error_budget=budget,
         options=options,
     )
-    if out.preparation_inverse != out.preparation.circuit.inverse():
+    emitted_a = out.preparation.circuit
+    if emitted_a is None:
+        raise ValueError("Compiled search must emit its initial preparation")
+    if out.preparation_inverse != emitted_a.inverse():
         raise ValueError("Actual emitted preparation inverse not reused")
     _write(directory / "compiler.json", out.metadata)
     components = {
-        "A": out.preparation.circuit,
+        "A": emitted_a,
         "A_inverse": out.preparation_inverse,
         "search": out.circuit,
     }
     if iterations:
-        components.update(O=out.oracle.circuit, S0=out.zero_reflection.circuit)
+        emitted_o = out.oracle.circuit
+        emitted_s = out.zero_reflection.circuit
+        if emitted_o is None or emitted_s is None:
+            raise ValueError("Nonzero iterations require emitted O and S0")
+        components.update(O=emitted_o, S0=emitted_s)
         diffusion = QuantumCircuit(o.num_qubits)
         diffusion.compose(out.preparation_inverse, mapping, inplace=True)
-        diffusion.compose(out.zero_reflection.circuit, mapping, inplace=True)
-        diffusion.compose(out.preparation.circuit, mapping, inplace=True)
+        diffusion.compose(emitted_s, mapping, inplace=True)
+        diffusion.compose(emitted_a, mapping, inplace=True)
         components["diffusion"] = diffusion
     saved, records = {}, {}
     for name, circuit in components.items():
@@ -455,14 +462,16 @@ def execute_case(
     ):
         raise ValueError("Emitted A/inverse phase-sensitive contract failed")
     if iterations:
-        emitted_o = clean_phase_check(saved["O"], mapping, parts["predicate"], limits)
+        emitted_o_contract = clean_phase_check(
+            saved["O"], mapping, parts["predicate"], limits
+        )
         reconstructed = _assemble(
             saved["A"], saved["O"], saved["S0"], mapping, iterations
         )
         if _leaf_word(reconstructed) != _leaf_word(saved["search"]):
             raise ValueError("Saved components fail full-search assembly")
     else:
-        emitted_o = None
+        emitted_o_contract = None
     target_state = Statevector.from_int(0, 1 << o.num_qubits).evolve(loaded_target).data
     emitted_state = (
         Statevector.from_int(0, 1 << o.num_qubits).evolve(saved["search"]).data
@@ -520,7 +529,7 @@ def execute_case(
         "status": "complete",
         "compiler_bound": out.metadata["error_bound"],
         "saved_metrics": metrics,
-        "emitted_O_contract": emitted_o,
+        "emitted_O_contract": emitted_o_contract,
         "actual_inverse_operator_error": inverse_error,
         "A_operator_error": a_error,
         "original_target_clean_state_error": error,
@@ -676,6 +685,18 @@ def main() -> None:
     parser.add_argument("--regime", choices=("R1", "R2", "R3"), required=True)
     parser.add_argument("--iterations", type=int, default=1)
     parser.add_argument("--error-budget", type=float, default=1e-3)
+    parser.add_argument(
+        "--sk-max-recursion",
+        type=int,
+        default=5,
+        help="Explicit SK recursion ceiling (0..6); work guards still apply",
+    )
+    parser.add_argument(
+        "--sk-basic-approximation-depth",
+        type=int,
+        default=12,
+        help="Explicit SK basis-net depth (1..12); no precision guarantee",
+    )
     parser.add_argument("--output-root", type=Path, default=Path("dump"))
     args = parser.parse_args()
     directory = run_case(
@@ -685,6 +706,10 @@ def main() -> None:
         iterations=args.iterations,
         error_budget=args.error_budget,
         output_root=args.output_root,
+        options=rotations.SynthesisOptions(
+            max_recursion=args.sk_max_recursion,
+            basic_approximation_depth=args.sk_basic_approximation_depth,
+        ),
     )
     print(directory, flush=True)
     if json.loads((directory / "result.json").read_text())["status"] != "complete":

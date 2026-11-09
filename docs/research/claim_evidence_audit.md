@@ -234,3 +234,23 @@ reviewed resource plan precedes any repeat, and C5bestfit noise requires its own
 adapter plus distinct execution/evidence review. Structure22 proof stays pending.
 Current-root scaling composition/review is still required despite the new exact
 old-candidate finalization admission. Full scientific/manuscript gate BLOCKED.
+
+
+## 9 November exact noisy-family admission
+
+[New exact integration](noisy_family_integration_20261109.md) verifies independent
+review622269d against candidatefb5e6a6:376 new conditional histograms/24,064shots
+plus the separately retained28/1,792 yields404 admitted request records and
+805−404=401 without admitted family observations. All4,397 execution inventory
+entries match;74 exact case/iteration groups have five seeds and13 case/regime
+sweeps are complete. This is not complete-family or pooled statistical admission.
+Three exact frozen-runner/config/resume-test paths are integrated asfe6c498,
+retaining all six already integratedcf678f72 paths. Candidate/isolated snapshot
+each pass24 tests; no study sampling reran. Eleven historical reports and the
+verbatim restrictive review are preserved. Full-family/resilience/speedup/C5noise
+claims remain BLOCKED; K3 R1 j2 seed11 returned4/64 versus99.9779% ideal.
+One missing-receipt histogram stays withheld;23 timeouts,20 new width exclusions
+and190 deferrals remain unmeasured. The shortened path7 R3 seed37/j1 boundary
+was5.288070s configured, not120s; any revisit needs distinct resource justification
+and independent review. Existing C5/retry and final coordinator owners remain.
+No automatic replay, new jobs, ceiling change or full-paper admission follows.

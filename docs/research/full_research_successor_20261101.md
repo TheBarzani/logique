@@ -178,3 +178,23 @@ Prior definitions/headers/bounds are unchanged. Existing46 jobs keep ownership.
 Scaling finalization now has exact old-candidate ADMIT0f8c9c7/a8b3606; current-root
 composition/review still precedes selected execution, with zero selected runs.
 No new scientific count/source/whole-paper admission follows from these updates.
+
+
+## 9 November exact noisy-family admission
+
+[New exact integration](noisy_family_integration_20261109.md) verifies independent
+review622269d against candidatefb5e6a6:376 new conditional histograms/24,064shots
+plus the separately retained28/1,792 yields404 admitted request records and
+805−404=401 without admitted family observations. All4,397 execution inventory
+entries match;74 exact case/iteration groups have five seeds and13 case/regime
+sweeps are complete. This is not complete-family or pooled statistical admission.
+Three exact frozen-runner/config/resume-test paths are integrated asfe6c498,
+retaining all six already integratedcf678f72 paths. Candidate/isolated snapshot
+each pass24 tests; no study sampling reran. Eleven historical reports and the
+verbatim restrictive review are preserved. Full-family/resilience/speedup/C5noise
+claims remain BLOCKED; K3 R1 j2 seed11 returned4/64 versus99.9779% ideal.
+One missing-receipt histogram stays withheld;23 timeouts,20 new width exclusions
+and190 deferrals remain unmeasured. The shortened path7 R3 seed37/j1 boundary
+was5.288070s configured, not120s; any revisit needs distinct resource justification
+and independent review. Existing C5/retry and final coordinator owners remain.
+No automatic replay, new jobs, ceiling change or full-paper admission follows.

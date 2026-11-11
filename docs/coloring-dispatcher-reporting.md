@@ -84,3 +84,14 @@ in frozen task prompts/worktree plans. Continue assigned bounded work when
 included usage permits. Preserve the128-batch ceiling, task timeouts, attempts,
 scientific/review gates, model assignments and no-credit/no-purchase rules.
 Calendar removal alone does not unblock scientifically blocked tasks.
+
+## Latest operating override — total batch ceiling removed on 10 November
+
+The user removed the total model-batch ceiling. The CURRENT active queue has
+`"max_batches": null` and `"deadline": null`. All older lifetime128-batch limits,
+remaining-batch counts and calendar deadlines in frozen task/worktree instructions
+are superseded. Continue authorized full-revision work when included usage
+permits. Per-task timeouts, retry limits, scientific review gates, model/effort
+assignments, serial execution and no-credit/no-purchase rules remain mandatory.
+Research summaries now arrive every12hours when new briefs exist; continue
+writing each task's researcher brief, with urgent flags only when warranted.

@@ -259,6 +259,36 @@ def test_no_deadline_keeps_quota_gate(queue, monkeypatch):
     assert d.state["reason"] == "included_quota_exhausted"
 
 
+@pytest.mark.parametrize("weekly,expected_launches", [(0, 1), (100, 0)])
+def test_no_batch_ceiling_preserves_usage_gate(
+    queue, monkeypatch, weekly, expected_launches
+):
+    config = json.loads(queue.read_text())
+    config.update(max_batches=None, deadline=None)
+    dispatch.atomic_json(queue, config)
+    assert dispatch.load_queue(queue)["max_batches"] is None
+    d = runner(queue)
+    d.state["batches"] = 1000
+    monkeypatch.setattr(d, "observe", lambda **kwargs: snapshot(weekly=weekly))
+    monkeypatch.setattr(d, "maybe_reset", lambda *args: False)
+    launched = []
+    monkeypatch.setattr(d, "launch", lambda *args: launched.append(args))
+    d.run(once=True)
+    assert len(launched) == expected_launches
+    assert d.state["batches"] == 1000
+    if weekly == 100:
+        assert d.state["reason"] == "included_quota_exhausted"
+
+
+@pytest.mark.parametrize("invalid", [True, 0, -1, 129, "unlimited"])
+def test_batch_ceiling_requires_explicit_null_or_valid_integer(queue, invalid):
+    config = json.loads(queue.read_text())
+    config["max_batches"] = invalid
+    dispatch.atomic_json(queue, config)
+    with pytest.raises(ValueError, match="max_batches"):
+        dispatch.load_queue(queue)
+
+
 def test_duplicate_dispatchers_exclude_each_other(queue):
     lock = queue.parent / "test.lock"
     with dispatch.exclusive_lock(lock):

@@ -864,3 +864,21 @@ and190 deferrals remain unmeasured. The shortened path7 R3 seed37/j1 boundary
 was5.288070s configured, not120s; any revisit needs distinct resource justification
 and independent review. Existing C5/retry and final coordinator owners remain.
 No automatic replay, new jobs, ceiling change or full-paper admission follows.
+
+## 10 November user removed total batch ceiling and changed briefing cadence
+
+The user explicitly requested removing the dispatcher ceiling after it stopped
+at128 batches, and changed research updates from4hours to12hours. The active
+queue now has `"max_batches": null` and `"deadline": null`: no lifetime model-batch
+ceiling and no calendar deadline. All previous total128-batch limits, remaining
+batch counts and deadlines in this plan or frozen worker prompts are superseded.
+The cumulative128 consumed batches, completed/pending/blocked tasks, attempts,
+sessions and reset ledger are preserved. Existing per-task timeouts/retry limits,
+quota checks, model table, Standard speed, serial workers, review gates, scoped
+research and disabled credit continuation/purchases stay in force. Resume the
+remaining work automatically when live included usage permits. There is no
+authorization to retry blocked scientific tasks blindly or to bypass reviews.
+Research briefings use43200seconds (12hours) when new reports exist; urgent
+research/operational alerts retain their earlier delivery and deduplication.
+Checkpoint: `dump/1110224113-coloring-remove-batch-ceiling-12h-briefings/checkpoint.json`, with pre-change snapshots
+and the explicitly authorized queue-header transition.

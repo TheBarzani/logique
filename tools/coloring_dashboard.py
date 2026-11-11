@@ -103,7 +103,7 @@ def render(queue: Path, *, now: float, width: int, height: int) -> str:
                     "ambiguous",
                 )
             ),
-            f"Model batches: {state.get('batches', 0)}/{config.get('max_batches', '?')}"
+            f"Model batches: {state.get('batches', 0)}/{config.get('max_batches') or 'no limit'}"
             f" | deadline {config.get('deadline') or 'none'}",
         ]
         active = [

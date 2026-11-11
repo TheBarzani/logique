@@ -127,19 +127,26 @@ def test_only_successfully_finished_cli_reports_are_eligible(configured):
     assert len(reports) == 1 and "/good/" in reports[0]["source"]
 
 
-def test_digest_cadence_and_pointer_following(configured):
+@pytest.mark.parametrize("interval", [14400, 43200])
+def test_digest_cadence_and_pointer_following(configured, interval):
     config, run = configured
+    settings = json.loads(config.read_text())
+    settings["interval_seconds"] = interval
+    config.write_text(json.dumps(settings))
     remote = Remote()
     sender = n.Notifier(config, remote)
     sender.tick()
     completed_report(run)
     last = sender.state["last_sent_at"]
-    assert sender.tick(now=last + 100) == "waiting_for_new_brief"
     # A current checkpoint prevents a stale alert at the simulated future time.
     state = json.loads((run / "state.json").read_text())
-    state["updated_at"] = last + 14401
+    for elapsed in (100, interval - 1):
+        state["updated_at"] = last + elapsed
+        (run / "state.json").write_text(json.dumps(state))
+        assert sender.tick(now=last + elapsed) == "waiting_for_new_brief"
+    state["updated_at"] = last + interval + 1
     (run / "state.json").write_text(json.dumps(state))
-    assert sender.tick(now=last + 14401) == "sent"
+    assert sender.tick(now=last + interval + 1) == "sent"
     assert remote.posts == 2 and "marked fraction" in remote.comments[-1]["body"]
     other = run.parent / "other"
     other.mkdir()
@@ -149,7 +156,7 @@ def test_digest_cadence_and_pointer_following(configured):
     (other / "state.json").write_text(
         json.dumps({"phase": "deadline_reached", "updated_at": last, "jobs": {}})
     )
-    assert sender.tick(now=last + 16000) == "sent"
+    assert sender.tick(now=last + interval + 1600) == "sent"
     assert "deadline has been reached" in remote.comments[-1]["body"]
 
 

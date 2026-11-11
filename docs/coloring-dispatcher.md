@@ -14,13 +14,15 @@ The active continuation queue is
 requests independent Astra re-review, then runs an integration coordinator.
 Scientific approval is separate from task completion: the coordinator must
 verify the reviewed file hashes and review decision before admitting FT work.
-It can append further bounded tasks from the full research plan. The queue is
-limited to 128 tasks/128 batches. On 4 November the user removed the calendar
-deadline: `"deadline": null` disables the date check in both idle and active
-worker monitoring. Per-task timeouts and the total batch bound still apply. A stopped/blocked queue is not overall research completion.
-The task-definition ceiling was raised from 64 on 28 October to permit further
-implementation/review/integration chains without deleting completed history.
-The existing 128-batch ceiling, quota gates and concurrency remain in force.
+It can append further bounded tasks from the full research plan. The queue currently
+contains100 bounded task definitions. The user removed the calendar deadline on
+4November and the total model-batch ceiling on10November. Explicit
+`"deadline": null` and `"max_batches": null` disable those respective stops;
+cumulative counters and history remain intact. Per-task timeouts/retry limits,
+usage gates and serial execution remain mandatory. A stopped/blocked queue is
+not overall research completion. The task-definition safety limit remains128;
+it is separate from the removed lifetime model-batch count.
+
 
 ## Controls
 
@@ -220,7 +222,7 @@ of automatically inventing an overarching conclusion.
 
 `tools/coloring_notifications.py` follows the canonical `active-dispatch.json`
 pointer, polling local files every minute in `coloring-paper:notifications`.
-The default is a digest every four hours **when new briefs exist**, with material
+The default is a digest every twelve hours **when new briefs exist**, with material
 quota pauses, blocked/stale execution and deadline/batch stops reported sooner
 (subject to a fifteen-minute alert cooldown). Identical alerts are suppressed;
 there are no empty repeating digests. It continues monitoring independently of

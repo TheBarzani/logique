@@ -212,7 +212,7 @@ class Notifier:
         )
         self.remote = remote or GitHub(self.config)
         self.stop = threading.Event()
-        interval = self.config.get("interval_seconds", 14400)
+        interval = self.config.get("interval_seconds", 43200)
         if type(interval) is not int or not 300 <= interval <= 86400:
             raise ValueError("Digest interval must be 300..86400 seconds")
 
@@ -288,7 +288,7 @@ class Notifier:
                 "The researcher has flagged a material review decision or a finding that could change the manuscript's conclusions. The briefing above explains the evidence and its limits.",
             )
         due = now - self.state.get("last_sent_at", 0) >= self.config.get(
-            "interval_seconds", 14400
+            "interval_seconds", 43200
         )
         if not event and (not due or not reports):
             return "waiting_for_new_brief"

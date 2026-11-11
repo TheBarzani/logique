@@ -287,7 +287,7 @@ def deadline_reached(config: dict) -> bool:
 
 
 def load_queue(path: Path) -> dict:
-    """Validate a finite, appendable queue and the plan's model/effort table."""
+    """Validate bounded tasks, optional total limits and approved model profiles."""
     config = json.loads(path.read_text())
     root = Path(config["repository"]).resolve()
     if not root.is_dir() or config.get("schema_version") != 1:
@@ -299,10 +299,14 @@ def load_queue(path: Path) -> dict:
     for key, low, high in (
         ("poll_seconds", 15, 300),
         ("monitor_seconds", 5, 60),
-        ("max_batches", 1, 128),
     ):
         if type(config.get(key)) is not int or not low <= config[key] <= high:
             raise ValueError(f"{key} must be an integer in [{low}, {high}]")
+    max_batches = config["max_batches"]
+    if max_batches is not None and (
+        type(max_batches) is not int or not 1 <= max_batches <= 128
+    ):
+        raise ValueError("max_batches must be null or an integer in [1, 128]")
     if config["deadline"] is not None:
         deadline = datetime.fromisoformat(config["deadline"])
         if deadline.tzinfo is None:
@@ -906,7 +910,10 @@ class Dispatcher:
                     if deadline_reached(config):
                         self.save("deadline_reached")
                         return
-                    if self.state["batches"] >= config["max_batches"]:
+                    if (
+                        config["max_batches"] is not None
+                        and self.state["batches"] >= config["max_batches"]
+                    ):
                         self.save("batch_limit_reached")
                         return
                     if (self.directory / "PAUSE").exists():

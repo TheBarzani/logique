@@ -6,7 +6,7 @@ brute-force proper-colouring predicate on the coloured graph (no logique predica
 MAXQ qubits are skipped and labelled.
 Usage: uv run --no-sync python tools/chia_oracle_check.py OUT.json MAXQ RUN_DIR [RUN_DIR ...]
 """
-import json, sys
+import json, random, sys
 from pathlib import Path
 import numpy as np
 from qiskit import qpy
@@ -45,7 +45,14 @@ def main():
                 row["result"] = "skipped_too_wide"; res.append(row); continue
             data = r["data_qubits"]; nd = len(data)
             bad = 0; marked = 0
-            for x in range(2 ** nd):
+            if nd <= 12:
+                words, mode = range(2 ** nd), "exhaustive"
+            else:  # sampled: seed 7, 24 random words + up to 24 truly marked words (own predicate), labelled
+                rng = random.Random(7)
+                marked_all = [x for x in range(2 ** nd) if predicate(r, x)]
+                words = sorted(set(rng.sample(range(2 ** nd), 24)) | set(marked_all[:12]) | set(marked_all[-12:]))
+                mode = "sampled"
+            for x in words:
                 idx = sum(((x >> i) & 1) << q for i, q in enumerate(data))
                 sv = Statevector.from_int(idx, 2 ** qc.num_qubits).evolve(qc)
                 amp = sv.data[idx]
@@ -53,7 +60,7 @@ def main():
                 want = -1 if f_x else 1
                 if abs(amp - want) > 1e-9:
                     bad += 1
-            row.update(result="ok" if bad == 0 else "FAIL", inputs=2 ** nd, mismatches=bad, marked=marked)
+            row.update(result="ok" if bad == 0 else "FAIL", mode=mode, inputs=len(words), mismatches=bad, marked=marked)
             res.append(row)
             print(row, flush=True)
     Path(out).write_text(json.dumps(res, indent=1))

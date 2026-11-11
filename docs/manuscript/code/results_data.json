@@ -1,0 +1,215 @@
+{
+ "k3_qgd": {
+  "aig_bennett": [
+   38,
+   209,
+   46
+  ],
+  "best_fit": [
+   7,
+   28,
+   28
+  ],
+  "klut_bennett": [
+   12,
+   78,
+   59
+  ],
+  "sb_balanced": [
+   11,
+   115,
+   53
+  ],
+  "sb_minimal": [
+   11,
+   177,
+   80
+  ],
+  "sb_simple": [
+   13,
+   77,
+   30
+  ],
+  "structure_parallel": [
+   14,
+   113,
+   56
+  ],
+  "structure_sequential": [
+   14,
+   113,
+   52
+  ],
+  "xag": [
+   17,
+   175,
+   77
+  ],
+  "xag_bennett": [
+   23,
+   95,
+   21
+  ]
+ },
+ "ledger": {
+  "k3_qgd": "T4-2",
+  "offset_D": "P14",
+  "oracle_T": "P6,P10",
+  "search_T": "P11"
+ },
+ "offset_D": {
+  "C5": 63,
+  "K3": 31,
+  "K4": 47
+ },
+ "oracle_T": {
+  "C5": {
+   "aig-bennett": [
+    749,
+    111
+   ],
+   "best-fit": [
+    13360,
+    6480
+   ],
+   "klut-bennett": [
+    739,
+    244
+   ],
+   "sb-balanced": [
+    345,
+    77
+   ],
+   "sb-minimal": [
+    771,
+    236
+   ],
+   "sb-simple": [
+    211,
+    41
+   ],
+   "structure-parallel": [
+    281,
+    53
+   ],
+   "structure-sequential": [
+    281,
+    77
+   ],
+   "xag": [
+    439,
+    159
+   ],
+   "xag-bennett": [
+    259,
+    57
+   ]
+  },
+  "K3": {
+   "aig-bennett": [
+    441,
+    75
+   ],
+   "best-fit": [
+    360,
+    159
+   ],
+   "klut-bennett": [
+    361,
+    128
+   ],
+   "sb-balanced": [
+    179,
+    47
+   ],
+   "sb-minimal": [
+    303,
+    80
+   ],
+   "sb-simple": [
+    123,
+    27
+   ],
+   "structure-parallel": [
+    165,
+    49
+   ],
+   "structure-sequential": [
+    165,
+    49
+   ],
+   "xag-bennett": [
+    147,
+    33
+   ]
+  },
+  "K4": {
+   "aig-bennett": [
+    651,
+    99
+   ],
+   "best-fit": [
+    552,
+    264
+   ],
+   "klut-bennett": [
+    615,
+    200
+   ],
+   "sb-balanced": [
+    179,
+    47
+   ],
+   "sb-minimal": [
+    303,
+    80
+   ],
+   "sb-simple": [
+    123,
+    27
+   ],
+   "structure-parallel": [
+    207,
+    45
+   ],
+   "structure-sequential": [
+    207,
+    72
+   ],
+   "xag": [
+    247,
+    106
+   ],
+   "xag-bennett": [
+    147,
+    33
+   ]
+  }
+ },
+ "search_T": {
+  "C5": {
+   "aig-bennett": 812,
+   "best-fit": 13423,
+   "klut-bennett": 802,
+   "sb-balanced": 408,
+   "sb-minimal": 834,
+   "sb-simple": 274,
+   "structure-parallel": 344,
+   "structure-sequential": 344,
+   "xag": 502,
+   "xag-bennett": 322
+  },
+  "K4": {
+   "aig-bennett": 698,
+   "best-fit": 599,
+   "klut-bennett": 662,
+   "sb-balanced": 226,
+   "sb-minimal": 350,
+   "sb-simple": 170,
+   "structure-parallel": 254,
+   "structure-sequential": 254,
+   "xag": 294,
+   "xag-bennett": 194
+  }
+ }
+}

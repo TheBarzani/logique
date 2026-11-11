@@ -882,3 +882,17 @@ Research briefings use43200seconds (12hours) when new reports exist; urgent
 research/operational alerts retain their earlier delivery and deduplication.
 Checkpoint: `dump/1110224113-coloring-remove-batch-ceiling-12h-briefings/checkpoint.json`, with pre-change snapshots
 and the explicitly authorized queue-header transition.
+
+## 10 November Thursday-morning research presentations
+
+The user requested a weekly progress rundown as a presentation converted to PDF
+and sent in a GitHub issue, in addition to the existing12-hour summaries.
+Configured schedule: Thursday09:00 America/Montreal, first12November2026.
+`tools/coloring_weekly.py` compiles LaTeX Beamer locally from completed
+researcher-written briefs, preserving measured values, calculations, review
+restrictions and next questions; no extra model turns or paid service are used.
+Full technical notes and source accompany the PDF. Delivery uses one dedicated
+prerelease for verified document assets and a new weekly issue with PDF links.
+No CI workflow is enabled. This reporting setup does not change scientific
+admissions, model limits, task scope or publishing/review gates.
+Setup/config/checkpoint: `dump/1110224624-thursday-research-presentations/`.

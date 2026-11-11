@@ -258,3 +258,53 @@ Stopping the notifications window affects delivery only. To restart:
 .venv/bin/python tools/coloring_notifications.py run \
   --config dump/1031203137-coloring-research-notifications/config.json
 ```
+
+## Thursday research presentation
+
+`tools/coloring_weekly.py` is a separate, model-free weekly sender. It publishes
+a fresh issue in TheBarzani/logique every Thursday at09:00 in
+America/Montreal, beginning12November2026. The local civil-time schedule follows
+daylight-saving changes. Twelve-hour briefings and urgent alerts continue
+independently. No GitHub Actions workflow is installed or enabled.
+
+The sender reads completed researcher briefs from the active and predecessor
+runs for the preceding seven-day period. Slides reproduce the latest main
+narrative per research area, preserving the full paragraph sequence and review
+qualifications. Companion technical notes retain every eligible weekly brief
+and its calculations/source links; a later review can restrict an earlier
+implementation claim. The sender does not infer scientific approval or invent
+a new cross-study conclusion. A week without completed briefs explicitly says
+so. Model-quota pauses do not prevent the scheduled local compilation/delivery.
+
+LaTeX Beamer generates a16:9 PDF using the existing isolated Tectonic0.17.0.
+Beamer and math resources were cached during installation; scheduled builds
+are offline, untrusted, and limited to180seconds. Raw report text is escaped;
+only a bounded whitelist of inline mathematics is typeset. Local home paths
+are removed from public text. Snapshots, sources, PDF hashes, compile logs,
+publication intent and read-back receipts stay in timestamped dump folders.
+
+PDF, LaTeX and technical-notes assets are hosted in one dedicated prerelease
+`coloring-research-briefing-pdfs`, explicitly marked as document hosting rather
+than a software release. Each weekly issue links these verified assets. The
+existing system GitHub CLI cannot directly attach PDF files to issues; release
+asset hosting avoids unsupported upload endpoints. Uploaded bytes and the
+final issue body are read back before recording successful delivery. Retries
+reconcile an existing weekly marker and matching asset bytes without clobbering
+files or blindly creating duplicate issues.
+
+Configuration: `dump/1110224624-thursday-research-presentations/weekly-config.json`.
+Live state/receipts: `weekly-state.json` beside that configuration.
+The `coloring-paper:weekly` tmux window runs the sender; it checks once a minute.
+It survives SSH disconnects, not a server reboot. Restarting the same sender
+catches up the latest missed Thursday while retaining prior delivery receipts.
+
+```sh
+.venv/bin/python tools/coloring_weekly.py status --config dump/1110224624-thursday-research-presentations/weekly-config.json
+.venv/bin/python tools/coloring_weekly.py preview --config dump/1110224624-thursday-research-presentations/weekly-config.json
+.venv/bin/python tools/coloring_weekly.py pause --config dump/1110224624-thursday-research-presentations/weekly-config.json
+.venv/bin/python tools/coloring_weekly.py unpause --config dump/1110224624-thursday-research-presentations/weekly-config.json
+```
+
+`preview` builds locally; add `--publish` to send a clearly titled preview issue.
+A preview does not consume Thursday's scheduled delivery. Weekly pause is
+independent of the dispatcher and ordinary notification sender.

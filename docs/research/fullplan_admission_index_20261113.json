@@ -1,0 +1,57 @@
+{
+  "review_commit": "be5d36ba261465921fffb70421a9d71189a12b43",
+  "tooling_integration_commit": "f7432e3",
+  "scientific_gate": "BLOCK",
+  "paths": [
+    {
+      "worker": "c5-structure-proof",
+      "commit": "24a3c91c20bbfe53dddcda25fa7de472cb4b090a",
+      "source": "tools/prove_c5_structure_lowering_1101052342.py",
+      "destination": "tools/prove_c5_structure_lowering_1101052342.py",
+      "sha256": "47e3703e0bf89d82a5ff9f73a71972ffb89ea8ae65b0115f86d7e6369269e98d"
+    },
+    {
+      "worker": "final-isolated-checks",
+      "commit": "cb1014fbe64124d5232fe3dc8567ea83d8bbaa3d",
+      "source": "tools/final_isolated_checks_1101052342.py",
+      "destination": "tools/final_isolated_checks_1101052342.py",
+      "sha256": "69c276ab25297cc27c665eb5af4cf23e0f0e662a4921734b18dd452ef8ba8843"
+    },
+    {
+      "worker": "final-isolated-checks",
+      "commit": "cb1014fbe64124d5232fe3dc8567ea83d8bbaa3d",
+      "source": "docs/research/final_isolated_checks_20261113.md",
+      "destination": "docs/research/final_isolated_checks_20261113.md",
+      "sha256": "e729071ccaa5c6e6d412000928de361a995a5dbb2d9d695d84a6a9631af51a01"
+    },
+    {
+      "worker": "c5-structure-proof",
+      "commit": "24a3c91c20bbfe53dddcda25fa7de472cb4b090a",
+      "source": "C5_STRUCTURE_LOWERING_REVIEW.md",
+      "destination": "docs/research/c5_structure_lowering_independent_review_20261113.md",
+      "sha256": "39f026211e90f84845302511f37fd286f4e13b570e239052abb151389304dcc8"
+    },
+    {
+      "worker": "mcx-wider-semantic-review",
+      "commit": "3878f140d02db84d986bfa05d92f62d0ba194721",
+      "source": "MCX_WIDER_SEMANTIC_REVIEW.md",
+      "destination": "docs/research/mcx_wider_semantic_independent_review_20261113.md",
+      "sha256": "7201e8a0032a41dd211f3b5e39f1477094ec21b785614936d367fcfeda20920b"
+    },
+    {
+      "worker": "comparison-cec-review",
+      "commit": "0fc7d724842efb7b6b73cacc0e45d297e35a1979",
+      "source": "COMPARISON_CEC_INDEPENDENT_REVIEW_1101052342.md",
+      "destination": "docs/research/comparison_cec_independent_review_20261113.md",
+      "sha256": "7fba7222f010f6447106bc71c31181a24b37e07fc5f1e212c3182386ec62a0da"
+    },
+    {
+      "worker": "final-quantum-claim-review",
+      "commit": "be5d36ba261465921fffb70421a9d71189a12b43",
+      "source": "FINAL_QUANTUM_CLAIM_REVIEW.md",
+      "destination": "docs/research/final_quantum_claim_independent_review_20261113.md",
+      "sha256": "cc7043bec29dedd8dfa080bb7a3b8d611a7a715e955cd2ce3422c8ef178eb066"
+    }
+  ],
+  "restriction": "Task-specific proof/frozen supervisory tools and restrictive decision records only; no new library correction, performance measurement, generalized source/tool/memory theorem, noise or full-paper admission."
+}

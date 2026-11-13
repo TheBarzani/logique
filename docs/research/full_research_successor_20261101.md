@@ -198,3 +198,22 @@ and190 deferrals remain unmeasured. The shortened path7 R3 seed37/j1 boundary
 was5.288070s configured, not120s; any revisit needs distinct resource justification
 and independent review. Existing C5/retry and final coordinator owners remain.
 No automatic replay, new jobs, ceiling change or full-paper admission follows.
+
+
+## 13 November exact final decisions and new ownership
+
+[The new full-plan coordinator matrix](fullplan_coordinator_20261113.md)
+supersedes current-status interpretations of this dated handoff without rewriting
+its evidence. Final reviewbe5d36bBLOCKs full gate, rejects saved dirty20MCX and
+endorses exact24a3c91C5structure gate closure and0fc7d72logical103pair decision.
+Four new independent reviews and historical final-check record are copied whole;
+two exact admitted tools integratedf7432e3, no blocked library source. Fresh
+checks authenticate admitted hashes/inventories and match candidate/isolated
+exact C5proof; no22wire replay/new shots.26append-only jobs100→126 now own
+MCXexclusion,scaling receipt transfer,native typed leaves,C5calibration ordering,
+focusedAstraCEC,reviewed manuscript reconciliation and updated final checks/
+Astrareview/NEWfinalcoordinator. Existing six extension jobs keep ownership and
+must consume the new map; no blind sampling or duplicate correction scheduling.
+Both calendar/lifetime batch bounds remain null;128definition safety limit
+leaves2slots. Broader unfinished scientific axes remain in scope and require
+exact checkpoint/cap decision if lawful definition capacity is exhausted.

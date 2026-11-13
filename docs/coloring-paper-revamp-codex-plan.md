@@ -896,3 +896,21 @@ prerelease for verified document assets and a new weekly issue with PDF links.
 No CI workflow is enabled. This reporting setup does not change scientific
 admissions, model limits, task scope or publishing/review gates.
 Setup/config/checkpoint: `dump/1110224624-thursday-research-presentations/`.
+
+
+## 13 November final exact admission and corrective continuation
+
+[New full tasks1–8 matrix and successor ownership](research/fullplan_coordinator_20261113.md)
+records mandatory final Astra reviewbe5d36b: full scientific gateBLOCK, saved
+two-dirty20 MCX wrong-target/wrong-phase rejection, exact C5structure proof
+closing only saved977oracle/four original observations,103logical CECpairs
+and restricted losses. Exact proof/frozen check tools integratedf7432e3; no
+blocked library fragment or new scientific metric imported. Fresh candidate
+and isolated deployment proofs match, no22wire evolution or noisy replay.
+Active null calendar/lifetime batch limits preserved; separate128definition
+safety limit remains.26new correction/review/integration/evidence/manuscript/
+updated-final-Astra/NEW-final-coordinator jobs appended100→126, prior jobs and
+headers immutable, state/history untouched. Existing six extension owners
+remain; do not duplicate them or the newly assigned corrections. Full matched
+profiles/policies/routing/FT/noise/scaling remain open. Dispatcher alone launches
+and publishes; checkpoint dump/1113162936-fullplan-final-coordinator/checkpoint.json.

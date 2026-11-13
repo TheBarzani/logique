@@ -13,7 +13,7 @@ import math
 from typing import Callable
 
 from qiskit import AncillaRegister, QuantumCircuit, transpile
-from qiskit.circuit import ControlledGate
+from qiskit.circuit import Barrier, ControlledGate
 from qiskit.circuit.library import CHGate, RCCXGate
 from qiskit.synthesis.multi_controlled import mcx_synthesis as _mcx
 
@@ -488,12 +488,22 @@ def clifford_t(circuit: QuantumCircuit, *, tolerance: float = 1e-9) -> QuantumCi
     gates use fixed exact gadgets (7, 4, 4 and 2 T gates). Multi-controlled X
     gates must first be expanded with decompose_mcx(); other gates are
     translated by Qiskit, and rotations by multiples of pi/4 become T, S and Z.
+    Gates priced by an expected T-count (exact repeat-until-success rotations)
+    are kept as they are.
     """
     staged = circuit.copy_empty_like()
+    kept = []
     for inst in circuit.data:
         operation = inst.operation
         if is_mcx(operation, 3):
             raise ValueError("Expand multi-controlled X gates with decompose_mcx()")
+        if _expected(operation) is not None:
+            # A labelled barrier holds the gate's place through translation.
+            staged.append(
+                Barrier(len(inst.qubits), label=f"{_KEPT}{len(kept)}"), inst.qubits
+            )
+            kept.append(operation)
+            continue
         name = _gadget_name(operation)
         if name is None:
             staged.append(operation, inst.qubits, inst.clbits, copy=False)
@@ -515,7 +525,26 @@ def clifford_t(circuit: QuantumCircuit, *, tolerance: float = 1e-9) -> QuantumCi
     lowered = transpile(
         staged, basis_gates=[*CLIFFORD_T_BASIS, "rz"], optimization_level=0
     )
+    if kept:
+        restored = lowered.copy_empty_like()
+        for inst in lowered.data:
+            label = getattr(inst.operation, "label", None) or ""
+            if inst.operation.name == "barrier" and label.startswith(_KEPT):
+                restored.append(kept[int(label[len(_KEPT) :])], inst.qubits)
+            else:
+                restored.append(inst.operation, inst.qubits, inst.clbits, copy=False)
+        lowered = restored
     return _snap_rotations(lowered, tolerance)
+
+
+_KEPT = "logique-kept-"
+
+
+def _expected(operation) -> tuple[float, float] | None:
+    """Expected T-count and T-depth of a measurement-assisted gate, if it is one."""
+    if getattr(operation, "expected_t", None) is None:
+        return None
+    return operation.expected_t, operation.expected_t_depth
 
 
 def weighted_depth(circuit: QuantumCircuit, weights: dict, default: float = 0) -> float:
@@ -560,14 +589,21 @@ def ft_metrics(circuit: QuantumCircuit, *, rotation_t: int | None = None) -> dic
     """Count a Clifford+T circuit whose remaining rz gates are rotations.
 
     With ``rotation_t`` (T gates per synthesized rotation), totals also price
-    the rotations; without it, rotations are reported only as counts.
+    the rotations; without it, rotations are reported only as counts. Exact
+    repeat-until-success rotations are counted apart, by their expected T-count
+    and T-depth (``rus_*`` keys), since they are measurement-assisted.
     """
     counts = {
         name: count
         for name, count in circuit.count_ops().items()
         if name not in _DIRECTIVES
     }
-    unknown = set(counts) - {*CLIFFORD_T_BASIS, "rz"}
+    expected = {}
+    for inst in circuit.data:
+        cost = _expected(inst.operation)
+        if cost is not None:
+            expected[inst.operation.name] = cost
+    unknown = set(counts) - {*CLIFFORD_T_BASIS, "rz", *expected}
     if unknown:
         raise ValueError(f"Lower to Clifford+T first; found {sorted(unknown)}")
     t_count = counts.get("t", 0) + counts.get("tdg", 0)
@@ -581,6 +617,12 @@ def ft_metrics(circuit: QuantumCircuit, *, rotation_t: int | None = None) -> dic
         "cx_count": counts.get("cx", 0),
         "gates": sum(counts.values()),
         "depth": weighted_depth(circuit, {}, default=1),
+        "rus_count": sum(counts[name] for name in expected),
+        "rus_expected_t": sum(counts[name] * t for name, (t, _) in expected.items()),
+        "rus_expected_t_depth": weighted_depth(
+            circuit,
+            {"t": 1, "tdg": 1, **{name: d for name, (_, d) in expected.items()}},
+        ),
         "metric_level": "fault-tolerant",
     }
     if rotation_t is not None:
@@ -592,7 +634,14 @@ def ft_metrics(circuit: QuantumCircuit, *, rotation_t: int | None = None) -> dic
     return metrics
 
 
-_COUNT_KEYS = ("t_count", "rotation_count", "cx_count", "gates")
+_COUNT_KEYS = (
+    "t_count",
+    "rotation_count",
+    "cx_count",
+    "gates",
+    "rus_count",
+    "rus_expected_t",
+)
 _LOWERED_COUNTS: dict = {}
 
 
@@ -710,16 +759,39 @@ def dutta_mcx_costs(controls: int, m1: int) -> dict:
     }
 
 
-def rotation_t_count(epsilon: float) -> int:
-    """Leading-order T count of one z-rotation approximated to precision epsilon.
+# T gates per approximated z-rotation, as a * log2(1/epsilon) + b. Ross and
+# Selinger's leading term is the static unitary model of every study; the other
+# models are the mean Clifford+T fits of Kliuchnikov et al. (Quantum 7, 1208,
+# 2023, Table 1), with the accuracy in diamond distance. Fallback is a
+# repeat-until-success protocol (expected T gates, with measurement); the mixed
+# protocols implement a random mixture of unitaries (a channel).
+ROTATION_SYNTHESIS = {
+    "ross_selinger": (3.0, 0.0, "unitary", "Ross and Selinger, arXiv:1403.2975"),
+    "mixed_diagonal": (1.52, -0.01, "mixed", "Kliuchnikov et al. (2023), Table 1"),
+    "fallback": (1.03, 5.75, "measurement", "Kliuchnikov et al. (2023), Table 1"),
+    "mixed_fallback": (
+        0.53,
+        4.86,
+        "mixed, measurement",
+        "Kliuchnikov et al. (2023), Table 1",
+    ),
+}
+
+
+def rotation_t_count(epsilon: float, model: str = "ross_selinger") -> int:
+    """T gates of one z-rotation approximated to precision epsilon.
 
     Ross and Selinger (arXiv:1403.2975) report 3 log2(1/epsilon) +
     O(log log(1/epsilon)) T gates in the typical case for ancilla-free
-    Clifford+T approximation; the lower-order term is omitted here.
+    Clifford+T approximation; the lower-order term is omitted here. The other
+    models of ROTATION_SYNTHESIS return their mean (expected) T-count.
     """
     if not 0 < epsilon < 1:
         raise ValueError("epsilon must lie strictly between 0 and 1")
-    return math.ceil(3 * math.log2(1 / epsilon))
+    if model not in ROTATION_SYNTHESIS:
+        raise ValueError(f"model must be one of {sorted(ROTATION_SYNTHESIS)}")
+    slope, offset, _, _ = ROTATION_SYNTHESIS[model]
+    return max(1, math.ceil(slope * math.log2(1 / epsilon) + offset))
 
 
 def grover_success(p: float, iterations: int) -> float:

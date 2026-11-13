@@ -62,6 +62,22 @@ def prepared_components(problem, instance, method: str):
     return preparation, diffusion, ancillas, clean
 
 
+def pricing(method: str, model: str) -> str:
+    """Pricing column of a preparation and rotation model.
+
+    Constructions with mid-circuit measurement (exact repeat-until-success
+    rotations, fallback synthesis) are reported apart from unitary ones, and
+    random mixtures of unitaries (mixed synthesis) apart from both.
+    """
+    from .costs import ROTATION_SYNTHESIS
+
+    if method == "exact_rus" or "measurement" in ROTATION_SYNTHESIS[model][2]:
+        return "measurement-based"
+    if ROTATION_SYNTHESIS[model][2] == "mixed":
+        return "mixed"
+    return "unitary"
+
+
 def component_counts(circuit, policy: str, clean) -> dict:
     """Exact Clifford+T counts after the study's MCX policy and relative phases.
 

@@ -185,3 +185,14 @@ def test_prepared_diffusion_reflects_about_the_same_state(method):
         + total["rotations"] * total["t_per_rotation"]
         + 3 * counts["rus_expected_t"]
     )
+
+
+def test_measurement_based_choices_are_priced_apart():
+    from logique.benchmarks.preparations import pricing
+
+    assert pricing("shukla_vedula", "ross_selinger") == "unitary"
+    assert pricing("hamming_weight", "ross_selinger") == "unitary"
+    assert pricing("shukla_vedula", "mixed_diagonal") == "mixed"
+    assert pricing("shukla_vedula", "fallback") == "measurement-based"
+    assert pricing("shukla_vedula", "mixed_fallback") == "measurement-based"
+    assert pricing("exact_rus", "ross_selinger") == "measurement-based"

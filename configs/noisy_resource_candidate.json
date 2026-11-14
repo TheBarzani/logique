@@ -1,0 +1,24 @@
+{
+  "purpose": "Static identity-locked analysis only; no scientific launch authorization",
+  "inputs": {
+    "manifest.json": "6b1024fee8a41769d1a281859444f675e640146f8ef716f9d27fa7cc20c4d2f7",
+    "selected-child.log.receipt.json": "e7dbb3b7b97ae0884d1b8b05a846c1c4ce9a0ea69621e19688bccb71026ee4bf",
+    "prepared/1101145422-noisy-remaining-requests/K3_k3_R2_seed37/result.json": "5eb4364e8a34d3c5c50722e3b778de1e6729d39e9ec7b2607bc0a416d30724b7",
+    "prepared/1101145422-noisy-remaining-requests/K3_k3_R2_seed37/j2/compact.qpy": "534974314f3d5d39cd30a62b6391b50548d216ea741fcbff2b9fe21014561691",
+    "prepared/1101145422-noisy-remaining-requests/K3_k3_R2_seed37/j2/compact_noise.json": "860eacdc1413b166a32bd1b21f8953a93f080a5255a3326a9875320d0783d548"
+  },
+  "future_caller_contract": {
+    "shots": 64,
+    "seed_transpiler": 37,
+    "seed_simulator": 74730,
+    "iterations": [2],
+    "max_active_wires": 18,
+    "timeout_seconds": 120,
+    "declared_process_bytes": 2147483648,
+    "coherent_validation": "Retain full complex-state, norm, marginal and workspace gates at 1e-10 before sampler; no prefix reuse without independently admitted full caller identity proof",
+    "channel_scope": "Unchanged ordered physical gate/readout/per-gate thermal channels; no idle relaxation, crosstalk or drift",
+    "method_change": "Explicit dense statevector, fusion_enable=false, shot_branching disabled; no new noise approximation",
+    "completion": "Only successful result with exactly64 returned counts; preserve partial/failure/pre-sampling artifacts",
+    "admission": "PENDING independent exact inherited-source, caller and resource review; no scientific execution in implementation job"
+  }
+}

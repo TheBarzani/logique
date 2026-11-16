@@ -177,10 +177,11 @@ def logique_instance(
     ``verification_assignments``; ``balanced``, ``tree``, ``mc_reduction`` and
     ``optimization`` select the encoder structure and the shape of its final
     conjunction, the multiplicative-complexity pass and the native bridge's
-    optimization. With ``schedule``, a kick-back oracle whose second half undoes
-    its first is reordered to a lower T-depth with the same gates
-    (``benchmarks.scheduling``) and verified again; ``structure["scheduled"]``
-    records whether that happened.
+    optimization. With ``schedule``, a kick-back oracle is reordered to a lower
+    T-depth with the same gates (``benchmarks.scheduling``): around its output
+    gate when its second half undoes its first, otherwise as a whole. The new
+    order is kept only when it prices shallower, and it is verified again;
+    ``structure["scheduled"]`` records whether that happened.
     """
     from logique.synthesis import synthesize
     from logique.verification import (
@@ -218,25 +219,42 @@ def logique_instance(
         report = verify_phase_oracle(result, encoding=encoding, assignments=chosen)
         oracle, form, target = result.phase_oracle(), "phase", None
     scheduled = False
-    if schedule and form == "kick-back":
-        from logique.benchmarks.scheduling import mirrored_middle, reschedule_mirrored
+    from logique.benchmarks.costs import is_mcx
+
+    # Multi-controlled gates are timed only once expanded: such oracles are
+    # scheduled by the study after decomposition (``expand_oracle``).
+    expandable = any(is_mcx(inst.operation, 3) for inst in oracle.data)
+    if schedule and form == "kick-back" and not expandable:
+        from logique.benchmarks.scheduling import (
+            mirrored_middle,
+            priced_t_depth,
+            reschedule,
+            reschedule_mirrored,
+        )
         from logique.verification.phase import verify_xor_oracle
 
+        candidate = None
         middle = mirrored_middle(oracle, output)
         if middle is not None:
             try:
                 candidate = reschedule_mirrored(oracle, middle)
             except ValueError:
                 candidate = None
-            if candidate is not None and candidate is not oracle:
-                verify_xor_oracle(
-                    candidate,
-                    data=inputs,
-                    target=output,
-                    encoding=encoding,
-                    assignments=chosen,
-                )
-                oracle, scheduled = candidate, True
+        if candidate is None or candidate is oracle:
+            # Without the mirrored structure, the whole oracle is reordered;
+            # swapping commuting gates keeps it exactly.
+            candidate = reschedule(oracle)
+            if priced_t_depth(candidate) >= priced_t_depth(oracle):
+                candidate = oracle
+        if candidate is not oracle:
+            verify_xor_oracle(
+                candidate,
+                data=inputs,
+                target=output,
+                encoding=encoding,
+                assignments=chosen,
+            )
+            oracle, scheduled = candidate, True
     timings["verification_s"] = time.perf_counter() - started
     workspace = sorted(set(range(oracle.num_qubits)) - set(inputs) - {output})
     preparation, diffusion, domain = _assemble(

@@ -156,6 +156,14 @@ def expand_oracle(
     oracle = instance.oracle
     if instance.mirrored is None:
         expanded, info = decompose_mcx(oracle, restoring)
+        info["scheduled"] = False
+        if schedule and len(expanded.data) <= SCHEDULE_GATES:
+            from .scheduling import priced_t_depth, reschedule
+
+            # Reordering commuting gates of the whole oracle keeps it exactly.
+            candidate = reschedule(expanded)
+            if priced_t_depth(candidate) < priced_t_depth(expanded):
+                expanded, info["scheduled"] = candidate, True
         return expanded, [info]
     start, stop = instance.mirrored
     data = oracle.data

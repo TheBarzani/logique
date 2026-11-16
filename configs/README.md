@@ -26,6 +26,11 @@ complete predicate) and `R3` (valid-color preparation without domain checks).
 `corrected_comparison.json` applies the same settings to the nine graphs of
 the manuscript, with a count budget large enough for myciel4, and adds
 Caterpillar's four XAG and eager strategies to the five methods.
+`tree_shapes_input.json`, `tree_shapes_rounds.json` and
+`tree_shapes_timed.json` run the XAG flow on the same graphs with a balanced
+encoder, each shape of its final conjunction and scheduling, and
+`scheduled_baselines.json` runs the four baselines with the same scheduling, so
+that the T-depth comparison of the shapes is fair. They omit routing.
 Study fields:
 
 - `regimes`: any of `R1`, `R2`, `R3`.
@@ -38,8 +43,15 @@ Study fields:
   encoded network as read, for every method), `refactor` (the native bridge's
   refactoring, which `aig_bennett` skips), `balanced` (balanced conjunction and
   disjunction trees in the encoder), `mc` (tweedledum's multiplicative-complexity
-  reduction) or `balanced_mc` (both); the last three also refactor. Baselines
-  are unaffected.
+  reduction) or `balanced_mc` (both); the last three also refactor.
+  `balanced_rounds` and `balanced_timed` shape the final conjunction of the
+  balanced encoder: pairing constraints by the round of an edge colouring, or
+  always joining the two expected to be ready first (same gates, other tree).
+  Baselines are unaffected.
+- `schedule` (default `false`): reorder the commuting gates of every oracle,
+  synthesized or baseline, to a lower T-depth with the same gates
+  (`logique.benchmarks.scheduling`); rescheduled Logique oracles are verified
+  again, and `structure.scheduled` records whether the reordering applied.
 - `targets`: any of `logical`, `toffoli`, `fault-tolerant`, `routed`
   (FakeTorino, with the fixed `seeds`).
 - `rotation_budget`: whole-algorithm error budget shared by all rotations.

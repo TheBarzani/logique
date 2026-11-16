@@ -2,6 +2,7 @@
 
 import json
 from datetime import datetime
+from pathlib import Path
 import subprocess
 import sys
 import pytest
@@ -105,3 +106,16 @@ def test_cli_offline_failure_is_actionable(tmp_path, capsys):
         main(["datasets", "fetch", "ctrl", "--offline", "--cache", str(tmp_path)]) == 1
     )
     assert "Offline cache missing" in capsys.readouterr().err
+
+
+@pytest.mark.parametrize(
+    "config", sorted((Path(__file__).resolve().parents[1] / "configs").glob("*.json"))
+)
+def test_every_maintained_config_loads(config):
+    loaded = load_config(config)
+    assert all(Path(p).exists() for p in loaded["inputs"])
+    if loaded.get("kind") == "study":
+        pytest.importorskip("qiskit")
+        from logique.benchmarks.study import study_settings
+
+        study_settings({k: v for k, v in loaded.items() if k != "kind"})

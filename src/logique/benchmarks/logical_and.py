@@ -88,6 +88,13 @@ def find_and_pairs(circuit: QuantumCircuit, *, clean_wires=(), restored_wires=No
     AND still equals the AND of the controls at j: the controls are unchanged
     in between, a classical simulation shows equal values, or j is the last
     write to a restored wire.
+
+    A pair whose target is not clean, or is written in between (for example a
+    flag set to |1> before the AND, or X gates around an open control), is
+    also accepted when the simulation shows that the target holds a constant
+    before i, holds the same values just before j as just after i, and the
+    AND of the controls is unchanged. A target held at 1 is flipped to 0
+    around the logical-AND and its uncomputation, which costs no T gate.
     """
     return _analyse(circuit, clean_wires, restored_wires)[0]
 
@@ -129,19 +136,40 @@ def _simulate(circuit: QuantumCircuit, clean: set[int], candidates: dict):
             result = value if result is None else result & value
         return result
 
+    def constant(value):
+        if value is None:
+            return None
+        if not value.any():
+            return 0
+        if (value == 255).all():
+            return 1
+        return None
+
     pending = {j: i for i, j in candidates.items()}
     stored = {}
     equal = set()
+    held: dict[int, tuple] = {}  # candidate -> (target constant before, value after)
+    restored = {}  # candidate -> the constant its target holds before and after
     for k, inst in enumerate(circuit.data):
         operation = inst.operation
         wires = [circuit.find_bit(q).index for q in inst.qubits]
         if k in candidates:
             stored[k] = conjunction(_and_gate(circuit, inst)[0])
         if k in pending:
-            first = stored.pop(pending[k])
+            i = pending[k]
+            first = stored.pop(i)
             last = conjunction(_and_gate(circuit, inst)[0])
             if first is not None and last is not None and np.array_equal(first, last):
-                equal.add(pending[k])
+                equal.add(i)
+            before, after = held.pop(i, (None, None))
+            target = _and_gate(circuit, inst)[1]
+            if (
+                before is not None
+                and after is not None
+                and values[target] is not None
+                and np.array_equal(values[target], after)
+            ):
+                restored[i] = before
         gate = _and_gate(circuit, inst)
         if gate is not None:
             flip = conjunction(gate[0])
@@ -165,11 +193,18 @@ def _simulate(circuit: QuantumCircuit, clean: set[int], candidates: dict):
             for q in _written(circuit, inst):
                 values[q] = None
             continue
+        before = values[target]
         if flip is None or values[target] is None:
             values[target] = None
         else:
             values[target] = values[target] ^ flip
-    return equal, "exhaustive" if exhaustive else f"sampled ({_SAMPLES} inputs)"
+        if k in candidates:
+            held[k] = (constant(before), values[target])
+    return (
+        equal,
+        restored,
+        "exhaustive" if exhaustive else f"sampled ({_SAMPLES} inputs)",
+    )
 
 
 def _analyse(circuit: QuantumCircuit, clean_wires, restored_wires):
@@ -196,8 +231,11 @@ def _analyse(circuit: QuantumCircuit, clean_wires, restored_wires):
         positions = writes.get(q, [])
         return bisect_right(positions, start) == bisect_right(positions, stop - 1)
 
-    # Structural candidates: the next write to an AND's target is the same AND.
+    # Structural candidates: the next write to an AND's target is the same AND;
+    # otherwise the next AND with the same controls on that target, past writes
+    # that the simulation must show to cancel.
     candidates = {}
+    loose = set()
     for k, inst in enumerate(circuit.data):
         gate = _and_gate(circuit, inst)
         if gate is None:
@@ -205,28 +243,47 @@ def _analyse(circuit: QuantumCircuit, clean_wires, restored_wires):
         j = next_write(gate[1], k)
         if j is not None and _and_gate(circuit, circuit.data[j]) == gate:
             candidates[k] = j
-    simulated, check = _simulate(circuit, set(clean), candidates)
+            continue
+        later = writes.get(gate[1], [])
+        for j in later[bisect_right(later, k) :]:
+            if _and_gate(circuit, circuit.data[j]) == gate:
+                candidates[k] = j
+                loose.add(k)
+                break
+    simulated, restored_targets, check = _simulate(circuit, set(clean), candidates)
 
     pairs = {}
-    uncomputes = set()
+    flipped = set()
+    uncomputes: dict[int, bool] = {}  # uncompute -> whether its target returns to 1
     for k, inst in enumerate(circuit.data):
         gate = _and_gate(circuit, inst)
         if k in uncomputes:
-            clean.add(gate[1])
+            if not uncomputes[k]:
+                clean.add(gate[1])
             continue
-        if k in candidates and gate[1] in clean:
+        if k in candidates and candidates[k] not in uncomputes:
             j = candidates[k]
-            if (
-                all(unchanged(q, k, j) for q, _ in gate[0])
-                or k in simulated
-                or (writes[gate[1]][-1] == j and gate[1] in restored)
-            ):
+            controls_kept = (
+                all(unchanged(q, k, j) for q, _ in gate[0]) or k in simulated
+            )
+            structural = (
+                k not in loose
+                and gate[1] in clean
+                and (
+                    controls_kept or (writes[gate[1]][-1] == j and gate[1] in restored)
+                )
+            )
+            confirmed = k in restored_targets and controls_kept
+            if structural or confirmed:
                 pairs[k] = j
-                uncomputes.add(j)
+                held_at_one = not structural and restored_targets[k] == 1
+                uncomputes[j] = held_at_one
+                if held_at_one:
+                    flipped.add(k)
                 clean.discard(gate[1])
                 continue
         clean.difference_update(_written(circuit, inst))
-    return pairs, check
+    return pairs, check, flipped
 
 
 def measurement_assisted(
@@ -240,8 +297,9 @@ def measurement_assisted(
     logical-AND, a doubly controlled Rx(pi) followed by S on the clean target,
     which costs four T gates.
     """
-    pairs, check = _analyse(circuit, clean_wires, restored_wires)
+    pairs, check, flipped = _analyse(circuit, clean_wires, restored_wires)
     uncomputes = set(pairs.values())
+    flips = {pairs[k] for k in flipped} | flipped
     dynamic = circuit.copy_empty_like()
     skeleton = circuit.copy_empty_like()
     bits = ClassicalRegister(len(pairs), "and_uncompute") if pairs else None
@@ -266,13 +324,20 @@ def measurement_assisted(
         qubit = circuit.qubits[target]
         if k in pairs:
             for out in (dynamic, skeleton):
+                if k in flips:
+                    out.x(qubit)  # the target is held at 1: compute into |0>
                 if opened:
                     out.x(opened)
                 out.append(RXGate(math.pi).control(2), [first, second, qubit])
                 out.s(qubit)
                 if opened:
                     out.x(opened)
+                if k in flips:
+                    out.x(qubit)
             continue
+        if k in flips:
+            dynamic.x(qubit)
+            skeleton.x(qubit)
         dynamic.h(qubit)
         dynamic.measure(qubit, bits[measured])
         with dynamic.if_test((bits[measured], 1)):
@@ -289,6 +354,9 @@ def measurement_assisted(
         skeleton.cz(first, second)
         if opened:
             skeleton.x(opened)
+        if k in flips:
+            dynamic.x(qubit)  # back to the 1 it held before the AND
+            skeleton.x(qubit)
     info = {
         "and_pairs": len(pairs),
         "measurements": len(pairs),

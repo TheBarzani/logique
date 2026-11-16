@@ -147,6 +147,75 @@ def test_restoring_tree_uncomputes_its_internal_nodes_by_measurement():
     assert_dynamic_matches(decomposed, dynamic, clean=set(ancillas))
 
 
+def test_a_target_held_at_one_is_paired_and_flipped():
+    # A flag set to |1> first, as in the Saha-Belletti baselines.
+    circuit = QuantumCircuit(4)
+    circuit.x(2)
+    circuit.ccx(0, 1, 2)
+    circuit.cx(2, 3)
+    circuit.ccx(0, 1, 2)
+    circuit.x(2)
+    assert logical_and.find_and_pairs(circuit, clean_wires=[2]) == {1: 3}
+    dynamic, _, info = logical_and.measurement_assisted(circuit, clean_wires=[2])
+    assert info["and_pairs"] == 1
+    assert_dynamic_matches(circuit, dynamic, clean={2})
+    assert (
+        logical_and.measurement_assisted_metrics(circuit, clean_wires=[2])["t_count"]
+        == 4
+    )
+
+
+def test_cancelling_writes_between_the_pair_are_allowed():
+    # X gates around an open-controlled use flip the target and restore it.
+    circuit = QuantumCircuit(4)
+    circuit.ccx(0, 1, 2)
+    circuit.x(2)
+    circuit.cx(2, 3)
+    circuit.x(2)
+    circuit.ccx(0, 1, 2)
+    assert logical_and.find_and_pairs(circuit, clean_wires=[2]) == {0: 4}
+    dynamic, _, _ = logical_and.measurement_assisted(circuit, clean_wires=[2])
+    assert_dynamic_matches(circuit, dynamic, clean={2})
+
+
+def test_writes_that_do_not_cancel_block_the_pair():
+    circuit = QuantumCircuit(4)
+    circuit.ccx(0, 1, 2)
+    circuit.cx(3, 2)  # depends on a free wire, so the target differs at the end
+    circuit.ccx(0, 1, 2)
+    assert logical_and.find_and_pairs(circuit, clean_wires=[2], restored_wires=[]) == {}
+    held = QuantumCircuit(3)
+    held.x(2)
+    held.cx(0, 2)  # the target is not a constant before the AND
+    held.ccx(0, 1, 2)
+    held.ccx(0, 1, 2)
+    assert logical_and.find_and_pairs(held, clean_wires=[2], restored_wires=[]) == {}
+
+
+def test_baseline_flags_are_uncomputed_like_the_xag_ands():
+    pytest.importorskip("saha_belletti")
+    from dataclasses import replace
+
+    from logique import read_dimacs
+    from logique.benchmarks.study import expand_oracle
+    from logique.circuits.search import baseline_instance
+
+    problem = replace(
+        read_dimacs(ROOT / "datasets/graphs/benchmarks/K3.col"), precolored={}
+    )
+    instance = baseline_instance(problem, "simple", "R3")
+    oracle, _ = expand_oracle(instance, "throwaway_tree")
+    oracle = costs.paired_relative_phase_toffolis(oracle)
+    clean = [*instance.clean, *range(instance.oracle.num_qubits, oracle.num_qubits)]
+    metrics = logical_and.measurement_assisted_metrics(oracle, clean_wires=clean)
+    # Three comparisons and one node of the conjunction are uncomputed by
+    # measurement; the gate on the output stays a Toffoli, as in the XAG oracle.
+    assert metrics["and_pairs"] == 4
+    assert metrics["t_count"] == 4 * 4 + 7
+    dynamic, _, _ = logical_and.measurement_assisted(oracle, clean_wires=clean)
+    assert_dynamic_matches(oracle, dynamic, clean=set(clean))
+
+
 def test_mcx_gates_must_be_expanded_first():
     circuit = QuantumCircuit(4)
     circuit.mcx([0, 1, 2], 3)

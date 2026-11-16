@@ -30,6 +30,20 @@ PROFILES = {
     "balanced": {"balanced": True, "mc_reduction": False, "optimization": "refactor"},
     "mc": {"balanced": False, "mc_reduction": True, "optimization": "refactor"},
     "balanced_mc": {"balanced": True, "mc_reduction": True, "optimization": "refactor"},
+    # Balanced encodings whose final conjunction pairs constraints by edge-colouring
+    # round, or joins the two expected to be ready first.
+    "balanced_rounds": {
+        "balanced": True,
+        "tree": "rounds",
+        "mc_reduction": False,
+        "optimization": "refactor",
+    },
+    "balanced_timed": {
+        "balanced": True,
+        "tree": "timed",
+        "mc_reduction": False,
+        "optimization": "refactor",
+    },
 }
 DEFAULTS = {
     "regimes": list(REGIMES),
@@ -42,6 +56,8 @@ DEFAULTS = {
     "seeds": [11, 23, 37, 41, 53],
     "relative_phase_mirrored": True,
     "relative_phase_pairs": True,
+    # Reorder commuting gates of every oracle to a lower T-depth (same gates).
+    "schedule": False,
     "drop_precolors": True,
     "samples": 256,
     "seed": 7,
@@ -100,6 +116,8 @@ def study_settings(config: dict) -> dict:
         raise ValueError(
             "iterations must be 'optimal', an integer, or a list of integers"
         )
+    if type(settings["schedule"]) is not bool:
+        raise ValueError("schedule must be true or false")
     if not 0 < settings["rotation_budget"] < 1:
         raise ValueError("rotation_budget must lie strictly between 0 and 1")
     return settings
@@ -113,7 +131,9 @@ def _pad(circuit, width):
     return padded
 
 
-def expand_oracle(instance, policy: str, *, relative_phase: bool = True):
+def expand_oracle(
+    instance, policy: str, *, relative_phase: bool = True, schedule: bool = False
+):
     """Expand the oracle's multi-controlled gates; return the circuit and records.
 
     A mirrored oracle (initialization, compute block, kick-back gate, inverse
@@ -121,7 +141,9 @@ def expand_oracle(instance, policy: str, *, relative_phase: bool = True):
     compute block, whose inverse restores any throwaway garbage; its Toffoli
     gates may use relative phases because only the kick-back gate acts in
     between. Gates without a mirror use the restoring tree when the policy is
-    the throwaway tree.
+    the throwaway tree. With ``schedule``, the expanded compute block is
+    reordered to a lower T-depth before relative phases are introduced; the
+    reordering swaps only commuting gates, so the oracle is unchanged.
     """
     from qiskit import QuantumCircuit
     from .costs import decompose_mcx, relative_phase_toffolis
@@ -143,6 +165,10 @@ def expand_oracle(instance, policy: str, *, relative_phase: bool = True):
         return circuit
 
     compute, compute_info = decompose_mcx(copy(data[start:stop], width), policy)
+    if schedule:
+        from .scheduling import reschedule
+
+        compute = reschedule(compute)
     if relative_phase:
         compute = relative_phase_toffolis(compute)
     kick = copy(data[stop : stop + 1], compute.num_qubits)
@@ -298,6 +324,7 @@ def run_study(config: dict, *, executable=None) -> Path:
                 "edges": len(problem.edges),
                 "colors": problem.colors,
                 "optimization_profile": settings["optimization_profile"],
+                "schedule": settings["schedule"],
             }
             for method in methods:
                 for regime in settings["regimes"]:
@@ -320,6 +347,7 @@ def run_study(config: dict, *, executable=None) -> Path:
                                 parameters=settings.get("parameters", {}),
                                 verification=verification,
                                 timeout=limits["synthesis_timeout_s"],
+                                schedule=settings["schedule"],
                                 **PROFILES[settings["optimization_profile"]],
                             )
                     except subprocess.TimeoutExpired:
@@ -378,6 +406,7 @@ def run_study(config: dict, *, executable=None) -> Path:
                             instance,
                             policy,
                             relative_phase=settings["relative_phase_mirrored"],
+                            schedule=settings["schedule"],
                         )
                         restoring = (
                             "clean_tree" if policy == "throwaway_tree" else policy

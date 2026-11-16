@@ -157,8 +157,9 @@ def test_one_iteration_matches_amplitude_amplification(native, method, regime, d
     assert success == pytest.approx(grover_success(6 / domain, 1), abs=1e-9)
 
 
+@pytest.mark.parametrize("schedule", [False, True])
 @pytest.mark.parametrize("policy", ["throwaway_tree", "clean_tree", "2_dirty_kg24"])
-def test_expanded_mirrored_oracle_is_exact(policy):
+def test_expanded_mirrored_oracle_is_exact(policy, schedule):
     np = pytest.importorskip("numpy")
     pytest.importorskip("saha_belletti")
     from qiskit import QuantumCircuit
@@ -171,7 +172,7 @@ def test_expanded_mirrored_oracle_is_exact(policy):
     # R3 omits the invalid-color checks and keeps the register small.
     problem = ColoringProblem(vertices=(1, 2), edges=((1, 2),), colors=5)
     instance = baseline_instance(problem, "original", "R3")
-    expanded, _ = expand_oracle(instance, policy)
+    expanded, _ = expand_oracle(instance, policy, schedule=schedule)
     assert expanded.num_qubits <= 12
     width = instance.oracle.num_qubits
     rng = np.random.default_rng(3)
@@ -314,6 +315,67 @@ def test_optimization_profiles_are_applied_and_recorded(native, tmp_path):
     assert reduced["multiplicative_depth"] < plain["multiplicative_depth"]
 
 
+@pytest.mark.integration
+@pytest.mark.parametrize("tree", ["input", "rounds", "timed"])
+def test_scheduled_tree_shapes_keep_qubits_and_t_count(native, tree):
+    from logique.benchmarks import costs
+    from logique.circuits.search import logique_instance
+
+    def priced(instance):
+        lowered = costs.clifford_t(
+            costs.paired_relative_phase_toffolis(instance.oracle)
+        )
+        metrics = costs.ft_metrics(lowered)
+        return instance.oracle.num_qubits, metrics["t_count"], metrics["t_depth"]
+
+    problem = unprecolored("K3")
+    plain = logique_instance(problem, "xag", "R3", executable=native, balanced=True)
+    shaped = logique_instance(
+        problem,
+        "xag",
+        "R3",
+        executable=native,
+        balanced=True,
+        tree=tree,
+        schedule=True,
+    )
+    assert shaped.structure["scheduled"] and shaped.structure["tree"] == tree
+    assert shaped.validation["status"] == "exhaustive"
+    before, after = priced(plain), priced(shaped)
+    assert after[:2] == before[:2]
+    assert after[2] <= before[2]
+    if tree == "input":
+        # The balanced K3 oracle runs its three edge comparisons together.
+        assert after[2] < before[2]
+
+
+@pytest.mark.integration
+def test_study_records_the_schedule_setting(native, tmp_path):
+    import pandas as pd
+
+    from logique.benchmarks.study import run_study
+
+    run = run_study(
+        {
+            "inputs": [str(GRAPHS / "K3.col")],
+            "methods": ["xag", "sb_simple"],
+            "regimes": ["R3"],
+            "optimization_profile": "balanced_rounds",
+            "schedule": True,
+            "mcx_policies": ["throwaway_tree"],
+            "targets": ["fault-tolerant"],
+            "output": str(tmp_path / "1115000000-scheduled"),
+        },
+        executable=native,
+    )
+    cases = json.loads((run / "run.json").read_text())["cases"]
+    xag = next(case for case in cases if case["method"] == "xag")
+    assert xag["structure"]["scheduled"] and xag["structure"]["tree"] == "rounds"
+    summary = pd.read_csv(run / "summary.csv")
+    assert set(summary.schedule) == {True}
+    assert set(summary.optimization_profile) == {"balanced_rounds"}
+
+
 def test_iterations_beyond_the_routing_limit_are_recorded(tmp_path):
     pytest.importorskip("qiskit_ibm_runtime")
     pytest.importorskip("saha_belletti")
@@ -429,4 +491,6 @@ def test_study_settings_reject_unknown_values():
         study_settings({**base, "iterations": "many"})
     with pytest.raises(ValueError, match="limits"):
         study_settings({**base, "limits": {"unknown": 1}})
+    with pytest.raises(ValueError, match="schedule"):
+        study_settings({**base, "schedule": "yes"})
     assert study_settings(base)["regimes"] == ["R1", "R2", "R3"]

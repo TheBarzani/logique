@@ -1,7 +1,12 @@
 """Independent domain regressions for parsing, mapping, and coloring semantics."""
 
+from pathlib import Path
+
 import pytest
 from logique import ColoringProblem, encode_coloring, read_dimacs
+from logique.coloring.encoding import TREES, edge_rounds
+
+ROOT = Path(__file__).resolve().parents[1]
 
 
 def test_dimacs_whitespace_isolates_precolors_and_repeated_reads(tmp_path):
@@ -115,3 +120,48 @@ def test_balanced_encoding_keeps_the_predicate_and_its_gates(problem):
     assert depths[True] <= depths[False]
     if len(problem.edges) >= 4:
         assert depths[True] < depths[False]
+
+
+@pytest.mark.parametrize(
+    "problem",
+    [
+        ColoringProblem((1, 2, 3), ((1, 2), (2, 3), (1, 3)), 3),
+        ColoringProblem((1, 2, 3, 4), ((1, 2), (2, 3), (3, 4), (4, 1)), 5, {2: 4}),
+        ColoringProblem((1, 2, 3, 4, 5), ((1, 2), (1, 3), (1, 4), (4, 5)), 2),
+        ColoringProblem((1, 2, 3, 4), ((1, 2), (3, 4), (2, 3)), 4),
+        ColoringProblem((1,), (), 3),
+    ],
+)
+def test_tree_shapes_keep_the_predicate_and_its_gates(problem):
+    shapes = {
+        tree: encode_coloring(problem, balanced=True, tree=tree) for tree in TREES
+    }
+    reference = encode_coloring(problem, balanced=True)
+    assert shapes["input"].verilog() == reference.verilog()
+    counts = {tree: e.verilog().count(" & ") for tree, e in shapes.items()}
+    assert len(set(counts.values())) == 1
+    for basis in range(1 << reference.input_count):
+        bits = [(basis >> i) & 1 for i in range(reference.input_count)]
+        expected = problem.is_valid(reference.decode(basis))
+        for encoding in shapes.values():
+            assert _evaluate(encoding.verilog(), bits)[0] == expected
+
+
+def test_tree_shapes_need_a_balanced_encoding():
+    problem = ColoringProblem((1, 2), ((1, 2),), 3)
+    with pytest.raises(ValueError):
+        encode_coloring(problem, tree="rounds")
+    with pytest.raises(ValueError):
+        encode_coloring(problem, balanced=True, tree="unknown")
+
+
+def test_edge_rounds_form_a_proper_edge_colouring():
+    problem = read_dimacs(ROOT / "datasets/graphs/benchmarks/myciel3.col")
+    rounds = edge_rounds(problem)
+    assert set(rounds) == {frozenset(e) for e in problem.edges}
+    for u, v in problem.edges:
+        for x, y in problem.edges:
+            if (u, v) != (x, y) and {u, v} & {x, y}:
+                assert rounds[frozenset((u, v))] != rounds[frozenset((x, y))]
+    degree = max(sum(v in e for e in problem.edges) for v in problem.vertices)
+    assert max(rounds.values()) + 1 <= 2 * degree - 1

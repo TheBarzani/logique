@@ -1,8 +1,38 @@
 """Deterministic structural Boolean encoding of complete coloring predicates."""
 
 from dataclasses import dataclass
+import heapq
 from pathlib import Path
 from .model import ColoringProblem
+
+# Shapes of the final conjunction over all constraints (balanced encodings only).
+TREES = ("input", "rounds", "timed")
+
+
+def edge_rounds(problem: ColoringProblem) -> dict[frozenset, int]:
+    """Rounds of a proper edge colouring: the edges of one round share no vertex.
+
+    The fewest-colour result of several greedy strategies on the line graph is
+    kept, so the choice is deterministic for a given graph.
+    """
+    if not problem.edges:
+        return {}
+    import networkx as nx
+
+    line = nx.line_graph(problem.to_networkx())
+    best: dict | None = None
+    for strategy in (
+        "largest_first",
+        "smallest_last",
+        "DSATUR",
+        "independent_set",
+        "connected_sequential_bfs",
+    ):
+        colouring = nx.greedy_color(line, strategy=strategy)
+        if best is None or max(colouring.values()) < max(best.values()):
+            best = colouring
+    assert best is not None
+    return {frozenset(edge): round_ for edge, round_ in best.items()}
 
 
 @dataclass(frozen=True)
@@ -12,10 +42,24 @@ class ColoringEncoding:
     Conjunctions and disjunctions are left-deep chains unless ``balanced``,
     which builds them as balanced trees of the same gates, so the predicate's
     multiplicative depth grows with the logarithm of the number of constraints.
+
+    ``tree`` shapes the final conjunction of a balanced encoding; every shape
+    uses the same gates. ``input`` pairs the constraints in input order.
+    ``rounds`` orders the edges by an edge colouring (vertex checks first), so
+    that constraints on disjoint vertices are paired. ``timed`` always joins
+    the two constraints expected to be ready first: a vertex check when its
+    own AND depth is reached, an edge at the end of its colouring round.
     """
 
     problem: ColoringProblem
     balanced: bool = False
+    tree: str = "input"
+
+    def __post_init__(self):
+        if self.tree not in TREES:
+            raise ValueError(f"tree must be one of {TREES}")
+        if self.tree != "input" and not self.balanced:
+            raise ValueError("Only a balanced encoding can choose its tree shape")
 
     @property
     def bits_per_color(self) -> int:
@@ -45,11 +89,13 @@ class ColoringEncoding:
         """Emit two-input structural gates accepted by the pinned native parser."""
         gates: list[str] = []
         wires: list[str] = []
+        depth: dict[str, int] = {}  # AND depth of every wire; XOR gates are free
 
         def gate(a: str, op: str, b: str) -> str:
             name = f"t{len(wires)}"
             wires.append(name)
             gates.append(f"assign {name} = {a} {op} {b};")
+            depth[name] = max(depth.get(a, 0), depth.get(b, 0)) + (op != "^")
             return name
 
         def combine(items: list[str], op: str, identity: str) -> str:
@@ -91,7 +137,12 @@ class ColoringEncoding:
                         "1'b1",
                     )
                 )
-        for u, v in self.problem.edges:
+        local = len(constraints)  # vertex checks come first
+        rounds = edge_rounds(self.problem) if self.tree != "input" else {}
+        edges = list(self.problem.edges)
+        if rounds:
+            edges.sort(key=lambda e: rounds[frozenset(e)])  # stable within a round
+        for u, v in edges:
             constraints.append(
                 combine(
                     [
@@ -102,7 +153,25 @@ class ColoringEncoding:
                     "1'b0",
                 )
             )
-        output = combine(constraints, "&", "1'b1")
+        if self.tree == "timed" and len(constraints) > 1:
+            # Vertex checks are ready at their own AND depth; edges finish one
+            # colouring round after another, each round as deep as one edge.
+            start = max((depth.get(c, 0) for c in constraints[:local]), default=0)
+            level = max((depth.get(c, 0) for c in constraints[local:]), default=0)
+            ready = [depth.get(c, 0) for c in constraints[:local]] + [
+                start + (rounds[frozenset(e)] + 1) * max(1, level) for e in edges
+            ]
+            heap = [(t, i, c) for i, (t, c) in enumerate(zip(ready, constraints))]
+            heapq.heapify(heap)
+            count = len(heap)
+            while len(heap) > 1:
+                ta, _, a = heapq.heappop(heap)
+                tb, _, b = heapq.heappop(heap)
+                heapq.heappush(heap, (max(ta, tb) + 1, count, gate(a, "&", b)))
+                count += 1
+            output = heap[0][2]
+        else:
+            output = combine(constraints, "&", "1'b1")
         inputs = [f"x{i}" for i in range(self.input_count)]
         declarations = [f"module top({', '.join(inputs + ['y0'])});"]
         if inputs:
@@ -122,10 +191,10 @@ class ColoringEncoding:
 
 
 def encode_coloring(
-    problem: ColoringProblem, *, balanced: bool = False
+    problem: ColoringProblem, *, balanced: bool = False, tree: str = "input"
 ) -> ColoringEncoding:
     """Encode all vertices, valid colors, precolors, and edge inequalities."""
-    return ColoringEncoding(problem, balanced)
+    return ColoringEncoding(problem, balanced, tree)
 
 
 def edge_coloring_expression(problem: ColoringProblem) -> tuple[str, list[str]]:

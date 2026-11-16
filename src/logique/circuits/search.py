@@ -143,13 +143,15 @@ def _mirror_span(circuit: QuantumCircuit) -> tuple[int, int] | None:
 
 
 def _encoding(
-    problem: ColoringProblem, regime: str, balanced: bool = False
+    problem: ColoringProblem, regime: str, balanced: bool = False, tree: str = "input"
 ) -> ColoringEncoding:
     _, complete = REGIMES[regime]
     if complete:
-        return encode_coloring(problem, balanced=balanced)
+        return encode_coloring(problem, balanced=balanced, tree=tree)
     bits = max(1, (problem.colors - 1).bit_length())
-    return encode_coloring(replace(problem, colors=1 << bits), balanced=balanced)
+    return encode_coloring(
+        replace(problem, colors=1 << bits), balanced=balanced, tree=tree
+    )
 
 
 def logique_instance(
@@ -162,17 +164,23 @@ def logique_instance(
     verification: dict | None = None,
     timeout: float = 180,
     balanced: bool = False,
+    tree: str = "input",
     mc_reduction: bool = False,
     optimization: str = "refactor",
+    schedule: bool = False,
 ) -> SearchInstance:
     """Synthesize the regime's predicate and wrap it as a verified oracle.
 
     The raw circuit is used directly with its output in |-> when it passes the
     kick-back check for both target values; otherwise the oracle is
     compute–phase–uncompute. ``verification`` holds keyword arguments for
-    ``verification_assignments``; ``balanced``, ``mc_reduction`` and
-    ``optimization`` select the encoder structure, the multiplicative-complexity
-    pass and the native bridge's optimization.
+    ``verification_assignments``; ``balanced``, ``tree``, ``mc_reduction`` and
+    ``optimization`` select the encoder structure and the shape of its final
+    conjunction, the multiplicative-complexity pass and the native bridge's
+    optimization. With ``schedule``, a kick-back oracle whose second half undoes
+    its first is reordered to a lower T-depth with the same gates
+    (``benchmarks.scheduling``) and verified again; ``structure["scheduled"]``
+    records whether that happened.
     """
     from logique.synthesis import synthesize
     from logique.verification import (
@@ -185,7 +193,7 @@ def logique_instance(
         raise ValueError(f"regime must be one of {sorted(REGIMES)}")
     timings = {}
     started = time.perf_counter()
-    encoding = _encoding(problem, regime, balanced)
+    encoding = _encoding(problem, regime, balanced, tree)
     result = synthesize(
         encoding,
         method,
@@ -209,6 +217,26 @@ def logique_instance(
     except AssertionError:
         report = verify_phase_oracle(result, encoding=encoding, assignments=chosen)
         oracle, form, target = result.phase_oracle(), "phase", None
+    scheduled = False
+    if schedule and form == "kick-back":
+        from logique.benchmarks.scheduling import mirrored_middle, reschedule_mirrored
+        from logique.verification.phase import verify_xor_oracle
+
+        middle = mirrored_middle(oracle, output)
+        if middle is not None:
+            try:
+                candidate = reschedule_mirrored(oracle, middle)
+            except ValueError:
+                candidate = None
+            if candidate is not None:
+                verify_xor_oracle(
+                    candidate,
+                    data=inputs,
+                    target=output,
+                    encoding=encoding,
+                    assignments=chosen,
+                )
+                oracle, scheduled = candidate, True
     timings["verification_s"] = time.perf_counter() - started
     workspace = sorted(set(range(oracle.num_qubits)) - set(inputs) - {output})
     preparation, diffusion, domain = _assemble(
@@ -226,6 +254,7 @@ def logique_instance(
             "gate_types",
         )
     }
+    structure.update(tree=tree, scheduled=scheduled)
     return SearchInstance(
         method=method,
         regime=regime,

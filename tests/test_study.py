@@ -350,6 +350,24 @@ def test_scheduled_tree_shapes_keep_qubits_and_t_count(native, tree):
 
 
 @pytest.mark.integration
+def test_scheduling_never_deepens_an_oracle(native):
+    from logique.benchmarks.scheduling import priced_t_depth
+    from logique.circuits.search import logique_instance
+
+    # On the six-cycle the scheduler's timing model prefers an order that the
+    # Clifford+T lowering prices one layer deeper; the original is kept.
+    cycle = ColoringProblem(
+        tuple(range(6)), tuple((i, (i + 1) % 6) for i in range(6)), 3
+    )
+    kwargs = {"executable": native, "balanced": True}
+    plain = logique_instance(cycle, "xag", "R3", **kwargs)
+    scheduled = logique_instance(cycle, "xag", "R3", schedule=True, **kwargs)
+    assert priced_t_depth(scheduled.oracle) <= priced_t_depth(plain.oracle)
+    if not scheduled.structure["scheduled"]:
+        assert scheduled.oracle == plain.oracle
+
+
+@pytest.mark.integration
 def test_study_records_the_schedule_setting(native, tmp_path):
     import pandas as pd
 

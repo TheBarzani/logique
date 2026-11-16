@@ -228,7 +228,7 @@ def logique_instance(
                 candidate = reschedule_mirrored(oracle, middle)
             except ValueError:
                 candidate = None
-            if candidate is not None:
+            if candidate is not None and candidate is not oracle:
                 verify_xor_oracle(
                     candidate,
                     data=inputs,

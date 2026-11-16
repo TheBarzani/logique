@@ -52,6 +52,9 @@ Study fields:
   synthesized or baseline, to a lower T-depth with the same gates
   (`logique.benchmarks.scheduling`); rescheduled Logique oracles are verified
   again, and `structure.scheduled` records whether the reordering applied.
+  An order is kept only when it prices to a lower T-depth than the original.
+- `description` (default `corrected-study`): names the run folder
+  `dump/MMDDHHMMSS-<description>`.
 - `targets`: any of `logical`, `toffoli`, `fault-tolerant`, `routed`
   (FakeTorino, with the fixed `seeds`).
 - `rotation_budget`: whole-algorithm error budget shared by all rotations.

@@ -20,6 +20,9 @@ from .provenance import checkout_revision, environment, native_provenance
 from .runner import new_run_directory
 
 REGIMES = ("R1", "R2", "R3")
+# Compute blocks beyond this many gates are not rescheduled (pricing both orders
+# would dominate the study's run time).
+SCHEDULE_GATES = 200_000
 PRICING = ("static", "measurement")
 TARGETS = ("logical", "toffoli", "fault-tolerant", "routed")
 # Encoder structure, multiplicative-complexity pass and native optimization of
@@ -58,6 +61,7 @@ DEFAULTS = {
     "relative_phase_pairs": True,
     # Reorder commuting gates of every oracle to a lower T-depth (same gates).
     "schedule": False,
+    "description": "corrected-study",  # names the run folder
     "drop_precolors": True,
     "samples": 256,
     "seed": 7,
@@ -165,10 +169,16 @@ def expand_oracle(
         return circuit
 
     compute, compute_info = decompose_mcx(copy(data[start:stop], width), policy)
-    if schedule:
-        from .scheduling import reschedule
+    compute_info["scheduled"] = False
+    if schedule and len(compute.data) <= SCHEDULE_GATES:
+        from .scheduling import priced_t_depth, reschedule
 
-        compute = reschedule(compute)
+        # The scheduler's timing model is approximate: keep the shallower order.
+        candidate = reschedule(compute)
+        if priced_t_depth(candidate, relative_phase) < priced_t_depth(
+            compute, relative_phase
+        ):
+            compute, compute_info["scheduled"] = candidate, True
     if relative_phase:
         compute = relative_phase_toffolis(compute)
     kick = copy(data[stop : stop + 1], compute.num_qubits)
@@ -282,7 +292,9 @@ def run_study(config: dict, *, executable=None) -> Path:
         if any(not m.startswith("sb_") for m in methods)
         else None
     )
-    output = new_run_directory(settings.get("output"), description="corrected-study")
+    output = new_run_directory(
+        settings.get("output"), description=settings["description"]
+    )
     manifest = {
         "schema_version": 1,
         "run_id": output.name,

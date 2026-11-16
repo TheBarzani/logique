@@ -56,5 +56,6 @@
     "synthesis_timeout_s": 180,
     "count_budget": 300000000
   },
-  "schedule": true
+  "schedule": true,
+  "description": "tree-shapes-rounds"
 }

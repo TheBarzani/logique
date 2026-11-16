@@ -211,6 +211,7 @@ def reschedule_mirrored(
     circuit: QuantumCircuit,
     middle: int,
     duration: Callable[[Instruction], int] = t_depth_duration,
+    check: bool = True,
 ) -> QuantumCircuit:
     """Reorder an oracle B, G, U whose second half U uncomputes the first half B.
 
@@ -219,7 +220,10 @@ def reschedule_mirrored(
     giving S(B), G, S(B)^-1. U must consist of exactly the gates of B^-1 (a
     synthesized oracle may undo independent blocks of B in another order), which
     is checked; whether U equals B^-1 as a unitary is not, so the caller verifies
-    the result against the predicate, as for any synthesized oracle.
+    the result against the predicate, as for any synthesized oracle. The timing
+    model of the scheduler only approximates the lowered circuit, so with
+    ``check`` the circuit itself is returned unless the result has a lower
+    priced T-depth.
     """
     data = circuit.data
     if not 0 <= middle < len(data) or 2 * middle + 1 != len(data):
@@ -236,7 +240,18 @@ def reschedule_mirrored(
     result = scheduled.copy()
     result.append(data[middle].operation, data[middle].qubits, data[middle].clbits)
     result.compose(scheduled.inverse(), inplace=True)
+    if check and priced_t_depth(result) >= priced_t_depth(circuit):
+        return circuit
     return result
+
+
+def priced_t_depth(circuit: QuantumCircuit, relative_phase: bool = True) -> int:
+    """T-depth as the study prices an oracle: paired relative phases, Clifford+T."""
+    from .costs import clifford_t, ft_metrics, paired_relative_phase_toffolis
+
+    if relative_phase:
+        circuit = paired_relative_phase_toffolis(circuit)
+    return int(ft_metrics(clifford_t(circuit))["t_depth"])
 
 
 def mirrored_middle(circuit: QuantumCircuit, output: int) -> int | None:

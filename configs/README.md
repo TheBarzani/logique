@@ -31,6 +31,8 @@ Caterpillar's four XAG and eager strategies to the five methods.
 encoder, each shape of its final conjunction and scheduling, and
 `scheduled_baselines.json` runs the four baselines with the same scheduling, so
 that the T-depth comparison of the shapes is fair. They omit routing.
+`repriced_comparison.json` repeats the nine-graph study without routing, to
+reprice the measurement-based column after the pair detector was extended.
 `balanced_methods.json` and `scheduled_methods.json` run the other Logique
 methods with the balanced encoder, without and with scheduling, so that every
 method's T-depth is reported before and after optimization (the nine-graph

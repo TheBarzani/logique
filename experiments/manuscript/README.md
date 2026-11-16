@@ -1,7 +1,8 @@
 # VCGC manuscript revision
 
 This study starts by reproducing the original manuscript on
-`vcgc-paper-revision`, branched from `main` at `acbbbd5`. Methodology and manuscript
+`coloring-paper-revamp` (named `vcgc-paper-revision` until 15 November 2026), branched from
+`main` at `acbbbd5`. Methodology and manuscript
 revisions follow the verified historical baseline. The manuscript remains local
 in ignored `docs/manuscript/`.
 

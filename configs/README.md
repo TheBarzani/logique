@@ -33,6 +33,8 @@ encoder, each shape of its final conjunction and scheduling, and
 that the T-depth comparison of the shapes is fair. They omit routing.
 `repriced_comparison.json` repeats the nine-graph study without routing, to
 reprice the measurement-based column after the pair detector was extended.
+`best_fit_depths*.json` price the T-depth of the best-fit oracles that exceed the
+default pricing limit (myciel3 to myciel5), with a limit of 12 million gates.
 `balanced_methods.json` and `scheduled_methods.json` run the other Logique
 methods with the balanced encoder, without and with scheduling, so that every
 method's T-depth is reported before and after optimization (the nine-graph

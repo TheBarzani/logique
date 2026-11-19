@@ -35,6 +35,10 @@ that the T-depth comparison of the shapes is fair. They omit routing.
 reprice the measurement-based column after the pair detector was extended.
 `best_fit_depths*.json` price the T-depth of the best-fit oracles that exceed the
 default pricing limit (myciel3 to myciel5), with a limit of 12 million gates.
+`routed_grid_*.json` route a Grover iteration on a square-grid device that grows
+with the circuit (`route_backend: grid`, Nighthawk topology): the XAG flow and the
+baselines as in the study, the baselines scheduled, and the XAG flow with each
+conjunction shape, scheduled.
 `balanced_methods.json` and `scheduled_methods.json` run the other Logique
 methods with the balanced encoder, without and with scheduling, so that every
 method's T-depth is reported before and after optimization (the nine-graph

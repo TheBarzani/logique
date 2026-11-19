@@ -90,6 +90,33 @@ def test_iteration_costs_add_the_oracle_and_diffusion():
     assert row["qubits_total"] == 12
 
 
+def test_iteration_depth_adds_the_components_and_their_rotations():
+    def component(name, t_depth, rotations, rotation_depth):
+        return dict(
+            benchmark="G",
+            regime="R2",
+            method="xag",
+            mcx_policy="clean_tree",
+            component=name,
+            metric_level="fault-tolerant",
+            t_count=10,
+            t_depth=t_depth,
+            rotation_count=rotations,
+            rotation_depth=rotation_depth,
+            qubits_total=12,
+        )
+
+    rows = pd.DataFrame(
+        [component("oracle", 9, 0, 0), component("diffusion", 4, 12, 2)]
+    )
+    (row,) = analysis.iteration_costs(rows).to_dict("records")
+    # Two rotations on the critical path, each synthesized with 41 T gates.
+    assert row["t_depth"] == 9 + 4 + 2 * 41
+    rows.loc[rows.component == "oracle", "t_depth"] = None
+    (row,) = analysis.iteration_costs(rows).to_dict("records")
+    assert pd.isna(row["t_depth"])
+
+
 def test_load_study_reads_domains_beyond_64_bits_exactly(tmp_path):
     import json
 

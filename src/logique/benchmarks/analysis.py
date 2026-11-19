@@ -67,6 +67,12 @@ def iteration_costs(
     every method shares the iteration count within a regime, so one iteration
     ranks them in the same way. The iteration's rotations share ``budget``,
     and rows lacking either component are left out.
+
+    ``t_depth`` adds the T-depths of the oracle and the diffusion operator,
+    which act one after the other, and counts every rotation on the critical
+    path of rotations at its synthesized T-count (a sequence of single-qubit
+    gates); adding the two paths gives an upper estimate. It is missing when
+    either component was priced without depths.
     """
     from .costs import rotation_t_count
 
@@ -82,6 +88,16 @@ def iteration_costs(
         rotation_t_count(budget / r) if r else 0 for r in table.rotation_count
     ]
     table["t_count"] = table.t_exact + table.rotation_count * table.rotation_t
+    if "t_depth" in parts.columns:
+        rotation_depth = (
+            grouped.rotation_depth.sum(min_count=1).fillna(0)
+            if "rotation_depth" in parts.columns
+            else 0
+        )
+        depth = grouped.t_depth.sum(min_count=2)
+        table["t_depth"] = (depth + rotation_depth * table.rotation_t).reindex(
+            table.index
+        )
     table["iterations"] = 1
     return table.reset_index()
 

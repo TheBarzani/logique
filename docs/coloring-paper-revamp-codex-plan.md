@@ -932,3 +932,26 @@ Existing extended-final/new-fullplan coordinators retain the remaining scope;
 C5 calibration/adapter/execution owners remain separate. Queue 126 definitions
 and null calendar/lifetime limits are unchanged. Completion checkpoint:
 `dump/1119151731-noisy-resource-integration-completion/checkpoint.json`.
+
+## 19 November extended coordinator: exact C5 block and full remaining scope
+
+[New exact decision and tasks1–8 ledger](research/noisy_extended_final_integration_20261119.md)
+preserves independent review `f3931a4` and worker `67c509e` whole, with zero
+new source paths, histograms, timeouts or exclusions admitted. All50 distinct
+best-fit C5 requests remain unlaunched at the cumulative adapter/calibration
+source gate;3,200 requested shots are zero executed shots. Original805 family
+membership,404 conditional records/25,856shots and401 missing family keys stay
+unchanged. The selected-noise resource chain executed no scientific retry;
+no conditional new resource-row evidence-review job was triggered. Exact
+structure proof/four original observations and ten best-fit ideal rows remain
+separate from noise. Fresh deployment/real-loader/26-worktree checks pass.
+Existing calibration/scaling/native/MCX/CEC/manuscript/updated-checks/Astrahigh/
+NEWfinal-coordinator owners are intact;126 definitions and null calendar/lifetime
+limits unchanged. Separate128definition safety limit leaves2slots, insufficient
+for a new implementation/review/NEWfinal-coordinator chain. The machine-readable
+ledger retains broader nine-graph profiles/policies/five-seed routing/FT,
+precision/resource callers, family noise and220 scaling slots with concrete
+acceptance/followup requirements; full research/manuscript gate remains BLOCK.
+Checkpoint: `dump/1119153456-noisy-extended-final-exact-coordination/checkpoint.json`.
+Bounded coordinator completion releases the existing26 successor jobs; dispatcher
+alone launches and pushes. No numerical study or completed-task replay occurred.

@@ -272,3 +272,22 @@ Existing extended-final/new-fullplan coordinators retain the remaining scope;
 C5 calibration/adapter/execution owners remain separate. Queue 126 definitions
 and null calendar/lifetime limits are unchanged. Completion checkpoint:
 `dump/1119151731-noisy-resource-integration-completion/checkpoint.json`.
+# 19 November extended coordinator decision
+
+The [exact C5 block and remaining tasks1–8 ledger](noisy_extended_final_integration_20261119.md)
+preserves independent `f3931a4` and worker `67c509e` records byte-for-byte.
+Newly admitted scientific source, histograms, timeouts and exclusions are empty.
+Fifty distinct best-fit C5 requests are unlaunched at the adapter/calibration
+prerequisite:3,200 requested shots,zero executed shots,not zero-success rows or
+resource exclusions. Original805-key membership and inherited404 conditional
+records/25,856shots/401 missing keys are unchanged; no fresh pooled recount.
+Selected K3seed37/j2 still has no counts; diagnostic resource source admission
+does not admit a caller/resource plan or another retry. The exact structure
+977-instruction proof/four saved ideal observations and ten11-wire best-fit ideal
+rows remain distinct and imply no C5 noise result. Existing26 successors own
+corrections,missing-only execution,updated isolated checks and fresh independent
+Astrahigh quantum/claim review before NEW final coordination. Full nine-graph
+profiles/policies/five routing seeds/FTprecisions,precision/resource callers,
+scaling and scientific novelty/evidence gate remain open in
+[the machine-readable ledger](noisy_extended_remaining_scope_20261119.json).
+No full-paper approval follows from bounded coordination or queue completion.

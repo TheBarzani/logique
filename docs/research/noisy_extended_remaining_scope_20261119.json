@@ -1,0 +1,223 @@
+{
+  "schema_version": 1,
+  "task": "noisy-extended-final-1101151114",
+  "scientific_gate": "BLOCK",
+  "paper_complete": false,
+  "new_scientific_observations": 0,
+  "new_scientific_source_paths": [],
+  "scope_values": "inherited restrictive reviewed records;not a fresh histogram/cost recount",
+  "queue": {
+    "definitions": 126,
+    "loader_definition_limit": 128,
+    "slots_remaining": 2,
+    "max_batches": null,
+    "deadline": null,
+    "new_jobs": [],
+    "new_full_complete_chain_minimum_definitions": 3,
+    "new_chain_status": "BLOCK definition capacity;do not silently change loader cap or epoch",
+    "existing_final_coordinator": "new-fullplan-coordinator-1113162936",
+    "updated_checks": "updated-bounded-checks-1113162936",
+    "updated_quantum_claim_review": "updated-final-astra-1113162936"
+  },
+  "noisy_populations": {
+    "original_family_requested": 805,
+    "inherited_admitted_family_records": 404,
+    "inherited_admitted_shots": 25856,
+    "original_family_without_admitted_observations": 401,
+    "separate_bestfit_c5_requested": 50,
+    "separate_bestfit_shots_requested": 3200,
+    "separate_bestfit_shots_executed": 0,
+    "separate_bestfit_counts": null,
+    "seeds": [
+      11,
+      23,
+      37,
+      41,
+      53
+    ],
+    "bestfit_source_manifest_sha256": "fb2d62dde01aaddcb50250731259f440a2d120c91fa474905b8670f560634fe4",
+    "selected_retry_status": "timeout_no_counts;120.006279041s;no new retry authorized"
+  },
+  "tasks": [
+    {
+      "task": 1,
+      "axis": "manuscript_validation",
+      "scientific_status": "OPEN/BLOCKED beyond exact restrictive admissions",
+      "existing_specialist_jobs": [
+        "manuscript-reconcile-1113162936",
+        "manuscript-reconcile-review-1113162936",
+        "manuscript-reconcile-integrate-1113162936",
+        "updated-bounded-checks-1113162936",
+        "updated-final-astra-1113162936"
+      ],
+      "full_scope_owner": "new-fullplan-coordinator-1113162936",
+      "remaining_acceptance_obligations": [
+        "admitted-only current amendment with dirty20/C5/CEC/RUS/noise losses",
+        "remaining audited tests/offline notebooks and approved offline package backend",
+        "qualified135 replay retains missing supervisor receipt",
+        "final contribution/novelty/evidence gate"
+      ],
+      "scheduling_warning": "existing specialist chain does not certify broader remaining axes"
+    },
+    {
+      "task": 2,
+      "axis": "matched_protocol",
+      "scientific_status": "OPEN/BLOCKED beyond exact restrictive admissions",
+      "existing_specialist_jobs": [
+        "c5-calibration-order-fix-1113162936",
+        "scaling-transfer-fix-1113162936"
+      ],
+      "full_scope_owner": "new-fullplan-coordinator-1113162936",
+      "remaining_acceptance_obligations": [
+        "target/calibration/precision/workspace/process identities",
+        "actual inverse/signed reflection/interface bit order",
+        "live peak and unavailable compiler splits explicit, no absent-identity match"
+      ],
+      "scheduling_warning": "existing specialist chain does not certify broader remaining axes"
+    },
+    {
+      "task": 3,
+      "axis": "mcx_costs",
+      "scientific_status": "OPEN/BLOCKED beyond exact restrictive admissions",
+      "existing_specialist_jobs": [
+        "mcx-dirty20-fix-1113162936",
+        "mcx-dirty20-review-1113162936",
+        "mcx-dirty20-integrate-1113162936"
+      ],
+      "full_scope_owner": "new-fullplan-coordinator-1113162936",
+      "remaining_acceptance_obligations": [
+        "fail-closed exact dirty20 construction",
+        "separate filtered correct-cost denominator with exact evidence review",
+        "nine-graph matched policy/component/search/common/routed/FT coverage",
+        "Gray12..20 excluded; Dutta analytical; rotations unpriced"
+      ],
+      "scheduling_warning": "existing specialist chain does not certify broader remaining axes"
+    },
+    {
+      "task": 4,
+      "axis": "comparison_cec_common_routing_ft",
+      "scientific_status": "OPEN/BLOCKED beyond exact restrictive admissions",
+      "existing_specialist_jobs": [
+        "cec-focused-successor-1113162936",
+        "cec-focused-review-1113162936",
+        "cec-focused-integrate-1113162936"
+      ],
+      "full_scope_owner": "new-fullplan-coordinator-1113162936",
+      "remaining_acceptance_obligations": [
+        "12 saved large chains;39 small common oracles;60 small common searches;63 unresolved small translations",
+        "five profiles/all workspace and decomposition policies across nine graphs",
+        "routing seeds11,23,37,41,53;FT budgets1e-3,1e-2,1e-4",
+        "frozen14850 ledger:3780 unrun costs,6750 routing,4050FT;K5 not universally admitted/no25-control rerun"
+      ],
+      "scheduling_warning": "existing specialist chain does not certify broader remaining axes"
+    },
+    {
+      "task": 5,
+      "axis": "native_mechanisms",
+      "scientific_status": "OPEN/BLOCKED beyond exact restrictive admissions",
+      "existing_specialist_jobs": [
+        "native-typed-leaf-fix-1113162936",
+        "native-typed-leaf-review-1113162936",
+        "native-typed-leaf-integrate-1113162936"
+      ],
+      "full_scope_owner": "new-fullplan-coordinator-1113162936",
+      "remaining_acceptance_obligations": [
+        "strict typed duplicate-leaf/indices boundary composed with current scaling/SAT source",
+        "exact whole-chain independent review/private provenanced build",
+        "public MC/profile/fast/depth composition and larger CEC",
+        "matched width/T-count/T-depth mechanism ablations"
+      ],
+      "scheduling_warning": "existing specialist chain does not certify broader remaining axes"
+    },
+    {
+      "task": 6,
+      "axis": "graph_ft_dynamic_rus",
+      "scientific_status": "OPEN/BLOCKED beyond exact restrictive admissions",
+      "existing_specialist_jobs": [],
+      "full_scope_owner": "new-fullplan-coordinator-1113162936",
+      "remaining_acceptance_obligations": [
+        "source-specific precision preflight before new tight1e-4 full-search attempt",
+        "retain3000000 guard and failed7875644/10125710/10125196 operation bounds",
+        "achieved preparation break-even null",
+        "RUS remains heralded cap-bounded instrument; unpriced nonT/reset/feedforward/runtime; no staticA/inverse substitution"
+      ],
+      "scheduling_warning": "existing specialist chain does not certify broader remaining axes"
+    },
+    {
+      "task": 7,
+      "axis": "ideal_noisy_resource_c5",
+      "scientific_status": "OPEN/BLOCKED beyond exact restrictive admissions",
+      "existing_specialist_jobs": [
+        "c5-calibration-order-fix-1113162936",
+        "c5-calibration-order-review-1113162936",
+        "c5-calibration-order-integrate-1113162936",
+        "c5-admitted-missing-execute-1113162936",
+        "c5-admitted-missing-review-1113162936",
+        "c5-admitted-missing-integrate-1113162936"
+      ],
+      "full_scope_owner": "new-fullplan-coordinator-1113162936",
+      "remaining_acceptance_obligations": [
+        "distinct50 best-fit requests source blocked;zero shots,not timeouts/exclusions",
+        "401 original-family keys lack admitted observations;no pooled/resilience claim",
+        "selected K3R2seed37j2 exact caller/resource review before any retry and separate evidence review if executed",
+        "resource-justified missing-family requests only;retain failed/partial artifacts",
+        "structure22 R1j2..5/R2j2..3 unexecuted, no widened authorization"
+      ],
+      "scheduling_warning": "existing specialist chain does not certify broader remaining axes"
+    },
+    {
+      "task": 8,
+      "axis": "scaling",
+      "scientific_status": "OPEN/BLOCKED beyond exact restrictive admissions",
+      "existing_specialist_jobs": [
+        "scaling-transfer-fix-1113162936",
+        "scaling-transfer-review-1113162936",
+        "scaling-transfer-execute-1113162936",
+        "scaling-new-evidence-review-1113162936",
+        "scaling-new-integrate-1113162936"
+      ],
+      "full_scope_owner": "new-fullplan-coordinator-1113162936",
+      "remaining_acceptance_obligations": [
+        "genuine receipt transfer across firstSIGINT",
+        "zero selected invocations/220 pending;five actual repeats then missing-only coverage",
+        "90s selected child/900s cumulative/6GiB declared envelope,one compiler child",
+        "DSJC125.1/le450_5a positive witness prerequisites;largerM unknown;stage splits unavailable"
+      ],
+      "scheduling_warning": "existing specialist chain does not certify broader remaining axes"
+    }
+  ],
+  "reference_hashes": {
+    "docs/research/fullplan_coordinator_20261113.md": "302f6b876002976175222b65493f0b1659f04773fc619a68b3ab3be2e62744b7",
+    "docs/research/c5_noise_missing_independent_review_20261119.md": "615d14c0eeb7bb3b2e6dc08f4740bdc09d20e19ea8cc3474691e672d91304370",
+    "docs/research/c5_noise_missing_execution_block_20261119.md": "528888254fb5973ee976346e50ec46fff705f72a48c8e5609722e06460512963",
+    "docs/research/noisy_resource_independent_review_20261113.md": "9fbf88fdc91aeb6b0f58a8439d323ddf15c64e6e985585101e86426079d51783",
+    "docs/research/noisy_resource_integration_20261119.md": "bf8b7efdc9c494fbc2b9ad6f671510e26e23abdc9cb80ceb5d68d16af1f7a182",
+    "docs/research/comparison_common_integration_20261108.md": "8b98c60865d3cf80c872a44560aee90af42ee32f527da9b771ad947f40adddf1",
+    "docs/research/final_quantum_claim_independent_review_20261113.md": "cc7043bec29dedd8dfa080bb7a3b8d611a7a715e955cd2ce3422c8ef178eb066"
+  },
+  "unscheduled_followup_specs": [
+    {
+      "axis": "selected_noise",
+      "implementation_profile": "experiments",
+      "deliverable": "implemented identity-locked exact full caller or ordered local-channel optimization;representative channel-density/entanglement resource fixtures;no scientific retry",
+      "review_profile": "critical_review",
+      "acceptance": "positive exact source/resource decision preserving64shots,120s,18active,calibration,orderedqargs,coherent1e-10 gates",
+      "subsequent": "coordinator integrates exact bytes,one justified bounded request,independent evidence review,updated isolated checks/Astrahigh review,NEW final coordinator"
+    },
+    {
+      "axis": "graph_ft_precision",
+      "implementation_profile": "costs",
+      "deliverable": "source-specific tighter conservative preflight with original whole-search error contracts and caps",
+      "review_profile": "critical_review",
+      "acceptance": "independent exact mathematical/source decision before one justified missing-only precision attempt;preserve all original failures",
+      "subsequent": "execution and separate evidence review,updated checks/Astrahigh review,NEW final coordinator"
+    },
+    {
+      "axis": "matched_profiles_policies_routing_ft",
+      "implementation_profile": "comparison",
+      "deliverable": "missing-only frozen-ledger shard after native/MCX/CEC source gates;all nine graphs retained",
+      "acceptance": "explicit comparable strongest baselines/identities,preallocation/runtime exclusions,5seeds and statedFTprecision,losses,independent exact evidence review",
+      "subsequent": "new full coordinator assigns bounded shards after lawful definition-cap decision"
+    }
+  ]
+}

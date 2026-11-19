@@ -62,6 +62,9 @@ DEFAULTS = {
     # Reorder commuting gates of every oracle to a lower T-depth (same gates).
     "schedule": False,
     "description": "corrected-study",  # names the run folder
+    # Device for routed metrics: the FakeTorino snapshot, or a square grid that
+    # grows with each circuit (Nighthawk topology).
+    "route_backend": "torino",
     "drop_precolors": True,
     "samples": 256,
     "seed": 7,
@@ -120,6 +123,8 @@ def study_settings(config: dict) -> dict:
         raise ValueError(
             "iterations must be 'optimal', an integer, or a list of integers"
         )
+    if settings["route_backend"] not in ("torino", "grid"):
+        raise ValueError("route_backend must be 'torino' or 'grid'")
     if type(settings["schedule"]) is not bool:
         raise ValueError("schedule must be true or false")
     if not 0 < settings["rotation_budget"] < 1:
@@ -289,7 +294,7 @@ def run_study(config: dict, *, executable=None) -> Path:
         rotation_t_count,
     )
     from .metrics import circuit_metrics
-    from .routing import default_backend, routed_metrics
+    from .routing import default_backend, grid_backend, routed_metrics
 
     settings = study_settings(config)
     limits = settings["limits"]
@@ -315,8 +320,13 @@ def run_study(config: dict, *, executable=None) -> Path:
         "cases": [],
     }
     rows = []
-    backend = default_backend() if "routed" in settings["targets"] else None
-    route_qubits = limits["route_qubits"] or (backend.num_qubits if backend else 0)
+    grid = settings["route_backend"] == "grid"
+    backend = (
+        default_backend() if "routed" in settings["targets"] and not grid else None
+    )
+    route_qubits = limits["route_qubits"] or (
+        backend.num_qubits if backend else (10**9 if grid else 0)
+    )
 
     def save():
         (output / "run.json").write_text(
@@ -579,7 +589,11 @@ def run_study(config: dict, *, executable=None) -> Path:
                                 }
                             else:
                                 record = routed_metrics(
-                                    iteration, backend=backend, seeds=settings["seeds"]
+                                    iteration,
+                                    backend=(
+                                        grid_backend(total_width) if grid else backend
+                                    ),
+                                    seeds=settings["seeds"],
                                 )
                                 record.pop("per_seed", None)
                             rows.append(

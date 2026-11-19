@@ -54,3 +54,30 @@ def test_wide_circuits_are_labelled_infeasible():
     record = routing.routed_metrics(circuit)
     assert record["routed"] is False
     assert "134" in record["reason"]
+
+
+@pytest.mark.parametrize(
+    "qubits, shape", [(120, (10, 12)), (11, (3, 4)), (4, (2, 2)), (1, (1, 2))]
+)
+def test_grid_backend_follows_the_nighthawk_lattice(qubits, shape):
+    backend = routing.grid_backend(qubits)
+    rows, columns = shape
+    assert backend.num_qubits == rows * columns >= qubits
+    assert f"{rows}x{columns}" in backend.name
+    degree = {}
+    for a, b in backend.coupling_map.get_edges():
+        degree[a] = degree.get(a, 0) + 1
+    # Each qubit couples to at most four neighbours (edges are listed both ways).
+    assert max(degree.values(), default=0) <= 4
+    assert "cz" in backend.target.operation_names
+
+
+def test_routed_metrics_on_an_uncalibrated_grid():
+    circuit = QuantumCircuit(5)
+    circuit.ccx(0, 1, 4)
+    circuit.append(RXGate(math.pi).control(2), [2, 3, 4])
+    backend = routing.grid_backend(circuit.num_qubits)
+    record = routing.routed_metrics(circuit, backend=backend, seeds=(11, 23))
+    assert record["routed"] and record["two_qubit_count"] >= 10
+    assert record["esp"] is None and record["duration_s"] is None
+    assert record["backend"].startswith("square grid")

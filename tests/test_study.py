@@ -394,6 +394,31 @@ def test_study_records_the_schedule_setting(native, tmp_path):
     assert set(summary.optimization_profile) == {"balanced_rounds"}
 
 
+@pytest.mark.integration
+def test_grid_routing_reaches_circuits_wider_than_torino(native, tmp_path):
+    import pandas as pd
+
+    from logique.benchmarks.study import run_study
+
+    run = run_study(
+        {
+            "inputs": [str(GRAPHS / "K3.col")],
+            "methods": ["xag"],
+            "regimes": ["R3"],
+            "targets": ["routed"],
+            "route_backend": "grid",
+            "seeds": [11],
+            "mcx_policies": ["throwaway_tree"],
+            "output": str(tmp_path / "1119000000-grid"),
+        },
+        executable=native,
+    )
+    routed = pd.read_csv(run / "summary.csv")
+    routed = routed[routed.metric_level == "routed"]
+    assert routed.routed.all() and routed.backend.str.startswith("square grid").all()
+    assert (routed.two_qubit_count > 0).all()
+
+
 def test_iterations_beyond_the_routing_limit_are_recorded(tmp_path):
     pytest.importorskip("qiskit_ibm_runtime")
     pytest.importorskip("saha_belletti")
@@ -511,4 +536,6 @@ def test_study_settings_reject_unknown_values():
         study_settings({**base, "limits": {"unknown": 1}})
     with pytest.raises(ValueError, match="schedule"):
         study_settings({**base, "schedule": "yes"})
+    with pytest.raises(ValueError, match="route_backend"):
+        study_settings({**base, "route_backend": "heron"})
     assert study_settings(base)["regimes"] == ["R1", "R2", "R3"]

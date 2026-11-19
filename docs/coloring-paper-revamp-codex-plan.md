@@ -914,3 +914,21 @@ headers immutable, state/history untouched. Existing six extension owners
 remain; do not duplicate them or the newly assigned corrections. Full matched
 profiles/policies/routing/FT/noise/scaling remain open. Dispatcher alone launches
 and publishes; checkpoint dump/1113162936-fullplan-final-coordinator/checkpoint.json.
+
+
+## 19 November exact selected-noise resource decision
+
+[Exact resource integration](research/noisy_resource_integration_20261119.md)
+verifies independent review `dc959490` and candidate `f0a2a06`. Three exact
+diagnostic paths are integrated as `06ce761`. Saved 13 November candidate/root
+checks each passed 23 tests; 137 worker, 25 reviewer and 35 selected predecessor
+artifact entries match. A fresh 19 November identity check confirms no drift
+after interruption; no numerical tests or scientific sampling were repeated.
+The full scientific caller and plausible 64-shot/120 s resource plan remain
+BLOCKED. The selected seed37/j2 request retains its 120.006279 s timeout without
+counts. Inherited family scope remains 404 records/25,856 shots and 401 frozen
+keys without admitted observations; this is not a fresh family recount.
+Existing extended-final/new-fullplan coordinators retain the remaining scope;
+C5 calibration/adapter/execution owners remain separate. Queue 126 definitions
+and null calendar/lifetime limits are unchanged. Completion checkpoint:
+`dump/1119151731-noisy-resource-integration-completion/checkpoint.json`.

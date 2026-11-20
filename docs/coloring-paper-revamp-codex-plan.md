@@ -955,3 +955,20 @@ acceptance/followup requirements; full research/manuscript gate remains BLOCK.
 Checkpoint: `dump/1119153456-noisy-extended-final-exact-coordination/checkpoint.json`.
 Bounded coordinator completion releases the existing26 successor jobs; dispatcher
 alone launches and pushes. No numerical study or completed-task replay occurred.
+
+## 20 November scaling receipt-transfer execution gate
+
+[Exact integration decision](research/scaling_transfer_integration_20261120.md)
+authenticates independent review `312bf0f` and complete candidate `78aab2e`.
+Whole-source BLOCK persists: original two copy failures are repaired, but 18
+restoration-tail exception-receipt failures and six earlier-error precedence
+failures prevent admission. The review is copied verbatim; no implementation,
+compiler invocation, execution configuration or new scientific metric is imported.
+All 15 offered paths, 96 source/context files, three overlapping inventories
+(1,301/589/1,231 entries) and the ten prepared inputs/frozen 220-slot ledger match.
+All220 slots remain unlaunched. Focused entire-tail correction and exact whole-path
+review must precede integration/checks and missing-only five-repeat execution;
+independent evidence review remains separate. Existing downstream/final owners
+consume BLOCK without polling. Queue126/null calendar/null lifetime bounds and
+separate128-definition capacity remain unchanged. Checkpoint:
+`dump/1120012718-scaling-transfer-exact-block-integration/checkpoint.json`.

@@ -1,0 +1,12 @@
+{
+  "source_review_commit": "3383bea84c8408d02d1e41386f87b0a2dc3ba4be",
+  "source_run": "dump/1030020413-full-scope-continuation-coordinator/worktrees/native-value-review/dump/1030214922-native-value-independent-review",
+  "original_files": {
+    "old-seven-input.json": "seven-old.stdout",
+    "valid-equal-cones.json": "equal-none.stdout"
+  },
+  "sha256": {
+    "old-seven-input.json": "25b1968a5cf5043cff8a9fc9a827770402938cf25871068104f6bb5e69fbab48",
+    "valid-equal-cones.json": "6f6ed77d607a6d9b084405bb9676134dede125cfe787d8ebb85ee6ecaa18861b"
+  }
+}

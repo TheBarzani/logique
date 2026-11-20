@@ -45,6 +45,13 @@ def synthesize(
     ``qubit_budget`` includes inputs, constants and output copies; it excludes
     external XOR-wrapper targets. SAT wall time is bounded by the Python process
     timeout; native search checks time between conflict-bounded solver calls.
+    XAG Bennett also accepts ``strategy='xag_low_t'`` only with a mandatory
+    ``canonical_sequential_two_cone_truth_tables_v1`` certificate: <=6 inputs,
+    <=256 stored nodes, <=256 wires and <=4096 mapping steps. The canonical
+    cleaned topological sequential schedule requires clean initial workspace.
+    Missing/malformed certificates and unsupported counts fail before circuit
+    construction. Exact static gates and emitted inverses are used; no free
+    measurement-assisted AND inverse or low-T resource advantage is promised.
     Omission retains Bennett mapping.
     """
     if method not in METHODS:
@@ -69,10 +76,18 @@ def synthesize(
     if strategy is not None:
         if method not in ("aig_bennett", "xag_bennett"):
             raise ValueError("strategy is supported only for AIG/XAG Bennett methods")
-        if strategy not in ("bennett", "bennett_inplace", "eager", "sat_pebbling"):
+        if strategy not in (
+            "bennett",
+            "bennett_inplace",
+            "eager",
+            "sat_pebbling",
+            "xag_low_t",
+        ):
             raise ValueError(
-                "strategy must be bennett, bennett_inplace, eager or sat_pebbling"
+                "strategy must be bennett, bennett_inplace, eager, sat_pebbling or xag_low_t"
             )
+        if strategy == "xag_low_t" and method != "xag_bennett":
+            raise ValueError("xag_low_t strategy is supported only for xag_bennett")
     sat = dict(
         qubit_budget=qubit_budget,
         sat_max_steps=sat_max_steps,

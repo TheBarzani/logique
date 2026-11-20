@@ -1,4 +1,68 @@
 #include "../include/actions.hpp"
+#include "../include/xag_controls.hpp"
+
+// Full basis action proves the real normalized unitary (all phases are +1),
+// including arbitrary target bits and the inverse, independently of LHRS.
+void check_physical_boolean_controls() {
+    unsigned checked = 0;
+    for (unsigned mask = 0; mask < 16; ++mask) {
+        for (auto indices : {std::vector<uint32_t>{0, 0, 1, 0},
+                             std::vector<uint32_t>{1, 0, 1, 0}}) {
+            PhysicalBooleanCircuit circ;
+            for (int i = 0; i < 3; ++i) circ.add_qubit();
+            std::vector<td::qubit_id> cs;
+            for (unsigned i = 0; i < indices.size(); ++i)
+                cs.emplace_back(indices[i], bool((mask >> i) & 1));
+            circ.add_gate(td::gate::mcx, cs, std::vector<td::qubit_id>{2});
+            if (circ.normalizations.size() != 1)
+                throw std::runtime_error("Missing physical normalization evidence");
+            auto apply = [&](unsigned state, bool inverse) {
+                auto gates = circ.gates;
+                if (inverse) std::reverse(gates.begin(), gates.end());
+                for (auto const& g : gates) {
+                    bool enabled = true;
+                    std::set<unsigned> unique;
+                    for (size_t j = 0; j < g["controls"].size(); ++j) {
+                        unsigned c = g["controls"][j];
+                        if (!unique.insert(c).second || c == g["target"] || c >= 3)
+                            throw std::runtime_error("Invalid normalized gate wiring");
+                        enabled &= bool((state >> c) & 1) == g["polarity"][j].get<bool>();
+                    }
+                    if (enabled) state ^= 1u << g["target"].get<unsigned>();
+                }
+                return state;
+            };
+            for (unsigned state = 0; state < 8; ++state) {
+                bool conjunction = true;
+                for (size_t i = 0; i < indices.size(); ++i)
+                    conjunction &= bool((state >> indices[i]) & 1) != bool((mask >> i) & 1);
+                unsigned expected = state ^ (unsigned(conjunction) << 2);
+                if (apply(state, false) != expected || apply(expected, true) != state)
+                    throw std::runtime_error("Incorrect Boolean control unitary/inverse");
+                ++checked;
+            }
+        }
+    }
+    // A contradiction does not excuse a target alias or an out-of-range wire.
+    for (auto cs : {std::vector<td::qubit_id>{0, td::qubit_id(0, true), 2},
+                    std::vector<td::qubit_id>{0, td::qubit_id(0, true), 3}}) {
+        PhysicalBooleanCircuit circ;
+        for (int i = 0; i < 3; ++i) circ.add_qubit();
+        bool rejected = false;
+        try { circ.add_gate(td::gate::mcx, cs, std::vector<td::qubit_id>{2}); }
+        catch (std::runtime_error const&) { rejected = true; }
+        if (!rejected || !circ.gates.empty()) throw std::runtime_error("Invalid alias accepted");
+    }
+    for (auto t : {td::qubit_id(3), td::qubit_id(2, true)}) {
+        PhysicalBooleanCircuit circ;
+        for (int i = 0; i < 3; ++i) circ.add_qubit();
+        bool rejected = false;
+        try { circ.add_gate(td::gate::pauli_x, t); }
+        catch (std::runtime_error const&) { rejected = true; }
+        if (!rejected) throw std::runtime_error("Invalid physical target accepted");
+    }
+    std::cout << "Passed " << checked << " physical Boolean unitary/inverse columns and 4 rejections\n";
+}
 
 // Exercise the pinned variant directly: no mapping algorithm is exposed just
 // to make its action type reachable. Compare complete rows, including payloads.
@@ -50,6 +114,7 @@ int main() {
         check(cp::compute_level_action{}, {{"action", "compute_level"}, {"level", json::array()}});
         check(cp::uncompute_level_action{}, {{"action", "uncompute_level"}, {"level", json::array()}});
         std::cout << "Passed " << checked << " exact action rows across all 7 pinned variants\n";
+        check_physical_boolean_controls();
     } catch (std::exception const& error) {
         std::cerr << error.what() << '\n';
         return 1;

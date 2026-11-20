@@ -53,7 +53,8 @@ strategy="eager")`). These instantiate the pinned Caterpillar
 `eager_mapping_strategy` classes, respectively, after the selected preprocessing
 and representation conversion. Omission still uses Bennett. The other three
 methods reject every explicit strategy control, including `bennett`. Unknown
-values, low-T/low-depth, SAT and strategy-specific tuning are unsupported.
+values and strategy-specific tuning reject. The bounded sequential XAG and SAT
+opt-ins are specified below.
 `mapping_strategy` records `name`, `explicit`, and the qualified `implementation`;
 Python requires this confirmation and a step array for every explicit request,
 so the control cannot silently disappear at an older bridge. `steps` contains
@@ -81,8 +82,8 @@ restore it. Unused primary inputs remain declared. Focused tests in
 independent functions and coloring predicates, all joint XOR-target patterns,
 phase/workspace restoration, nested in-place targets, shared fanout, early eager
 cleanup and bounded superpositions. This is no admission of low-T/low-depth,
-level-based, LUT in-place, best-fit strategy overrides or SAT/recomputation
-variants, and makes no performance claim.
+level-based, LUT in-place or best-fit strategy overrides; the separate bounded
+SAT opt-in is described below. No performance claim follows.
 
 Common preprocessing is **opt-in**. Add `"preprocessing":"none"` or
 `"preprocessing":"refactoring"` to the native request, or pass
@@ -132,8 +133,80 @@ Configure with `-DLOGIQUE_BUILD_CONTRACT_PROBES=ON` and run
 every variant, including populated and empty payloads. These probes validate
 serialization; they do not certify the gate-emission semantics of additional
 strategies. Gate-emission acceptance is separate from these serializer probes;
-SAT controls remain unsupported.
+The bounded SAT opt-in is described below.
 
 The notebook compares these specific configurations, not published optimal
 resource counts. It explicitly distinguishes raw clean-output computations from
 the compute/copy/uncompute wrapper that accepts arbitrary XOR targets.
+
+## Capped sequential XAG value certificate
+
+The explicit `xag_bennett` / `strategy="xag_low_t"` path uses the pinned
+non-template `caterpillar::xag_mapping_strategy`. It requires
+`xag_value_validation.policy="canonical_sequential_two_cone_truth_tables_v1"`.
+This is a sequential two-cone schedule with exact static X/CNOT/Toffoli gates;
+the name makes no T-count or free inverse-AND claim. Fast/depth/level mappings
+are separate and unsupported by this policy.
+
+The supported domain is a cleaned combinational binary XAG in stored topological
+order, with consecutive canonical PIs, distinct earlier nonconstant fanins and
+uncomplemented XOR children. AND/output complements and unused PIs are retained.
+Initial computation workspace must be clean. Release/NDEBUG supports empty
+internal XOR frontiers; Debug explicitly rejects them. The native validator checks
+caps before allocating its Boolean tables: **6 inputs, 256 stored nodes, 256
+physical wires, 4096 mapping steps**, plus at most 256 outputs. Parsing and
+preprocessing occur earlier; these are not general parser memory limits.
+Above-cap requests reject as unsupported, without a silent fallback.
+
+The certificate must declare exactly these four `caps` and integer
+`inputs`, `nodes`, `width`, `steps`, `assignments`, `blocks`, `operand_reads`
+and `zero_releases` counts. `assignments` equals $2^{\mathrm{inputs}}$; node and
+wire truth tables contain at most 64 assignment bits. `node_values` is indexed by
+stored node ID. `block_checks` records central node/undo identity, entry/exit
+active boundary addresses, generations and values, and two cone frames containing
+saved/prepared/restored values. Native validation checks actual operand values,
+restoring frames, zero-before-release/reuse, and exact schedule/gate/I/O emission.
+A stack generation or address alone never proves its Boolean value.
+
+Python requires this certificate before `records_to_qiskit`. Missing, malformed,
+unknown-policy, wrong-cap, inconsistent-count or invalid-address responses raise
+`RuntimeError`. Boolean and floating-point substitutes for integer fields reject.
+Python checks canonical network/table consistency, steps against audit actions,
+block/read/release counts, trace addresses and restoration, gate wiring/polarity,
+and scalar emitted output/input/workspace tables. It accepts the exact saved
+valid response and rejects the saved historical seven-input response without a
+certificate. This handshake is not an unrestricted proof for arbitrary schedules
+or an authenticated assertion by an untrusted executable.
+
+The redundant action `leaves` list is independently checked as a bounded list
+of distinct integer node IDs before comparison with `explicit_leaves`. Its
+length, order and values must match exactly. In particular, `true` and `1.0`
+cannot stand in for node ID `1`, even if both the step and its audit action
+contain the same malformed payload. Other node/wire indices in the mapped
+network, action trace, frames, stacks, gates and normalization records also use
+strict integer checks. Unread stale stack aliases remain valid addresses.
+
+Internal XOR aliases can remain live but stale after a cone restores its anchor.
+Their final stacks are checked as addresses, never admitted as persistent values;
+only an actual prepared operand or active block boundary supplies a value.
+Raw complemented PI outputs may change that PI. The actual emitted inverse in
+the compute/copy/inverse and compute/Z/inverse wrappers restores computation
+inputs/workspace on the clean-workspace subspace; dirty initial scratch is excluded.
+
+The current bridge also retains the independently bounded `sat_pebbling` strategy
+for AIG/XAG Bennett with all four explicit positive integer controls:
+`qubit_budget<=64`, `sat_max_steps<=128`, `sat_conflict_limit<=100000`,
+`sat_time_seconds<=30`. Its separate ordinary-action emitter and value checks
+remain unchanged; the sequential cone certificate does not certify SAT schedules.
+SAT domain limits are 6 inputs, 32 gates, 64 nodes and 16 outputs. Python's
+whole-process timeout is `sat_time_seconds+1`; direct JSON clients must impose
+an external deadline. Horizon/conflict exhaustion does not establish global
+infeasibility. Bennett, in-place Bennett, eager and the other methods retain
+their existing behavior and do not require this cone certificate.
+
+Build this composition into a new private directory with serial `-j1`, preserving
+older executables. With `LOGIQUE_BUILD_CONTRACT_PROBES=ON`, CTest runs action,
+value and SAT probes. Keep `build_provenance.json`, `sat_build_provenance.json`,
+compiler commands, effective dependency hashes and the executable SHA256 together.
+Exact whole-composition independent review remains necessary before integration;
+a passing implementation test or queue completion is not scientific admission.

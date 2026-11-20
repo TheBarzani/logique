@@ -2,8 +2,10 @@
 #include "serialization.hpp"
 #include "actions.hpp"
 #include "sat_pebbling.hpp"
-template<class Ntk, class Strategy> json compile(Ntk const& ntk, Strategy& strategy) {
-    RecordingCircuit circ;
+#include "xag_controls.hpp"
+#include "xag_value_validator.hpp"
+template<class Ntk, class Strategy, class Circuit>
+json compile(Ntk const& ntk, Strategy& strategy, Circuit& circ) {
     cp::logic_network_synthesis_stats stats;
     if (!cp::logic_network_synthesis(circ, ntk, strategy, RecordLut{}, {}, &stats))
         throw std::runtime_error("Mapping strategy failed");
@@ -13,6 +15,11 @@ template<class Ntk, class Strategy> json compile(Ntk const& ntk, Strategy& strat
     });
     return {{"num_qubits", circ.width}, {"gates", circ.gates}, {"input_qubits", stats.i_indexes},
             {"output_qubits", stats.o_indexes}, {"steps", steps}, {"network", graph_json(ntk)}};
+}
+
+template<class Ntk, class Strategy> json compile(Ntk const& ntk, Strategy& strategy) {
+    RecordingCircuit circ;
+    return compile(ntk, strategy, circ);
 }
 
 // Instantiate the pinned classes, rather than relabeling Bennett schedules.
@@ -35,8 +42,10 @@ inline json map_network(mt::xag_network const& selected, json const& request) {
         const auto strategy = explicit_strategy ? request.at("strategy").get<std::string>() : "bennett";
         if (explicit_strategy && method != "aig_bennett" && method != "xag_bennett")
             throw std::runtime_error("strategy is supported only for AIG/XAG Bennett methods");
-        if (strategy != "bennett" && strategy != "bennett_inplace" && strategy != "eager" && strategy != "sat_pebbling")
-            throw std::runtime_error("strategy must be bennett, bennett_inplace, eager or sat_pebbling");
+        if (strategy != "bennett" && strategy != "bennett_inplace" && strategy != "eager" && strategy != "xag_low_t" && strategy != "sat_pebbling")
+            throw std::runtime_error("Unsupported strategy");
+        if (strategy == "xag_low_t" && method != "xag_bennett")
+            throw std::runtime_error("xag_low_t strategy is supported only for xag_bennett");
         const bool common = request.find("preprocessing") != request.end();
         const auto policy = common ? request.at("preprocessing").get<std::string>()
                                    : (method == "aig_bennett" ? "none" : "refactoring");
@@ -62,8 +71,30 @@ inline json map_network(mt::xag_network const& selected, json const& request) {
             Network<mt::aig_network> ntk(mt::cleanup_dangling<mt::xag_network, mt::aig_network>(xag));
             result = strategy == "sat_pebbling" ? compile_sat(ntk, sat_budget(request)) : compile_bennett(ntk, strategy);
         } else if (method == "xag_bennett") {
-            Network<mt::xag_network> ntk(xag);
-            result = strategy == "sat_pebbling" ? compile_sat(ntk, sat_budget(request)) : compile_bennett(ntk, strategy);
+            if (strategy == "xag_low_t") {
+                // This non-template pinned class uses the actual bundled XAG,
+                // not the Network adapter or any level strategy.
+                xag_value::Domain domain(xag);
+                auto expected = xag_value::expected(domain);
+                auto audit = audit_xag_schedule(xag);
+                xag_value::require(audit.at("steps") == expected.at("steps") &&
+                    audit.at("actions") == expected.at("actions") &&
+                    audit.at("node_stacks") == expected.at("node_stacks"),
+                    "pinned stack audit differs from independent block replay");
+                cp::xag_mapping_strategy mapping;
+                PhysicalBooleanCircuit circ;
+                result = compile(xag, mapping, circ);
+                xag_value::match(expected, result);
+                if (result.at("steps") != audit.at("steps"))
+                    throw std::runtime_error("xag_low_t: schedule changed after audit");
+                audit.erase("steps");
+                result["xag_schedule_audit"] = audit;
+                result["physical_control_normalization"] = circ.normalizations;
+                result["xag_value_validation"] = expected.at("certificate");
+            } else {
+                Network<mt::xag_network> ntk(xag);
+                result = strategy == "sat_pebbling" ? compile_sat(ntk, sat_budget(request)) : compile_bennett(ntk, strategy);
+            }
         } else if (method == "klut_bennett") {
             const int k = request.value("k", 4);
             if (k < 2 || k > 6) throw std::runtime_error("k must be between 2 and 6");
@@ -90,6 +121,7 @@ inline json map_network(mt::xag_network const& selected, json const& request) {
         result["mapping_strategy"] = {{"name", name}, {"explicit", explicit_strategy},
             {"implementation", method == "xag" ? "tweedledum::xag_synth" :
                 name == "sat_pebbling" ? "logique::bounded_sat_pebbling" :
+                name == "xag_low_t" ? "caterpillar::xag_mapping_strategy" :
                 "caterpillar::" + name + "_mapping_strategy"}};
         result["preprocessing"] = {{"policy", policy}, {"common", common},
                                    {"before_network", graph_json(selected)},

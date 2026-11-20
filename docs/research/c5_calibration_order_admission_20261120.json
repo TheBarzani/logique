@@ -1,0 +1,37 @@
+{
+  "task": "c5-calibration-order-integrate-1113162936",
+  "review_commit": "f6adc06ae96b16e3c226a33a53b57a987deea6c9",
+  "review_original": "C5_CALIBRATION_ORDER_REVIEW_1113162936.md",
+  "review_copy": "docs/research/c5_calibration_order_independent_review_20261120.md",
+  "review_sha256": "2254e59d9d8121180b4eab7bbd930b7e64b6c76e747ef2d5b97500ed91794dc3",
+  "candidate_correctness": "1bf8095df78924d2eaab3e32ed79d3a08207f506",
+  "candidate_handoff": "4d89fb6f6705204176d40e74c67adb13c4b4dbd2",
+  "reviewed_inheritance": "ad0191ae0d74ac3c440a371e5a53e5705f985113",
+  "source_integration_commit": "f456861ed43601eb4fc5225270c231e4101bd44d",
+  "whole_paths": {
+    "configs/c5_best_fit_noise_adapter.json": {
+      "admitted": "2cea9cd979cd2e37824128e055a8df5ecc9643edd7df64a1f5df38d025a85d63",
+      "preimage": null
+    },
+    "src/logique/benchmarks/c5_noise_adapter.py": {
+      "admitted": "340b382354409d8e157c5b4c6f3a6830c8e24a15d822397c73f92dd3a8948a10",
+      "preimage": null
+    },
+    "src/logique/benchmarks/noisy_iterations.py": {
+      "admitted": "b442146d972b22a4680e123f3247d21be1aa7d6f10a85aaa7118826792cf27df",
+      "preimage": "0630dc70ecd0a8490acdff8dd661c2e939644be18bd500dd8be91dbae5e22385"
+    },
+    "tests/test_c5_noise_adapter.py": {
+      "admitted": "bc64e715d09774c1142fb224280560b12991c3923523ca9463661f360e5e09c2",
+      "preimage": null
+    },
+    "tools/check_c5_noise_adapter.py": {
+      "admitted": "248c393387610d8bea2a91ae9210dc9e5a4a4499f39ac7e176cdd5e9a33dc637",
+      "preimage": null
+    }
+  },
+  "source_gate": "ADMIT exact five paths only",
+  "scientific_gate": "BLOCK; no new scientific observations",
+  "scientific_shots": 0,
+  "checkpoint": "dump/1120162133-c5-calibration-order-exact-integration/checkpoint.json"
+}

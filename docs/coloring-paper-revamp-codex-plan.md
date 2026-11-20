@@ -988,3 +988,20 @@ capacity resolution before missing-only execution and separate evidence review.
 126 definitions/null calendar/null lifetime limits remain unchanged; full
 scientific gate BLOCK. Checkpoint:
 `dump/1120061945-scaling-new-exact-integration/checkpoint.json`.
+
+
+## 20 November exact capped native typed-leaf integration
+
+[Exact whole-path integration](research/native_typed_leaf_integration_20261120.md)
+authenticates Astra review `1296b03` and candidate `1516566`: all18 admitted
+paths imported unchanged, source/build/test commit `1d153aa`, verbatim review
+and dated reports committed separately. Candidate/isolated checks each pass1059
+tests,438 malformed rejections plus one valid sentinel,79 saved responses and
+24640 scalar wrapper columns. All1152 effective build dependencies and119worker/
+924reviewer evidence entries match. Exact private build reused after complete
+identity checks; no rebuild, study replay, performance or public fast/depth
+admission. Scaling process/scaling source stays withheld;220slots unlaunched.
+Future receipt-transfer/native composition requires new exact whole-file review.
+Scientific BLOCK and all dirty20/C5/noise/partialFT restrictions remain binding.
+126definitions/null calendar/null lifetime bounds and README/pins/history remain.
+Checkpoint: `dump/1120064654-native-typed-leaf-exact-integration/checkpoint.json`.

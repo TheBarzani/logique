@@ -1005,3 +1005,24 @@ Future receipt-transfer/native composition requires new exact whole-file review.
 Scientific BLOCK and all dirty20/C5/noise/partialFT restrictions remain binding.
 126definitions/null calendar/null lifetime bounds and README/pins/history remain.
 Checkpoint: `dump/1120064654-native-typed-leaf-exact-integration/checkpoint.json`.
+
+
+## 20 November exact missing-only C5 noisy evidence admission
+
+[Exact bounded integration](research/c5_admitted_missing_integration_20261120.md)
+authenticates review `3fa8a1c`: ten preparation-only j0 histograms/640shots,
+one no-count R1 seed11 j1 timeout,39 unlaunched among50 distinct best-fit
+requests. Configuration integrated whole as `9998160`; no library changes or
+scientific replay. The inaccurate executor report is withheld whole; verbatim
+review corrects its denial of saved `validated_pre_sampling` and compact noise.
+Historical timeout120.081294s/exit−9 supplies no completed-shot evidence.
+Fresh candidate/integrated scalar source/import/hash/interval checks agree;
+172 inherited context entries match. Original805-family membership and inherited
+404records/25,856shots/401missing stay unchanged, without pooling. Exact977-oracle
+structure/four ideal observations and ten best-fit ideal rows remain separate.
+Amplified-noise/full scientific gate BLOCK; NEW final coordinator owns stage-cost
+resource planning under unchanged120s/2GiB and exact review before any semantic
+optimization or further sampling. Existing owners,126definitions, null calendar/
+lifetime limits, README, pins and all failed/partial histories remain intact.
+Checkpoint: `dump/1120165059-c5-admitted-missing-exact-integration/checkpoint.json`.
+Dispatcher alone publishes committed root HEAD.

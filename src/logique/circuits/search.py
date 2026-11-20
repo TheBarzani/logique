@@ -13,7 +13,6 @@ checks of the predicate:
 """
 
 from dataclasses import dataclass, field, replace
-import time
 
 from qiskit import QuantumCircuit
 from qiskit.circuit import ControlledGate
@@ -183,6 +182,7 @@ def logique_instance(
     order is kept only when it prices shallower, and it is verified again;
     ``structure["scheduled"]`` records whether that happened.
     """
+    from logique.benchmarks.timing import Stage
     from logique.synthesis import synthesize
     from logique.verification import (
         verification_assignments,
@@ -193,37 +193,47 @@ def logique_instance(
     if regime not in REGIMES:
         raise ValueError(f"regime must be one of {sorted(REGIMES)}")
     timings = {}
-    started = time.perf_counter()
-    encoding = _encoding(problem, regime, balanced, tree)
-    result = synthesize(
-        encoding,
-        method,
-        executable=executable,
-        timeout=timeout,
-        mc_reduction=mc_reduction,
-        optimization=optimization,
-        **(parameters or {}),
-    )
-    timings["synthesis_s"] = time.perf_counter() - started
+    with Stage() as stage:
+        encoding = _encoding(problem, regime, balanced, tree)
+    timings.update(stage.record("encoding"))
+    with Stage() as stage:
+        result = synthesize(
+            encoding,
+            method,
+            executable=executable,
+            timeout=timeout,
+            mc_reduction=mc_reduction,
+            optimization=optimization,
+            **(parameters or {}),
+        )
+    # The synthesis stage includes the native bridge, a child process.
+    timings.update(stage.record("synthesis"))
     timings["native_s"] = result.metadata.get("native_seconds")
-    started = time.perf_counter()
-    assignments, coverage = verification_assignments(encoding, **(verification or {}))
-    inputs = result.metadata["input_qubits"]
-    output = result.metadata["output_qubits"][0]
-    # Exhaustive coverage is reported as such rather than as explicit inputs.
-    chosen = None if coverage["status"] == "exhaustive" else assignments
-    try:
-        report = verify_kickback_oracle(result, encoding=encoding, assignments=chosen)
-        oracle, form, target = result.circuit, "kick-back", output
-    except AssertionError:
-        report = verify_phase_oracle(result, encoding=encoding, assignments=chosen)
-        oracle, form, target = result.phase_oracle(), "phase", None
+    timings["mc_reduction_s"] = result.metadata.get("mc_reduction_seconds")
+    with Stage() as verifying:
+        assignments, coverage = verification_assignments(
+            encoding, **(verification or {})
+        )
+        inputs = result.metadata["input_qubits"]
+        output = result.metadata["output_qubits"][0]
+        # Exhaustive coverage is reported as such rather than as explicit inputs.
+        chosen = None if coverage["status"] == "exhaustive" else assignments
+        try:
+            report = verify_kickback_oracle(
+                result, encoding=encoding, assignments=chosen
+            )
+            oracle, form, target = result.circuit, "kick-back", output
+        except AssertionError:
+            report = verify_phase_oracle(result, encoding=encoding, assignments=chosen)
+            oracle, form, target = result.phase_oracle(), "phase", None
     scheduled = False
     from logique.benchmarks.costs import is_mcx
 
     # Multi-controlled gates are timed only once expanded: such oracles are
     # scheduled by the study after decomposition (``expand_oracle``).
     expandable = any(is_mcx(inst.operation, 3) for inst in oracle.data)
+    scheduling = Stage()
+    rechecking = Stage()
     if schedule and form == "kick-back" and not expandable:
         from logique.benchmarks.scheduling import (
             mirrored_middle,
@@ -233,33 +243,40 @@ def logique_instance(
         )
         from logique.verification.phase import verify_xor_oracle
 
-        candidate = None
-        middle = mirrored_middle(oracle, output)
-        if middle is not None:
-            try:
-                candidate = reschedule_mirrored(oracle, middle)
-            except ValueError:
-                candidate = None
-        if candidate is None or candidate is oracle:
-            # Without the mirrored structure, the whole oracle is reordered;
-            # swapping commuting gates keeps it exactly.
-            candidate = reschedule(oracle)
-            if priced_t_depth(candidate) >= priced_t_depth(oracle):
-                candidate = oracle
+        with scheduling:
+            candidate = None
+            middle = mirrored_middle(oracle, output)
+            if middle is not None:
+                try:
+                    candidate = reschedule_mirrored(oracle, middle)
+                except ValueError:
+                    candidate = None
+            if candidate is None or candidate is oracle:
+                # Without the mirrored structure, the whole oracle is reordered;
+                # swapping commuting gates keeps it exactly.
+                candidate = reschedule(oracle)
+                if priced_t_depth(candidate) >= priced_t_depth(oracle):
+                    candidate = oracle
         if candidate is not oracle:
-            verify_xor_oracle(
-                candidate,
-                data=inputs,
-                target=output,
-                encoding=encoding,
-                assignments=chosen,
-            )
+            with rechecking:
+                verify_xor_oracle(
+                    candidate,
+                    data=inputs,
+                    target=output,
+                    encoding=encoding,
+                    assignments=chosen,
+                )
             oracle, scheduled = candidate, True
-    timings["verification_s"] = time.perf_counter() - started
+    # Verification is an analysis stage; scheduling belongs to the method.
+    timings["verification_s"] = verifying.wall_s + rechecking.wall_s
+    timings["verification_cpu_s"] = verifying.cpu_s + rechecking.cpu_s
+    timings.update(scheduling.record("schedule"))
     workspace = sorted(set(range(oracle.num_qubits)) - set(inputs) - {output})
-    preparation, diffusion, domain = _assemble(
-        problem, regime, inputs, oracle.num_qubits, target, form == "kick-back"
-    )
+    with Stage() as stage:
+        preparation, diffusion, domain = _assemble(
+            problem, regime, inputs, oracle.num_qubits, target, form == "kick-back"
+        )
+    timings.update(stage.record("preparation"))
     summary = result.summary()
     structure = {
         key: summary[key]
@@ -300,6 +317,7 @@ def baseline_instance(
     verification: dict | None = None,
 ) -> SearchInstance:
     """Wrap a Saha–Belletti oracle; R3 builds it without invalid-color checks."""
+    from logique.benchmarks.timing import Stage
     from logique.synthesis.saha_belletti import baseline_oracle
     from logique.verification import verification_assignments, verify_xor_oracle
 
@@ -307,24 +325,30 @@ def baseline_instance(
         raise ValueError(f"regime must be one of {sorted(REGIMES)}")
     _, complete = REGIMES[regime]
     timings = {}
-    started = time.perf_counter()
-    oracle = baseline_oracle(problem, variant, domain_checks=complete)
-    timings["synthesis_s"] = time.perf_counter() - started
-    encoding = _encoding(problem, regime)
-    started = time.perf_counter()
-    assignments, coverage = verification_assignments(encoding, **(verification or {}))
-    report = verify_xor_oracle(
-        oracle.circuit,
-        data=oracle.data,
-        target=oracle.target,
-        encoding=encoding,
-        assignments=None if coverage["status"] == "exhaustive" else assignments,
-    )
-    timings["verification_s"] = time.perf_counter() - started
+    with Stage() as stage:
+        oracle = baseline_oracle(problem, variant, domain_checks=complete)
+    # Building the hand-constructed oracle is this approach's synthesis stage.
+    timings.update(stage.record("synthesis"))
+    with Stage() as stage:
+        # The encoding serves only the verification here, an analysis stage.
+        encoding = _encoding(problem, regime)
+        assignments, coverage = verification_assignments(
+            encoding, **(verification or {})
+        )
+        report = verify_xor_oracle(
+            oracle.circuit,
+            data=oracle.data,
+            target=oracle.target,
+            encoding=encoding,
+            assignments=None if coverage["status"] == "exhaustive" else assignments,
+        )
+    timings.update(stage.record("verification"))
     width = oracle.circuit.num_qubits
-    preparation, diffusion, domain = _assemble(
-        problem, regime, oracle.data, width, oracle.target, True
-    )
+    with Stage() as stage:
+        preparation, diffusion, domain = _assemble(
+            problem, regime, oracle.data, width, oracle.target, True
+        )
+    timings.update(stage.record("preparation"))
     return SearchInstance(
         method=f"sb_{variant}",
         regime=regime,

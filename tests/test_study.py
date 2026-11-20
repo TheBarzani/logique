@@ -392,6 +392,24 @@ def test_study_records_the_schedule_setting(native, tmp_path):
     summary = pd.read_csv(run / "summary.csv")
     assert set(summary.schedule) == {True}
     assert set(summary.optimization_profile) == {"balanced_rounds"}
+    # Method stages are timed apart from analysis stages, in wall-clock and CPU time.
+    timings = xag["timings"]
+    for stage in ("encoding", "synthesis", "schedule", "verification", "preparation"):
+        assert timings[f"{stage}_s"] >= 0 and timings[f"{stage}_cpu_s"] >= 0
+    assert timings["schedule_s"] > 0  # the oracle was scheduled
+    assert timings["synthesis_cpu_s"] > 0  # includes the native bridge
+    manifest = json.loads((run / "run.json").read_text())
+    assert manifest["machine"]["logical_cores"] >= 1
+    assert all(case["peak_rss_bytes"] > 0 and "load_end" in case for case in cases)
+    search = summary[summary.component == "search"]
+    for column in (
+        "decomposition_s",
+        "decomposition_cpu_s",
+        "pricing_cpu_s",
+        "decomposition_schedule_s",
+        "load_average",
+    ):
+        assert column in search
 
 
 @pytest.mark.integration

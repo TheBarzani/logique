@@ -6,17 +6,26 @@ and prices the preparation, the oracle and the diffusion operator separately at
 the requested metric levels. Search rows combine the components for the chosen
 iteration counts, synthesize rotations under a whole-algorithm error budget,
 and record widths, stage timings and validation coverage.
+
+Stage timings (``benchmarks.timing``) give wall-clock seconds as ``<stage>_s``
+and CPU seconds, including child processes such as the native bridge, as
+``<stage>_cpu_s``. Method stages (encoding, synthesis, scheduling,
+decomposition, preparation) are kept apart from analysis stages
+(verification, pricing, routing). Since 20 November 2026 the decomposition
+time excludes the scheduling of the expanded oracle, reported as
+``decomposition_schedule_s``. The manifest records the machine, and each case
+its load average at start and end and the peak resident memory so far.
 """
 
 from dataclasses import replace
 import json
 from pathlib import Path
 import subprocess
-import time
 
 from logique.coloring import read_dimacs
 from logique.coloring.counting import count_colorings
 from .provenance import checkout_revision, environment, native_provenance
+from .timing import Stage, load_average, machine, peak_memory
 from .runner import new_run_directory
 
 REGIMES = ("R1", "R2", "R3")
@@ -165,10 +174,12 @@ def expand_oracle(
         if schedule and len(expanded.data) <= SCHEDULE_GATES:
             from .scheduling import priced_t_depth, reschedule
 
-            # Reordering commuting gates of the whole oracle keeps it exactly.
-            candidate = reschedule(expanded)
-            if priced_t_depth(candidate) < priced_t_depth(expanded):
-                expanded, info["scheduled"] = candidate, True
+            with Stage() as stage:
+                # Reordering commuting gates of the whole oracle keeps it exactly.
+                candidate = reschedule(expanded)
+                if priced_t_depth(candidate) < priced_t_depth(expanded):
+                    expanded, info["scheduled"] = candidate, True
+            info.update(stage.record("schedule"))
         return expanded, [info]
     start, stop = instance.mirrored
     data = oracle.data
@@ -186,12 +197,14 @@ def expand_oracle(
     if schedule and len(compute.data) <= SCHEDULE_GATES:
         from .scheduling import priced_t_depth, reschedule
 
-        # The scheduler's timing model is approximate: keep the shallower order.
-        candidate = reschedule(compute)
-        if priced_t_depth(candidate, relative_phase) < priced_t_depth(
-            compute, relative_phase
-        ):
-            compute, compute_info["scheduled"] = candidate, True
+        with Stage() as stage:
+            # The scheduler's timing model is approximate: keep the shallower order.
+            candidate = reschedule(compute)
+            if priced_t_depth(candidate, relative_phase) < priced_t_depth(
+                compute, relative_phase
+            ):
+                compute, compute_info["scheduled"] = candidate, True
+        compute_info.update(stage.record("schedule"))
     if relative_phase:
         compute = relative_phase_toffolis(compute)
     kick = copy(data[stop : stop + 1], compute.num_qubits)
@@ -314,6 +327,7 @@ def run_study(config: dict, *, executable=None) -> Path:
         "config": config,
         "settings": settings,
         "versions": environment(),
+        "machine": machine(),
         "checkout": checkout_revision(Path.cwd()),
         "native": native,
         "status": "running",
@@ -362,6 +376,7 @@ def run_study(config: dict, *, executable=None) -> Path:
                     case = {"name": name, **graph, "method": method, "regime": regime}
                     manifest["cases"].append(case)
                     case["status"] = "running"
+                    case["load_start"] = load_average()
                     save()
                     try:
                         if method.startswith("sb_"):
@@ -431,42 +446,53 @@ def run_study(config: dict, *, executable=None) -> Path:
                         None if solutions is None else solutions / instance.domain
                     )
                     for policy in settings["mcx_policies"]:
-                        started = time.perf_counter()
-                        oracle, oracle_info = expand_oracle(
-                            instance,
-                            policy,
-                            relative_phase=settings["relative_phase_mirrored"],
-                            schedule=settings["schedule"],
+                        with Stage() as decomposing:
+                            oracle, oracle_info = expand_oracle(
+                                instance,
+                                policy,
+                                relative_phase=settings["relative_phase_mirrored"],
+                                schedule=settings["schedule"],
+                            )
+                            restoring = (
+                                "clean_tree" if policy == "throwaway_tree" else policy
+                            )
+                            diffusion, diffusion_info = decompose_mcx(
+                                instance.diffusion,
+                                restoring,
+                                clean_wires=instance.clean,
+                            )
+                            if settings["relative_phase_pairs"]:
+                                oracle = paired_relative_phase_toffolis(oracle)
+                                diffusion = paired_relative_phase_toffolis(diffusion)
+                        # Scheduling inside the expansion is reported on its own.
+                        schedule_s = sum(i.get("schedule_s", 0.0) for i in oracle_info)
+                        schedule_cpu_s = sum(
+                            i.get("schedule_cpu_s", 0.0) for i in oracle_info
                         )
-                        restoring = (
-                            "clean_tree" if policy == "throwaway_tree" else policy
-                        )
-                        diffusion, diffusion_info = decompose_mcx(
-                            instance.diffusion, restoring, clean_wires=instance.clean
-                        )
-                        if settings["relative_phase_pairs"]:
-                            oracle = paired_relative_phase_toffolis(oracle)
-                            diffusion = paired_relative_phase_toffolis(diffusion)
-                        decomposition_s = time.perf_counter() - started
+                        decomposition = {
+                            "decomposition_s": decomposing.wall_s - schedule_s,
+                            "decomposition_cpu_s": decomposing.cpu_s - schedule_cpu_s,
+                            "decomposition_schedule_s": schedule_s,
+                            "decomposition_schedule_cpu_s": schedule_cpu_s,
+                        }
                         total_width = max(oracle.num_qubits, diffusion.num_qubits)
                         appended = list(range(width, total_width))
                         clean = [*instance.clean, *appended]
-                        started = time.perf_counter()
-                        parts = {
-                            name: _component_metrics(
-                                circuit,
-                                wires,
-                                settings["pricing"],
-                                settings["targets"],
-                                limits["price_gates"],
-                            )
-                            for name, circuit, wires in (
-                                ("preparation", instance.preparation, []),
-                                ("oracle", oracle, clean),
-                                ("diffusion", diffusion, clean),
-                            )
-                        }
-                        pricing_s = time.perf_counter() - started
+                        with Stage() as pricing:
+                            parts = {
+                                name: _component_metrics(
+                                    circuit,
+                                    wires,
+                                    settings["pricing"],
+                                    settings["targets"],
+                                    limits["price_gates"],
+                                )
+                                for name, circuit, wires in (
+                                    ("preparation", instance.preparation, []),
+                                    ("oracle", oracle, clean),
+                                    ("diffusion", diffusion, clean),
+                                )
+                            }
                         policy_common = {
                             **common,
                             "mcx_policy": policy,
@@ -555,12 +581,10 @@ def run_study(config: dict, *, executable=None) -> Path:
                                         "t_per_success": (
                                             None if not success else total / success
                                         ),
-                                        "decomposition_s": decomposition_s,
-                                        "pricing_s": pricing_s,
-                                        **{
-                                            f"{stage}": value
-                                            for stage, value in instance.timings.items()
-                                        },
+                                        **decomposition,
+                                        **pricing.record("pricing"),
+                                        **instance.timings,
+                                        "load_average": load_average(),
                                     }
                                 )
                         if "routed" in settings["targets"]:
@@ -572,36 +596,38 @@ def run_study(config: dict, *, executable=None) -> Path:
                             iteration.compose(
                                 diffusion, range(diffusion.num_qubits), inplace=True
                             )
-                            started = time.perf_counter()
-                            cx = _lowered_cx(iteration, parts, limits["route_cx"])
-                            if total_width > route_qubits:
-                                record = {
-                                    "routed": False,
-                                    "reason": f"needs {total_width} qubits; limit {route_qubits}",
-                                }
-                            elif cx > limits["route_cx"]:
-                                record = {
-                                    "routed": False,
-                                    "reason": (
-                                        f"needs at least {cx} CNOTs after Clifford+T "
-                                        f"lowering; limit {limits['route_cx']}"
-                                    ),
-                                }
-                            else:
-                                record = routed_metrics(
-                                    iteration,
-                                    backend=(
-                                        grid_backend(total_width) if grid else backend
-                                    ),
-                                    seeds=settings["seeds"],
-                                )
-                                record.pop("per_seed", None)
+                            with Stage() as routing:
+                                cx = _lowered_cx(iteration, parts, limits["route_cx"])
+                                if total_width > route_qubits:
+                                    record = {
+                                        "routed": False,
+                                        "reason": f"needs {total_width} qubits; limit {route_qubits}",
+                                    }
+                                elif cx > limits["route_cx"]:
+                                    record = {
+                                        "routed": False,
+                                        "reason": (
+                                            f"needs at least {cx} CNOTs after Clifford+T "
+                                            f"lowering; limit {limits['route_cx']}"
+                                        ),
+                                    }
+                                else:
+                                    record = routed_metrics(
+                                        iteration,
+                                        backend=(
+                                            grid_backend(total_width)
+                                            if grid
+                                            else backend
+                                        ),
+                                        seeds=settings["seeds"],
+                                    )
+                                    record.pop("per_seed", None)
                             rows.append(
                                 {
                                     **policy_common,
                                     "component": "iteration",
                                     **{k: v for k, v in record.items() if k != "seeds"},
-                                    "routing_s": time.perf_counter() - started,
+                                    **routing.record("routing"),
                                     "metric_level": "routed",
                                 }
                             )
@@ -610,7 +636,9 @@ def run_study(config: dict, *, executable=None) -> Path:
                             "diffusion": diffusion_info,
                             "qubits_total": total_width,
                         }
-                    case["status"] = "complete"
+                    case.update(
+                        status="complete", load_end=load_average(), **peak_memory()
+                    )
                     save()
         manifest["status"] = "complete"
     except Exception as error:

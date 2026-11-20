@@ -972,3 +972,19 @@ independent evidence review remains separate. Existing downstream/final owners
 consume BLOCK without polling. Queue126/null calendar/null lifetime bounds and
 separate128-definition capacity remain unchanged. Checkpoint:
 `dump/1120012718-scaling-transfer-exact-block-integration/checkpoint.json`.
+
+
+## 20 November selected/new220 evidence reconciliation
+
+[Exact evidence integration](research/scaling_new_evidence_integration_20261120.md)
+preserves independent review `83bc0a6` verbatim. Zero new compiler observations
+or source paths are admitted: 100 selected-input plus 120 planted slots remain
+unlaunched, 44 case/profile groups and zero measured five-repeat groups.
+Historical tiny runs and process fixtures are separate; missing witnesses,
+18 receipt/six precedence failures, failed charges and missing receipts remain.
+Fresh exact saved-data authentication passes without compiler or numerical replay.
+The existing new-fullplan coordinator owns lawful correction/review/execution
+capacity resolution before missing-only execution and separate evidence review.
+126 definitions/null calendar/null lifetime limits remain unchanged; full
+scientific gate BLOCK. Checkpoint:
+`dump/1120061945-scaling-new-exact-integration/checkpoint.json`.

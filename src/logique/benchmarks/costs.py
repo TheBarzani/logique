@@ -63,6 +63,28 @@ def _tree(controls: int, *, uncompute: bool) -> QuantumCircuit:
 
 
 _KG24 = "Khattar and Gidney, Quantum 9, 1752 (2025)"
+
+
+def _validate_mcx_construction(method: str, controls: int) -> None:
+    """Reject the reviewed two-dirty, 20-control implementation defect."""
+    if method == "2_dirty_kg24" and controls == 20:
+        # Reviews 3878f14 and be5d36b reject the saved Qiskit 2.1.1 action:
+        # input 4194307 incorrectly becomes 5242883; compute-Z-inverse has
+        # the wrong sign. This exclusion is not a claim about the KG theorem.
+        # Keep it fail-closed across dependency updates until exact review.
+        raise ValueError(
+            "2_dirty_kg24 with 20 controls is unsupported: the reviewed "
+            "Qiskit 2.1.1 construction has a wrong-target/wrong-phase "
+            "counterexample (3878f14, be5d36b)"
+        )
+
+
+def _two_dirty_kg24(controls: int) -> QuantumCircuit:
+    """Guard the rejected width before invoking the installed constructor."""
+    _validate_mcx_construction("2_dirty_kg24", controls)
+    return _mcx.synth_mcx_2_dirty_kg24(controls)
+
+
 MCX_DECOMPOSITIONS = {
     item.name: item
     for item in (
@@ -99,7 +121,7 @@ MCX_DECOMPOSITIONS = {
         MCXDecomposition("1_clean_kg24", "clean", _KG24, _mcx.synth_mcx_1_clean_kg24),
         MCXDecomposition("1_dirty_kg24", "dirty", _KG24, _mcx.synth_mcx_1_dirty_kg24),
         MCXDecomposition("2_clean_kg24", "clean", _KG24, _mcx.synth_mcx_2_clean_kg24),
-        MCXDecomposition("2_dirty_kg24", "dirty", _KG24, _mcx.synth_mcx_2_dirty_kg24),
+        MCXDecomposition("2_dirty_kg24", "dirty", _KG24, _two_dirty_kg24),
         MCXDecomposition(
             "clean_tree",
             "clean",
@@ -118,6 +140,7 @@ MCX_DECOMPOSITIONS = {
 
 @lru_cache(maxsize=256)
 def _construction(method: str, controls: int) -> QuantumCircuit:
+    _validate_mcx_construction(method, controls)
     return MCX_DECOMPOSITIONS[method].build(controls)
 
 
@@ -141,6 +164,10 @@ def decompose_mcx(
     dirty constructions borrow wires outside the gate. A throwaway tree leaves
     garbage on fresh ancillas, so its result is valid only inside a block that
     is later inverted, which restores every ancilla.
+
+    The reviewed ``2_dirty_kg24`` construction at exactly 20 controls is
+    unsupported. A block containing it raises ValueError before constructing
+    any replacement, including when its controls are open.
     """
     if method not in MCX_DECOMPOSITIONS:
         raise ValueError(f"method must be one of {sorted(MCX_DECOMPOSITIONS)}")
@@ -153,6 +180,8 @@ def decompose_mcx(
         for inst in circuit.data
         if is_mcx(inst.operation, min_controls)
     ]
+    for _, controls in gates:
+        _validate_mcx_construction(method, controls)
     needs = [
         _construction(method, controls).num_qubits - controls - 1
         for _, controls in gates
@@ -545,6 +574,7 @@ def isolated_mcx_costs(method: str, controls: int) -> dict:
     dirty constructions borrow existing wires while clean ones append ancillas.
     A throwaway tree is costed as built, leaving garbage for a mirrored gate.
     """
+    _validate_mcx_construction(method, controls)
     circuit = QuantumCircuit(2 * controls - 1)
     circuit.mcx(list(range(controls)), controls)
     decomposed, info = decompose_mcx(circuit, method)

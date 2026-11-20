@@ -41,7 +41,7 @@ def _write(path: Path, value: dict) -> None:
     temporary.replace(path)
 
 
-def validate_config(config: dict) -> None:
+def validate_config(config: dict, *, pilot_hash: str = PILOT_HASH) -> None:
     """Validate every resource/control field before launching children."""
     if set(config) != {
         "ideal_pilot",
@@ -71,7 +71,7 @@ def validate_config(config: dict) -> None:
         _integer(config[key], key, low, high)
     if not 0 < config["tolerance"] <= 1e-8:
         raise ValueError("Invalid tolerance")
-    if config["pilot_manifest_sha256"] != PILOT_HASH:
+    if config["pilot_manifest_sha256"] != pilot_hash:
         raise ValueError("This harness requires the exact admitted ideal pilot")
     if not config["execute"] or len(set(config["execute"])) != len(config["execute"]):
         raise ValueError("Execution selections must be unique and nonempty")
@@ -245,12 +245,31 @@ def selected_iterations(request: dict, reference: dict) -> list[int]:
 def execute_seed(request: dict) -> dict:
     """Persist all requested rows before setup and retain failure/interruption."""
     config = request["config"]
-    validate_config(config)
+    saved_source = None
+    if "source_kind" in request:
+        from logique.benchmarks.c5_noise_adapter import SOURCE_KIND, load_source
+
+        if request["source_kind"] != SOURCE_KIND:
+            raise ValueError("Unknown saved-component source")
+        saved_source = load_source(config, request["name"])
+    else:
+        validate_config(config)
     output = Path(request["output"])
-    reference = json.loads(
-        (Path(config["ideal_pilot"]) / request["name"] / "result.json").read_text()
+    reference = (
+        saved_source["reference"]
+        if saved_source is not None
+        else json.loads(
+            (Path(config["ideal_pilot"]) / request["name"] / "result.json").read_text()
+        )
     )
     chosen = selected_iterations(request, reference)
+    if saved_source is not None:
+        from logique.benchmarks.c5_noise_adapter import request_identity
+
+        if len(chosen) != 1 or request.get("request_identity") != request_identity(
+            request["name"], request["seed"], chosen[0]
+        ):
+            raise ValueError("C5 best-fit request identity mismatch")
     output.mkdir(exist_ok=False)
     record = {
         "name": request["name"],
@@ -261,9 +280,14 @@ def execute_seed(request: dict) -> dict:
         "requested_iterations": chosen,
         "selection_scope": "only selected rows routed/sampled; preceding coherent steps built",
     }
+    if saved_source is not None:
+        record.update(saved_source["identity"])
+        record["request_identity"] = request["request_identity"]
     _write(output / "result.json", record)
     status = "not_executed_after_failure"
     try:
+        if saved_source is not None:
+            return _execute_seed(request, record, saved_source=saved_source)
         return _execute_seed(request, record)
     except BaseException as exc:
         status = (
@@ -476,7 +500,7 @@ def _components(problem, regime: str):
     return parts, policies
 
 
-def _execute_seed(request: dict, record: dict) -> dict:
+def _execute_seed(request: dict, record: dict, *, saved_source=None) -> dict:
     """Route one case/seed sweep and execute calibration-preserving trajectories."""
     from qiskit import QuantumCircuit, qpy, transpile
     from qiskit.quantum_info import Statevector
@@ -486,10 +510,15 @@ def _execute_seed(request: dict, record: dict) -> dict:
     from logique.benchmarks.routing import default_backend, _seed_metrics
 
     config = request["config"]
-    validate_config(config)
+    if saved_source is None:
+        validate_config(config)
     output = Path(request["output"])
     pilot = Path(config["ideal_pilot"])
-    reference = json.loads((pilot / request["name"] / "result.json").read_text())
+    reference = (
+        saved_source["reference"]
+        if saved_source is not None
+        else json.loads((pilot / request["name"] / "result.json").read_text())
+    )
     selected_iterations(request, reference)
     case, regime, seed = reference["case"], reference["regime"], request["seed"]
     problem = _problem(case)
@@ -523,15 +552,29 @@ def _execute_seed(request: dict, record: dict) -> dict:
             },
         )
     snapshot = json.loads((snapshot_dir / "noise.json").read_text())
-    parts, policies = _components(problem, regime)
+    if saved_source is not None:
+        from logique.benchmarks.c5_noise_adapter import validate_calibration
+
+        record["backend_calibration_sha256"] = validate_calibration(
+            backend, snapshot_dir, snapshot
+        )
+        _write(output / "result.json", record)
+    parts, policies = (
+        (saved_source["parts"], saved_source["policies"])
+        if saved_source is not None
+        else _components(problem, regime)
+    )
     if parts[1].num_qubits != width:
         raise AssertionError("Explicit policy changed admitted workspace width")
     n = reference["counts"]["data_bits"]
     good, valid = [np.asarray(x, dtype=bool) for x in _word_classes(problem)]
     ideal_parts = []
-    for name in ("preparation", "oracle", "diffusion"):
-        with (pilot / request["name"] / f"{name}.qpy").open("rb") as stream:
-            ideal_parts.append(qpy.load(stream)[0])
+    if saved_source is not None:
+        ideal_parts = [part.copy() for part in parts]
+    else:
+        for name in ("preparation", "oracle", "diffusion"):
+            with (pilot / request["name"] / f"{name}.qpy").open("rb") as stream:
+                ideal_parts.append(qpy.load(stream)[0])
     ideal_state = Statevector.from_int(0, 1 << width).evolve(
         ideal_parts[0], list(range(n))
     )
@@ -560,6 +603,9 @@ def _execute_seed(request: dict, record: dict) -> dict:
             "confidence_scope": "pointwise binomial shot uncertainty conditional on this fixed routed seed; seeds are distinct implementations, never pooled",
         }
     )
+    if saved_source is not None:
+        record.update(saved_source["identity"])
+        record["mcx_policy"] = "exact admitted best_fit U/CX; no re-lowering"
     logical = QuantumCircuit(width, n)
     logical.compose(parts[0], range(n), inplace=True)
     requested = {row["iterations"]: row for row in record["rows"]}
@@ -637,6 +683,10 @@ def _execute_seed(request: dict, record: dict) -> dict:
                 ).index
         if sorted(measured) != list(range(n)):
             raise AssertionError("Measurement classification lost logical data bits")
+        if saved_source is not None:
+            from logique.benchmarks.c5_noise_adapter import validate_layout
+
+            validate_layout(physical, final, measured, width, n)
         row["measurement_compact_wires_lsb_first"] = [measured[i] for i in range(n)]
         pure = compact.remove_final_measurements(inplace=False)
         if any(item.operation.num_qubits > 2 for item in pure.data):

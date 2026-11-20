@@ -1,0 +1,14 @@
+{
+  "ideal_pilot": "/Users/mar/codex-work/logique/dump/1030020413-full-scope-continuation-coordinator/worktrees/c5-complete-execute/dump/1101010944-c5-complete-best-fit",
+  "pilot_manifest_sha256": "fb2d62dde01aaddcb50250731259f440a2d120c91fa474905b8670f560634fe4",
+  "execute": ["R1", "R2"],
+  "shots": 64,
+  "random_batches": 2048,
+  "max_qubits": 18,
+  "timeout_seconds": 120,
+  "budget_seconds": 900,
+  "seed": 71028,
+  "tolerance": 1e-10,
+  "optimization_level": 3,
+  "memory_bytes": 2147483648
+}

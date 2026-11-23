@@ -1,0 +1,12 @@
+c planted_n16_k3_p10: planted 3-coloring, cross-class edge probability 0.1, seed 3016010
+p edge 16 9
+e 2 3
+e 2 13
+e 2 16
+e 3 7
+e 4 15
+e 5 13
+e 6 14
+e 8 9
+e 10 11
+x colors 3

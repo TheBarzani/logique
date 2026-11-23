@@ -1,0 +1,8 @@
+c C5: small tier, generated
+p edge 5 5
+e 1 2
+e 2 3
+e 3 4
+e 4 5
+e 1 5
+x colors 3

@@ -29,7 +29,7 @@ def test_k3_complete_phase_action(native, method):
     from logique.synthesis import synthesize
     from logique.verification import verify_phase_oracle
 
-    encoding = encode_coloring(read_dimacs(ROOT / "datasets/graphs/manuscript/K3.col"))
+    encoding = encode_coloring(read_dimacs(ROOT / "datasets/graphs/discovery/K3.col"))
     result = synthesize(encoding, method, executable=native)
     report = verify_phase_oracle(result, encoding=encoding)
     assert report["assignments"] == 64
@@ -80,7 +80,7 @@ def test_phase_verifier_rejects_corrupt_oracles(native):
     from logique.synthesis import synthesize
     from logique.verification import verify_phase_oracle
 
-    encoding = encode_coloring(read_dimacs(ROOT / "datasets/graphs/manuscript/K3.col"))
+    encoding = encode_coloring(read_dimacs(ROOT / "datasets/graphs/discovery/K3.col"))
     result = synthesize(encoding, "xag", executable=native)
     wrong = result.phase_oracle()
     del wrong.data[len(result.circuit.data)]

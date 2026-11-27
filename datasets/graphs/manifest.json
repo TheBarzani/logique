@@ -6,12 +6,12 @@
  "graphs": [
   {
    "name": "K3",
-   "path": "datasets/graphs/manuscript/K3.col",
+   "path": "datasets/graphs/discovery/K3.col",
    "sha256": "ca290e8b863deafa6c59fe2797a304b9d5dcbde0eef8d9c453d903d3d282ed8b",
    "split": "discovery",
    "tier": "medium",
-   "class": "manuscript",
-   "source": "manuscript benchmark",
+   "class": "complete",
+   "origin": "Complete graph written for the original manuscript",
    "precolors_dropped": 1,
    "vertices": 3,
    "edges": 3,
@@ -26,16 +26,17 @@
    "colorings": 6,
    "count_cpu_s": 0.0,
    "witness": "found",
-   "witness_cpu_s": 0.0
+   "witness_cpu_s": 0.0,
+   "source": "original manuscript"
   },
   {
    "name": "K5",
-   "path": "datasets/graphs/manuscript/K5.col",
+   "path": "datasets/graphs/discovery/K5.col",
    "sha256": "4653b427fa59e689ba1ff548c9d5033158368e2c7c1544b8d8f227eb16bde587",
    "split": "discovery",
    "tier": "medium",
-   "class": "manuscript",
-   "source": "manuscript benchmark",
+   "class": "complete",
+   "origin": "Complete graph written for the original manuscript",
    "precolors_dropped": 1,
    "vertices": 5,
    "edges": 10,
@@ -50,16 +51,17 @@
    "colorings": 120,
    "count_cpu_s": 0.0,
    "witness": "found",
-   "witness_cpu_s": 0.0
+   "witness_cpu_s": 0.0,
+   "source": "original manuscript"
   },
   {
    "name": "K10",
-   "path": "datasets/graphs/manuscript/K10.col",
+   "path": "datasets/graphs/discovery/K10.col",
    "sha256": "6d31641c2ffe3df554468c0b6d625d3e8208cabeb751ede6f8bc1232abf2fd9f",
    "split": "discovery",
    "tier": "medium",
-   "class": "manuscript",
-   "source": "manuscript benchmark",
+   "class": "complete",
+   "origin": "Complete graph written for the original manuscript",
    "precolors_dropped": 1,
    "vertices": 10,
    "edges": 45,
@@ -74,64 +76,17 @@
    "colorings": 3628800,
    "count_cpu_s": 0.0,
    "witness": "found",
-   "witness_cpu_s": 0.0
-  },
-  {
-   "name": "myciel3",
-   "path": "datasets/graphs/manuscript/myciel3.col",
-   "sha256": "defa2f8a7216b8c99971dfb5287a5125b8f885a6f8a6a4d6c934533fb26d07d4",
-   "split": "discovery",
-   "tier": "medium",
-   "class": "manuscript",
-   "source": "manuscript benchmark",
-   "precolors_dropped": 1,
-   "vertices": 11,
-   "edges": 20,
-   "colors": 4,
-   "data_qubits": 22,
-   "density": 0.3636,
-   "max_degree": 5,
-   "clique_number": 2,
-   "triangles": 0,
-   "bipartite": false,
-   "girth": 4,
-   "colorings": 12480,
-   "count_cpu_s": 0.046,
-   "witness": "found",
-   "witness_cpu_s": 0.0
-  },
-  {
-   "name": "zed-city_2019",
-   "path": "datasets/graphs/manuscript/zed-city_2019.col",
-   "sha256": "4730a0c8d9d213dd3511b33b03641166c6b6cd72db66500e2c87baac66d723a6",
-   "split": "discovery",
-   "tier": "medium",
-   "class": "manuscript",
-   "source": "manuscript benchmark",
-   "precolors_dropped": 4,
-   "vertices": 11,
-   "edges": 22,
-   "colors": 4,
-   "data_qubits": 22,
-   "density": 0.4,
-   "max_degree": 7,
-   "clique_number": 4,
-   "triangles": 13,
-   "bipartite": false,
-   "girth": 3,
-   "colorings": 1200,
-   "count_cpu_s": 0.001,
-   "witness": "found",
-   "witness_cpu_s": 0.0
+   "witness_cpu_s": 0.0,
+   "source": "original manuscript"
   },
   {
    "name": "K20",
-   "path": "datasets/graphs/manuscript/K20.col",
+   "path": "datasets/graphs/discovery/K20.col",
    "sha256": "d0d2b6ad438aff2e52c2be1f30528d83037ce0e38d230730348f823e5ff68366",
    "split": "discovery",
    "tier": "medium",
-   "class": "manuscript",
-   "source": "manuscript benchmark",
+   "class": "complete",
+   "origin": "Complete graph written for the original manuscript",
    "precolors_dropped": 1,
    "vertices": 20,
    "edges": 190,
@@ -146,16 +101,42 @@
    "colorings": 2432902008176640000,
    "count_cpu_s": 0.0,
    "witness": "found",
-   "witness_cpu_s": 0.001
+   "witness_cpu_s": 0.001,
+   "source": "original manuscript"
+  },
+  {
+   "name": "myciel3",
+   "path": "datasets/graphs/discovery/myciel3.col",
+   "sha256": "defa2f8a7216b8c99971dfb5287a5125b8f885a6f8a6a4d6c934533fb26d07d4",
+   "split": "discovery",
+   "tier": "medium",
+   "class": "mycielski",
+   "origin": "Michael Trick: graph from the Mycielski transformation (DIMACS graph-coloring collection); a benchmark of the original manuscript",
+   "precolors_dropped": 1,
+   "vertices": 11,
+   "edges": 20,
+   "colors": 4,
+   "data_qubits": 22,
+   "density": 0.3636,
+   "max_degree": 5,
+   "clique_number": 2,
+   "triangles": 0,
+   "bipartite": false,
+   "girth": 4,
+   "colorings": 12480,
+   "count_cpu_s": 0.046,
+   "witness": "found",
+   "witness_cpu_s": 0.0,
+   "source": "original manuscript"
   },
   {
    "name": "myciel4",
-   "path": "datasets/graphs/manuscript/myciel4.col",
+   "path": "datasets/graphs/discovery/myciel4.col",
    "sha256": "05e1b6cd48f78c55d32385d811998cfb33887cd28be25c3f22d1480b957d95b3",
    "split": "discovery",
    "tier": "medium",
-   "class": "manuscript",
-   "source": "manuscript benchmark",
+   "class": "mycielski",
+   "origin": "Michael Trick: graph from the Mycielski transformation (DIMACS graph-coloring collection); a benchmark of the original manuscript",
    "precolors_dropped": 1,
    "vertices": 23,
    "edges": 71,
@@ -170,16 +151,17 @@
    "colorings": 2845658400,
    "count_cpu_s": 12.543,
    "witness": "found",
-   "witness_cpu_s": 0.0
+   "witness_cpu_s": 0.0,
+   "source": "original manuscript"
   },
   {
    "name": "2-Insertions_3",
-   "path": "datasets/graphs/manuscript/2-Insertions_3.col",
+   "path": "datasets/graphs/discovery/2-Insertions_3.col",
    "sha256": "d2ac825410b45ee52fcf58dea994447b8220ca9e4639497bcae5c1cdd84391a0",
    "split": "discovery",
    "tier": "medium",
-   "class": "manuscript",
-   "source": "manuscript benchmark",
+   "class": "insertions",
+   "origin": "M. Caramia and P. Dell'Olmo: 2-Insertions graph of order 3 (DIMACS graph-coloring collection); a benchmark of the original manuscript",
    "precolors_dropped": 1,
    "vertices": 37,
    "edges": 72,
@@ -194,16 +176,42 @@
    "colorings": 68372560349664,
    "count_cpu_s": 0.052,
    "witness": "found",
-   "witness_cpu_s": 0.001
+   "witness_cpu_s": 0.001,
+   "source": "original manuscript"
+  },
+  {
+   "name": "zed-city_2019",
+   "path": "datasets/graphs/discovery/zed-city_2019.col",
+   "sha256": "4730a0c8d9d213dd3511b33b03641166c6b6cd72db66500e2c87baac66d723a6",
+   "split": "discovery",
+   "tier": "medium",
+   "class": "zed-city",
+   "origin": "IBM Quantum Hackathon 2019: the Zed city problem of placing convenience stores in city districts, posed as vertex coloring; a benchmark of the original manuscript",
+   "precolors_dropped": 4,
+   "vertices": 11,
+   "edges": 22,
+   "colors": 4,
+   "data_qubits": 22,
+   "density": 0.4,
+   "max_degree": 7,
+   "clique_number": 4,
+   "triangles": 13,
+   "bipartite": false,
+   "girth": 3,
+   "colorings": 1200,
+   "count_cpu_s": 0.001,
+   "witness": "found",
+   "witness_cpu_s": 0.0,
+   "source": "original manuscript"
   },
   {
    "name": "myciel5",
-   "path": "datasets/graphs/manuscript/myciel5.col",
+   "path": "datasets/graphs/discovery/myciel5.col",
    "sha256": "f24b252dc12f35d9b7496c634e00e129334015716025a69528923b483d62e959",
    "split": "discovery",
    "tier": "large",
-   "class": "manuscript",
-   "source": "manuscript benchmark",
+   "class": "mycielski",
+   "origin": "Michael Trick: graph from the Mycielski transformation (DIMACS graph-coloring collection); a benchmark of the original manuscript",
    "precolors_dropped": 1,
    "vertices": 47,
    "edges": 236,
@@ -218,7 +226,8 @@
    "colorings": null,
    "count_cpu_s": 163.698,
    "witness": "found",
-   "witness_cpu_s": 0.002
+   "witness_cpu_s": 0.002,
+   "source": "original manuscript"
   },
   {
    "name": "P3",
@@ -227,7 +236,7 @@
    "split": "confirmation",
    "tier": "small",
    "class": "paths",
-   "source": "generated",
+   "origin": "Generated by tools/build_graph_tiers.py: path on 3 vertices with 2 colors",
    "vertices": 3,
    "edges": 2,
    "colors": 2,
@@ -241,7 +250,8 @@
    "colorings": 2,
    "count_cpu_s": 0.0,
    "witness": "found",
-   "witness_cpu_s": 0.0
+   "witness_cpu_s": 0.0,
+   "source": "generated"
   },
   {
    "name": "P4",
@@ -250,7 +260,7 @@
    "split": "confirmation",
    "tier": "small",
    "class": "paths",
-   "source": "generated",
+   "origin": "Generated by tools/build_graph_tiers.py: path on 4 vertices with 2 colors",
    "vertices": 4,
    "edges": 3,
    "colors": 2,
@@ -264,7 +274,8 @@
    "colorings": 2,
    "count_cpu_s": 0.0,
    "witness": "found",
-   "witness_cpu_s": 0.0
+   "witness_cpu_s": 0.0,
+   "source": "generated"
   },
   {
    "name": "P4_k3",
@@ -273,7 +284,7 @@
    "split": "confirmation",
    "tier": "small",
    "class": "paths",
-   "source": "generated",
+   "origin": "Generated by tools/build_graph_tiers.py: path on 4 vertices with 3 colors",
    "vertices": 4,
    "edges": 3,
    "colors": 3,
@@ -287,7 +298,8 @@
    "colorings": 24,
    "count_cpu_s": 0.0,
    "witness": "found",
-   "witness_cpu_s": 0.0
+   "witness_cpu_s": 0.0,
+   "source": "generated"
   },
   {
    "name": "P5",
@@ -296,7 +308,7 @@
    "split": "confirmation",
    "tier": "small",
    "class": "paths",
-   "source": "generated",
+   "origin": "Generated by tools/build_graph_tiers.py: path on 5 vertices with 2 colors",
    "vertices": 5,
    "edges": 4,
    "colors": 2,
@@ -310,7 +322,8 @@
    "colorings": 2,
    "count_cpu_s": 0.0,
    "witness": "found",
-   "witness_cpu_s": 0.0
+   "witness_cpu_s": 0.0,
+   "source": "generated"
   },
   {
    "name": "P6",
@@ -319,7 +332,7 @@
    "split": "confirmation",
    "tier": "small",
    "class": "paths",
-   "source": "generated",
+   "origin": "Generated by tools/build_graph_tiers.py: path on 6 vertices with 2 colors",
    "vertices": 6,
    "edges": 5,
    "colors": 2,
@@ -333,7 +346,8 @@
    "colorings": 2,
    "count_cpu_s": 0.0,
    "witness": "found",
-   "witness_cpu_s": 0.0
+   "witness_cpu_s": 0.0,
+   "source": "generated"
   },
   {
    "name": "P7",
@@ -342,7 +356,7 @@
    "split": "confirmation",
    "tier": "small",
    "class": "paths",
-   "source": "generated",
+   "origin": "Generated by tools/build_graph_tiers.py: path on 7 vertices with 2 colors",
    "vertices": 7,
    "edges": 6,
    "colors": 2,
@@ -356,7 +370,8 @@
    "colorings": 2,
    "count_cpu_s": 0.0,
    "witness": "found",
-   "witness_cpu_s": 0.0
+   "witness_cpu_s": 0.0,
+   "source": "generated"
   },
   {
    "name": "P8",
@@ -365,7 +380,7 @@
    "split": "confirmation",
    "tier": "small",
    "class": "paths",
-   "source": "generated",
+   "origin": "Generated by tools/build_graph_tiers.py: path on 8 vertices with 2 colors",
    "vertices": 8,
    "edges": 7,
    "colors": 2,
@@ -379,7 +394,8 @@
    "colorings": 2,
    "count_cpu_s": 0.0,
    "witness": "found",
-   "witness_cpu_s": 0.0
+   "witness_cpu_s": 0.0,
+   "source": "generated"
   },
   {
    "name": "C4",
@@ -388,7 +404,7 @@
    "split": "confirmation",
    "tier": "small",
    "class": "cycles",
-   "source": "generated",
+   "origin": "Generated by tools/build_graph_tiers.py: cycle on 4 vertices with 2 colors",
    "vertices": 4,
    "edges": 4,
    "colors": 2,
@@ -402,7 +418,8 @@
    "colorings": 2,
    "count_cpu_s": 0.0,
    "witness": "found",
-   "witness_cpu_s": 0.0
+   "witness_cpu_s": 0.0,
+   "source": "generated"
   },
   {
    "name": "C5",
@@ -411,7 +428,7 @@
    "split": "confirmation",
    "tier": "small",
    "class": "cycles",
-   "source": "generated",
+   "origin": "Generated by tools/build_graph_tiers.py: cycle on 5 vertices with 3 colors",
    "vertices": 5,
    "edges": 5,
    "colors": 3,
@@ -425,7 +442,8 @@
    "colorings": 30,
    "count_cpu_s": 0.0,
    "witness": "found",
-   "witness_cpu_s": 0.0
+   "witness_cpu_s": 0.0,
+   "source": "generated"
   },
   {
    "name": "C6",
@@ -434,7 +452,7 @@
    "split": "confirmation",
    "tier": "small",
    "class": "cycles",
-   "source": "generated",
+   "origin": "Generated by tools/build_graph_tiers.py: cycle on 6 vertices with 2 colors",
    "vertices": 6,
    "edges": 6,
    "colors": 2,
@@ -448,7 +466,8 @@
    "colorings": 2,
    "count_cpu_s": 0.0,
    "witness": "found",
-   "witness_cpu_s": 0.0
+   "witness_cpu_s": 0.0,
+   "source": "generated"
   },
   {
    "name": "C7",
@@ -457,7 +476,7 @@
    "split": "confirmation",
    "tier": "small",
    "class": "cycles",
-   "source": "generated",
+   "origin": "Generated by tools/build_graph_tiers.py: cycle on 7 vertices with 3 colors",
    "vertices": 7,
    "edges": 7,
    "colors": 3,
@@ -471,7 +490,8 @@
    "colorings": 126,
    "count_cpu_s": 0.0,
    "witness": "found",
-   "witness_cpu_s": 0.0
+   "witness_cpu_s": 0.0,
+   "source": "generated"
   },
   {
    "name": "K4",
@@ -480,7 +500,7 @@
    "split": "confirmation",
    "tier": "small",
    "class": "complete",
-   "source": "generated",
+   "origin": "Generated by tools/build_graph_tiers.py: complete graph on 4 vertices",
    "vertices": 4,
    "edges": 6,
    "colors": 4,
@@ -494,7 +514,8 @@
    "colorings": 24,
    "count_cpu_s": 0.0,
    "witness": "found",
-   "witness_cpu_s": 0.0
+   "witness_cpu_s": 0.0,
+   "source": "generated"
   },
   {
    "name": "petersen",
@@ -503,7 +524,7 @@
    "split": "confirmation",
    "tier": "small",
    "class": "petersen",
-   "source": "generated",
+   "origin": "Generated by tools/build_graph_tiers.py: the Petersen graph, 10 vertices with 3 colors",
    "vertices": 10,
    "edges": 15,
    "colors": 3,
@@ -517,7 +538,8 @@
    "colorings": 120,
    "count_cpu_s": 0.0,
    "witness": "found",
-   "witness_cpu_s": 0.0
+   "witness_cpu_s": 0.0,
+   "source": "generated"
   },
   {
    "name": "wheel_5",
@@ -526,7 +548,7 @@
    "split": "confirmation",
    "tier": "small",
    "class": "wheels",
-   "source": "generated",
+   "origin": "Generated by tools/build_graph_tiers.py: wheel: a hub joined to a cycle of 5 vertices, 4 colors",
    "vertices": 6,
    "edges": 10,
    "colors": 4,
@@ -540,7 +562,8 @@
    "colorings": 120,
    "count_cpu_s": 0.0,
    "witness": "found",
-   "witness_cpu_s": 0.0
+   "witness_cpu_s": 0.0,
+   "source": "generated"
   },
   {
    "name": "wheel_6",
@@ -549,7 +572,7 @@
    "split": "confirmation",
    "tier": "small",
    "class": "wheels",
-   "source": "generated",
+   "origin": "Generated by tools/build_graph_tiers.py: wheel: a hub joined to a cycle of 6 vertices, 3 colors",
    "vertices": 7,
    "edges": 12,
    "colors": 3,
@@ -563,7 +586,8 @@
    "colorings": 6,
    "count_cpu_s": 0.0,
    "witness": "found",
-   "witness_cpu_s": 0.0
+   "witness_cpu_s": 0.0,
+   "source": "generated"
   },
   {
    "name": "wheel_7",
@@ -572,7 +596,7 @@
    "split": "confirmation",
    "tier": "small",
    "class": "wheels",
-   "source": "generated",
+   "origin": "Generated by tools/build_graph_tiers.py: wheel: a hub joined to a cycle of 7 vertices, 4 colors",
    "vertices": 8,
    "edges": 14,
    "colors": 4,
@@ -586,7 +610,8 @@
    "colorings": 504,
    "count_cpu_s": 0.0,
    "witness": "found",
-   "witness_cpu_s": 0.0
+   "witness_cpu_s": 0.0,
+   "source": "generated"
   },
   {
    "name": "wheel_8",
@@ -595,7 +620,7 @@
    "split": "confirmation",
    "tier": "small",
    "class": "wheels",
-   "source": "generated",
+   "origin": "Generated by tools/build_graph_tiers.py: wheel: a hub joined to a cycle of 8 vertices, 3 colors",
    "vertices": 9,
    "edges": 16,
    "colors": 3,
@@ -609,7 +634,8 @@
    "colorings": 6,
    "count_cpu_s": 0.0,
    "witness": "found",
-   "witness_cpu_s": 0.0
+   "witness_cpu_s": 0.0,
+   "source": "generated"
   },
   {
    "name": "multipartite_2_2_2",
@@ -618,7 +644,7 @@
    "split": "confirmation",
    "tier": "small",
    "class": "complete-multipartite",
-   "source": "generated",
+   "origin": "Generated by tools/build_graph_tiers.py: complete multipartite graph with parts of sizes 2, 2, 2",
    "vertices": 6,
    "edges": 12,
    "colors": 3,
@@ -632,7 +658,8 @@
    "colorings": 6,
    "count_cpu_s": 0.0,
    "witness": "found",
-   "witness_cpu_s": 0.0
+   "witness_cpu_s": 0.0,
+   "source": "generated"
   },
   {
    "name": "multipartite_2_2_2_2",
@@ -641,7 +668,7 @@
    "split": "confirmation",
    "tier": "small",
    "class": "complete-multipartite",
-   "source": "generated",
+   "origin": "Generated by tools/build_graph_tiers.py: complete multipartite graph with parts of sizes 2, 2, 2, 2",
    "vertices": 8,
    "edges": 24,
    "colors": 4,
@@ -655,7 +682,8 @@
    "colorings": 24,
    "count_cpu_s": 0.001,
    "witness": "found",
-   "witness_cpu_s": 0.0
+   "witness_cpu_s": 0.0,
+   "source": "generated"
   },
   {
    "name": "multipartite_3_3_3",
@@ -664,7 +692,7 @@
    "split": "confirmation",
    "tier": "small",
    "class": "complete-multipartite",
-   "source": "generated",
+   "origin": "Generated by tools/build_graph_tiers.py: complete multipartite graph with parts of sizes 3, 3, 3",
    "vertices": 9,
    "edges": 27,
    "colors": 3,
@@ -678,7 +706,8 @@
    "colorings": 6,
    "count_cpu_s": 0.001,
    "witness": "found",
-   "witness_cpu_s": 0.0
+   "witness_cpu_s": 0.0,
+   "source": "generated"
   },
   {
    "name": "latin_square_3",
@@ -687,7 +716,7 @@
    "split": "confirmation",
    "tier": "small",
    "class": "latin-squares",
-   "source": "generated",
+   "origin": "Generated by tools/build_graph_tiers.py: rook's graph of a 3 by 3 board, whose 3-colorings are the Latin squares of order 3",
    "vertices": 9,
    "edges": 18,
    "colors": 3,
@@ -701,7 +730,8 @@
    "colorings": 12,
    "count_cpu_s": 0.0,
    "witness": "found",
-   "witness_cpu_s": 0.0
+   "witness_cpu_s": 0.0,
+   "source": "generated"
   },
   {
    "name": "grid_3x3",
@@ -710,7 +740,7 @@
    "split": "confirmation",
    "tier": "small",
    "class": "grids",
-   "source": "generated",
+   "origin": "Generated by tools/build_graph_tiers.py: 3 by 3 square grid with 2 colors",
    "vertices": 9,
    "edges": 12,
    "colors": 2,
@@ -724,7 +754,8 @@
    "colorings": 2,
    "count_cpu_s": 0.0,
    "witness": "found",
-   "witness_cpu_s": 0.0
+   "witness_cpu_s": 0.0,
+   "source": "generated"
   },
   {
    "name": "grid_4x4",
@@ -733,7 +764,7 @@
    "split": "confirmation",
    "tier": "small",
    "class": "grids",
-   "source": "generated",
+   "origin": "Generated by tools/build_graph_tiers.py: 4 by 4 square grid with 2 colors",
    "vertices": 16,
    "edges": 24,
    "colors": 2,
@@ -747,7 +778,8 @@
    "colorings": 2,
    "count_cpu_s": 0.0,
    "witness": "found",
-   "witness_cpu_s": 0.0
+   "witness_cpu_s": 0.0,
+   "source": "generated"
   },
   {
    "name": "hypercube_3",
@@ -756,7 +788,7 @@
    "split": "confirmation",
    "tier": "small",
    "class": "hypercubes",
-   "source": "generated",
+   "origin": "Generated by tools/build_graph_tiers.py: 3-dimensional hypercube with 2 colors",
    "vertices": 8,
    "edges": 12,
    "colors": 2,
@@ -770,7 +802,8 @@
    "colorings": 2,
    "count_cpu_s": 0.0,
    "witness": "found",
-   "witness_cpu_s": 0.0
+   "witness_cpu_s": 0.0,
+   "source": "generated"
   },
   {
    "name": "hypercube_4",
@@ -779,7 +812,7 @@
    "split": "confirmation",
    "tier": "small",
    "class": "hypercubes",
-   "source": "generated",
+   "origin": "Generated by tools/build_graph_tiers.py: 4-dimensional hypercube with 2 colors",
    "vertices": 16,
    "edges": 32,
    "colors": 2,
@@ -793,7 +826,8 @@
    "colorings": 2,
    "count_cpu_s": 0.001,
    "witness": "found",
-   "witness_cpu_s": 0.0
+   "witness_cpu_s": 0.0,
+   "source": "generated"
   },
   {
    "name": "planar_n10",
@@ -802,7 +836,7 @@
    "split": "confirmation",
    "tier": "small",
    "class": "planar-triangulations",
-   "source": "generated",
+   "origin": "Generated by tools/build_graph_tiers.py: random planar triangulation on 10 vertices (vertex insertions, then edge flips), seed 5000010",
    "vertices": 10,
    "edges": 24,
    "colors": 4,
@@ -816,7 +850,8 @@
    "colorings": 24,
    "count_cpu_s": 0.0,
    "witness": "found",
-   "witness_cpu_s": 0.0
+   "witness_cpu_s": 0.0,
+   "source": "generated"
   },
   {
    "name": "interval_n12",
@@ -825,7 +860,7 @@
    "split": "confirmation",
    "tier": "small",
    "class": "interval-graphs",
-   "source": "generated",
+   "origin": "Generated by tools/build_graph_tiers.py: random interval graph on 12 vertices, seed 6000012",
    "vertices": 12,
    "edges": 16,
    "colors": 4,
@@ -839,7 +874,8 @@
    "colorings": 62208,
    "count_cpu_s": 0.0,
    "witness": "found",
-   "witness_cpu_s": 0.0
+   "witness_cpu_s": 0.0,
+   "source": "generated"
   },
   {
    "name": "multipartite_2_2_2_2_2",
@@ -848,7 +884,7 @@
    "split": "confirmation",
    "tier": "medium",
    "class": "complete-multipartite",
-   "source": "generated",
+   "origin": "Generated by tools/build_graph_tiers.py: complete multipartite graph with parts of sizes 2, 2, 2, 2, 2",
    "vertices": 10,
    "edges": 40,
    "colors": 5,
@@ -862,7 +898,8 @@
    "colorings": 120,
    "count_cpu_s": 0.128,
    "witness": "found",
-   "witness_cpu_s": 0.0
+   "witness_cpu_s": 0.0,
+   "source": "generated"
   },
   {
    "name": "latin_square_4",
@@ -871,7 +908,7 @@
    "split": "confirmation",
    "tier": "medium",
    "class": "latin-squares",
-   "source": "generated",
+   "origin": "Generated by tools/build_graph_tiers.py: rook's graph of a 4 by 4 board, whose 4-colorings are the Latin squares of order 4",
    "vertices": 16,
    "edges": 48,
    "colors": 4,
@@ -885,7 +922,8 @@
    "colorings": 576,
    "count_cpu_s": 0.07,
    "witness": "found",
-   "witness_cpu_s": 0.0
+   "witness_cpu_s": 0.0,
+   "source": "generated"
   },
   {
    "name": "latin_square_5",
@@ -894,7 +932,7 @@
    "split": "confirmation",
    "tier": "medium",
    "class": "latin-squares",
-   "source": "generated",
+   "origin": "Generated by tools/build_graph_tiers.py: rook's graph of a 5 by 5 board, whose 5-colorings are the Latin squares of order 5",
    "vertices": 25,
    "edges": 100,
    "colors": 5,
@@ -908,7 +946,8 @@
    "colorings": 161280,
    "count_cpu_s": 0.241,
    "witness": "found",
-   "witness_cpu_s": 0.0
+   "witness_cpu_s": 0.0,
+   "source": "generated"
   },
   {
    "name": "latin_square_6",
@@ -917,7 +956,7 @@
    "split": "confirmation",
    "tier": "medium",
    "class": "latin-squares",
-   "source": "generated",
+   "origin": "Generated by tools/build_graph_tiers.py: rook's graph of a 6 by 6 board, whose 6-colorings are the Latin squares of order 6",
    "vertices": 36,
    "edges": 180,
    "colors": 6,
@@ -931,7 +970,8 @@
    "colorings": 812851200,
    "count_cpu_s": 17.278,
    "witness": "found",
-   "witness_cpu_s": 0.001
+   "witness_cpu_s": 0.001,
+   "source": "generated"
   },
   {
    "name": "sudoku_4x4",
@@ -940,7 +980,7 @@
    "split": "confirmation",
    "tier": "medium",
    "class": "sudoku",
-   "source": "generated",
+   "origin": "Generated by tools/build_graph_tiers.py: 4 by 4 Sudoku graph",
    "vertices": 16,
    "edges": 56,
    "colors": 4,
@@ -954,7 +994,8 @@
    "colorings": 288,
    "count_cpu_s": 0.058,
    "witness": "found",
-   "witness_cpu_s": 0.0
+   "witness_cpu_s": 0.0,
+   "source": "generated"
   },
   {
    "name": "grid_5x5",
@@ -963,7 +1004,7 @@
    "split": "confirmation",
    "tier": "medium",
    "class": "grids",
-   "source": "generated",
+   "origin": "Generated by tools/build_graph_tiers.py: 5 by 5 square grid with 2 colors",
    "vertices": 25,
    "edges": 40,
    "colors": 2,
@@ -977,7 +1018,8 @@
    "colorings": 2,
    "count_cpu_s": 0.001,
    "witness": "found",
-   "witness_cpu_s": 0.0
+   "witness_cpu_s": 0.0,
+   "source": "generated"
   },
   {
    "name": "planar_n16",
@@ -986,7 +1028,7 @@
    "split": "confirmation",
    "tier": "medium",
    "class": "planar-triangulations",
-   "source": "generated",
+   "origin": "Generated by tools/build_graph_tiers.py: random planar triangulation on 16 vertices (vertex insertions, then edge flips), seed 5000016",
    "vertices": 16,
    "edges": 42,
    "colors": 4,
@@ -1000,7 +1042,8 @@
    "colorings": 96,
    "count_cpu_s": 0.001,
    "witness": "found",
-   "witness_cpu_s": 0.0
+   "witness_cpu_s": 0.0,
+   "source": "generated"
   },
   {
    "name": "planar_n24",
@@ -1009,7 +1052,7 @@
    "split": "confirmation",
    "tier": "medium",
    "class": "planar-triangulations",
-   "source": "generated",
+   "origin": "Generated by tools/build_graph_tiers.py: random planar triangulation on 24 vertices (vertex insertions, then edge flips), seed 5000024",
    "vertices": 24,
    "edges": 66,
    "colors": 4,
@@ -1023,7 +1066,8 @@
    "colorings": 96,
    "count_cpu_s": 0.001,
    "witness": "found",
-   "witness_cpu_s": 0.0
+   "witness_cpu_s": 0.0,
+   "source": "generated"
   },
   {
    "name": "planar_n32",
@@ -1032,7 +1076,7 @@
    "split": "confirmation",
    "tier": "medium",
    "class": "planar-triangulations",
-   "source": "generated",
+   "origin": "Generated by tools/build_graph_tiers.py: random planar triangulation on 32 vertices (vertex insertions, then edge flips), seed 5000032",
    "vertices": 32,
    "edges": 90,
    "colors": 4,
@@ -1046,7 +1090,8 @@
    "colorings": 6624,
    "count_cpu_s": 0.002,
    "witness": "found",
-   "witness_cpu_s": 0.0
+   "witness_cpu_s": 0.0,
+   "source": "generated"
   },
   {
    "name": "interval_n20",
@@ -1055,7 +1100,7 @@
    "split": "confirmation",
    "tier": "medium",
    "class": "interval-graphs",
-   "source": "generated",
+   "origin": "Generated by tools/build_graph_tiers.py: random interval graph on 20 vertices, seed 6000020",
    "vertices": 20,
    "edges": 40,
    "colors": 5,
@@ -1069,7 +1114,8 @@
    "colorings": 671846400,
    "count_cpu_s": 0.001,
    "witness": "found",
-   "witness_cpu_s": 0.0
+   "witness_cpu_s": 0.0,
+   "source": "generated"
   },
   {
    "name": "interval_n32",
@@ -1078,7 +1124,7 @@
    "split": "confirmation",
    "tier": "medium",
    "class": "interval-graphs",
-   "source": "generated",
+   "origin": "Generated by tools/build_graph_tiers.py: random interval graph on 32 vertices, seed 6000032",
    "vertices": 32,
    "edges": 125,
    "colors": 7,
@@ -1092,7 +1138,8 @@
    "colorings": 73139886489600,
    "count_cpu_s": 0.1,
    "witness": "found",
-   "witness_cpu_s": 0.001
+   "witness_cpu_s": 0.001,
+   "source": "generated"
   },
   {
    "name": "planted_n6_k3_p50",
@@ -1101,9 +1148,9 @@
    "split": "confirmation",
    "tier": "medium",
    "class": "planted-vertices",
-   "source": "generated",
+   "origin": "Generated by tools/build_graph_tiers.py: planted 3-coloring of 6 vertices, cross-class edge probability 0.5, seed 3006050",
    "family": "planted-vertices",
-   "density": 0.2,
+   "density": 0.5,
    "seed": 3006050,
    "vertices": 6,
    "edges": 3,
@@ -1116,7 +1163,8 @@
    "girth": null,
    "colorings": 216,
    "count_cpu_s": 0.0,
-   "witness": "planted"
+   "witness": "planted",
+   "source": "generated"
   },
   {
    "name": "planted_n6_k4_p50",
@@ -1125,9 +1173,9 @@
    "split": "confirmation",
    "tier": "medium",
    "class": "planted-vertices",
-   "source": "generated",
+   "origin": "Generated by tools/build_graph_tiers.py: planted 4-coloring of 6 vertices, cross-class edge probability 0.5, seed 4006050",
    "family": "planted-vertices",
-   "density": 0.2667,
+   "density": 0.5,
    "seed": 4006050,
    "vertices": 6,
    "edges": 4,
@@ -1140,7 +1188,8 @@
    "girth": null,
    "colorings": 1296,
    "count_cpu_s": 0.0,
-   "witness": "planted"
+   "witness": "planted",
+   "source": "generated"
   },
   {
    "name": "planted_n8_k3_p50",
@@ -1149,9 +1198,9 @@
    "split": "confirmation",
    "tier": "medium",
    "class": "planted-vertices",
-   "source": "generated",
+   "origin": "Generated by tools/build_graph_tiers.py: planted 3-coloring of 8 vertices, cross-class edge probability 0.5, seed 3008050",
    "family": "planted-vertices",
-   "density": 0.4643,
+   "density": 0.5,
    "seed": 3008050,
    "vertices": 8,
    "edges": 13,
@@ -1164,7 +1213,8 @@
    "girth": 3,
    "colorings": 24,
    "count_cpu_s": 0.0,
-   "witness": "planted"
+   "witness": "planted",
+   "source": "generated"
   },
   {
    "name": "planted_n8_k4_p50",
@@ -1173,9 +1223,9 @@
    "split": "confirmation",
    "tier": "medium",
    "class": "planted-vertices",
-   "source": "generated",
+   "origin": "Generated by tools/build_graph_tiers.py: planted 4-coloring of 8 vertices, cross-class edge probability 0.5, seed 4008050",
    "family": "planted-vertices",
-   "density": 0.3571,
+   "density": 0.5,
    "seed": 4008050,
    "vertices": 8,
    "edges": 10,
@@ -1188,7 +1238,8 @@
    "girth": 3,
    "colorings": 2592,
    "count_cpu_s": 0.0,
-   "witness": "planted"
+   "witness": "planted",
+   "source": "generated"
   },
   {
    "name": "planted_n10_k3_p50",
@@ -1197,9 +1248,9 @@
    "split": "confirmation",
    "tier": "medium",
    "class": "planted-vertices",
-   "source": "generated",
+   "origin": "Generated by tools/build_graph_tiers.py: planted 3-coloring of 10 vertices, cross-class edge probability 0.5, seed 3010050",
    "family": "planted-vertices",
-   "density": 0.4889,
+   "density": 0.5,
    "seed": 3010050,
    "vertices": 10,
    "edges": 22,
@@ -1212,7 +1263,8 @@
    "girth": 3,
    "colorings": 6,
    "count_cpu_s": 0.0,
-   "witness": "planted"
+   "witness": "planted",
+   "source": "generated"
   },
   {
    "name": "planted_n10_k4_p50",
@@ -1221,9 +1273,9 @@
    "split": "confirmation",
    "tier": "medium",
    "class": "planted-vertices",
-   "source": "generated",
+   "origin": "Generated by tools/build_graph_tiers.py: planted 4-coloring of 10 vertices, cross-class edge probability 0.5, seed 4010050",
    "family": "planted-vertices",
-   "density": 0.4,
+   "density": 0.5,
    "seed": 4010050,
    "vertices": 10,
    "edges": 18,
@@ -1236,7 +1288,8 @@
    "girth": 3,
    "colorings": 2160,
    "count_cpu_s": 0.0,
-   "witness": "planted"
+   "witness": "planted",
+   "source": "generated"
   },
   {
    "name": "planted_n12_k3_p50",
@@ -1245,9 +1298,9 @@
    "split": "confirmation",
    "tier": "medium",
    "class": "planted-vertices",
-   "source": "generated",
+   "origin": "Generated by tools/build_graph_tiers.py: planted 3-coloring of 12 vertices, cross-class edge probability 0.5, seed 3012050",
    "family": "planted-vertices",
-   "density": 0.4394,
+   "density": 0.5,
    "seed": 3012050,
    "vertices": 12,
    "edges": 29,
@@ -1260,7 +1313,8 @@
    "girth": 3,
    "colorings": 12,
    "count_cpu_s": 0.0,
-   "witness": "planted"
+   "witness": "planted",
+   "source": "generated"
   },
   {
    "name": "planted_n12_k4_p50",
@@ -1269,9 +1323,9 @@
    "split": "confirmation",
    "tier": "medium",
    "class": "planted-vertices",
-   "source": "generated",
+   "origin": "Generated by tools/build_graph_tiers.py: planted 4-coloring of 12 vertices, cross-class edge probability 0.5, seed 4012050",
    "family": "planted-vertices",
-   "density": 0.3939,
+   "density": 0.5,
    "seed": 4012050,
    "vertices": 12,
    "edges": 26,
@@ -1284,7 +1338,8 @@
    "girth": 3,
    "colorings": 5328,
    "count_cpu_s": 0.001,
-   "witness": "planted"
+   "witness": "planted",
+   "source": "generated"
   },
   {
    "name": "planted_n16_k3_p50",
@@ -1293,9 +1348,9 @@
    "split": "confirmation",
    "tier": "medium",
    "class": "planted-vertices",
-   "source": "generated",
+   "origin": "Generated by tools/build_graph_tiers.py: planted 3-coloring of 16 vertices, cross-class edge probability 0.5, seed 3016050",
    "family": "planted-vertices",
-   "density": 0.3333,
+   "density": 0.5,
    "seed": 3016050,
    "vertices": 16,
    "edges": 40,
@@ -1309,6 +1364,7 @@
    "colorings": 24,
    "count_cpu_s": 0.001,
    "witness": "planted",
+   "source": "generated",
    "also_in": [
     "planted-density"
    ]
@@ -1320,9 +1376,9 @@
    "split": "confirmation",
    "tier": "medium",
    "class": "planted-vertices",
-   "source": "generated",
+   "origin": "Generated by tools/build_graph_tiers.py: planted 4-coloring of 16 vertices, cross-class edge probability 0.5, seed 4016050",
    "family": "planted-vertices",
-   "density": 0.4083,
+   "density": 0.5,
    "seed": 4016050,
    "vertices": 16,
    "edges": 49,
@@ -1335,7 +1391,8 @@
    "girth": 3,
    "colorings": 528,
    "count_cpu_s": 0.008,
-   "witness": "planted"
+   "witness": "planted",
+   "source": "generated"
   },
   {
    "name": "planted_n20_k3_p50",
@@ -1344,9 +1401,9 @@
    "split": "confirmation",
    "tier": "medium",
    "class": "planted-vertices",
-   "source": "generated",
+   "origin": "Generated by tools/build_graph_tiers.py: planted 3-coloring of 20 vertices, cross-class edge probability 0.5, seed 3020050",
    "family": "planted-vertices",
-   "density": 0.3263,
+   "density": 0.5,
    "seed": 3020050,
    "vertices": 20,
    "edges": 62,
@@ -1359,7 +1416,8 @@
    "girth": 3,
    "colorings": 6,
    "count_cpu_s": 0.03,
-   "witness": "planted"
+   "witness": "planted",
+   "source": "generated"
   },
   {
    "name": "planted_n20_k4_p50",
@@ -1368,9 +1426,9 @@
    "split": "confirmation",
    "tier": "medium",
    "class": "planted-vertices",
-   "source": "generated",
+   "origin": "Generated by tools/build_graph_tiers.py: planted 4-coloring of 20 vertices, cross-class edge probability 0.5, seed 4020050",
    "family": "planted-vertices",
-   "density": 0.3737,
+   "density": 0.5,
    "seed": 4020050,
    "vertices": 20,
    "edges": 71,
@@ -1383,7 +1441,8 @@
    "girth": 3,
    "colorings": 1440,
    "count_cpu_s": 0.388,
-   "witness": "planted"
+   "witness": "planted",
+   "source": "generated"
   },
   {
    "name": "planted_n24_k3_p50",
@@ -1392,9 +1451,9 @@
    "split": "confirmation",
    "tier": "medium",
    "class": "planted-vertices",
-   "source": "generated",
+   "origin": "Generated by tools/build_graph_tiers.py: planted 3-coloring of 24 vertices, cross-class edge probability 0.5, seed 3024050",
    "family": "planted-vertices",
-   "density": 0.3442,
+   "density": 0.5,
    "seed": 3024050,
    "vertices": 24,
    "edges": 95,
@@ -1407,7 +1466,8 @@
    "girth": 3,
    "colorings": 6,
    "count_cpu_s": 0.077,
-   "witness": "planted"
+   "witness": "planted",
+   "source": "generated"
   },
   {
    "name": "planted_n24_k4_p50",
@@ -1416,9 +1476,9 @@
    "split": "confirmation",
    "tier": "medium",
    "class": "planted-vertices",
-   "source": "generated",
+   "origin": "Generated by tools/build_graph_tiers.py: planted 4-coloring of 24 vertices, cross-class edge probability 0.5, seed 4024050",
    "family": "planted-vertices",
-   "density": 0.3623,
+   "density": 0.5,
    "seed": 4024050,
    "vertices": 24,
    "edges": 100,
@@ -1431,7 +1491,8 @@
    "girth": 3,
    "colorings": 144,
    "count_cpu_s": 5.934,
-   "witness": "planted"
+   "witness": "planted",
+   "source": "generated"
   },
   {
    "name": "planted_n32_k3_p50",
@@ -1440,9 +1501,9 @@
    "split": "confirmation",
    "tier": "medium",
    "class": "planted-vertices",
-   "source": "generated",
+   "origin": "Generated by tools/build_graph_tiers.py: planted 3-coloring of 32 vertices, cross-class edge probability 0.5, seed 3032050",
    "family": "planted-vertices",
-   "density": 0.381,
+   "density": 0.5,
    "seed": 3032050,
    "vertices": 32,
    "edges": 189,
@@ -1455,7 +1516,8 @@
    "girth": 3,
    "colorings": 6,
    "count_cpu_s": 8.378,
-   "witness": "planted"
+   "witness": "planted",
+   "source": "generated"
   },
   {
    "name": "planted_n32_k4_p50",
@@ -1464,9 +1526,9 @@
    "split": "confirmation",
    "tier": "medium",
    "class": "planted-vertices",
-   "source": "generated",
+   "origin": "Generated by tools/build_graph_tiers.py: planted 4-coloring of 32 vertices, cross-class edge probability 0.5, seed 4032050",
    "family": "planted-vertices",
-   "density": 0.3972,
+   "density": 0.5,
    "seed": 4032050,
    "vertices": 32,
    "edges": 197,
@@ -1479,7 +1541,8 @@
    "girth": 3,
    "colorings": 96,
    "count_cpu_s": 0.541,
-   "witness": "planted"
+   "witness": "planted",
+   "source": "generated"
   },
   {
    "name": "planted_n48_k3_p50",
@@ -1488,9 +1551,9 @@
    "split": "confirmation",
    "tier": "medium",
    "class": "planted-vertices",
-   "source": "generated",
+   "origin": "Generated by tools/build_graph_tiers.py: planted 3-coloring of 48 vertices, cross-class edge probability 0.5, seed 3048050",
    "family": "planted-vertices",
-   "density": 0.3599,
+   "density": 0.5,
    "seed": 3048050,
    "vertices": 48,
    "edges": 406,
@@ -1503,7 +1566,8 @@
    "girth": 3,
    "colorings": 6,
    "count_cpu_s": 0.4,
-   "witness": "planted"
+   "witness": "planted",
+   "source": "generated"
   },
   {
    "name": "planted_n48_k4_p50",
@@ -1512,9 +1576,9 @@
    "split": "confirmation",
    "tier": "medium",
    "class": "planted-vertices",
-   "source": "generated",
+   "origin": "Generated by tools/build_graph_tiers.py: planted 4-coloring of 48 vertices, cross-class edge probability 0.5, seed 4048050",
    "family": "planted-vertices",
-   "density": 0.3759,
+   "density": 0.5,
    "seed": 4048050,
    "vertices": 48,
    "edges": 424,
@@ -1527,7 +1591,8 @@
    "girth": 3,
    "colorings": 24,
    "count_cpu_s": 35.521,
-   "witness": "planted"
+   "witness": "planted",
+   "source": "generated"
   },
   {
    "name": "planted_n64_k3_p50",
@@ -1536,9 +1601,9 @@
    "split": "confirmation",
    "tier": "medium",
    "class": "planted-vertices",
-   "source": "generated",
+   "origin": "Generated by tools/build_graph_tiers.py: planted 3-coloring of 64 vertices, cross-class edge probability 0.5, seed 3064050",
    "family": "planted-vertices",
-   "density": 0.3249,
+   "density": 0.5,
    "seed": 3064050,
    "vertices": 64,
    "edges": 655,
@@ -1551,7 +1616,8 @@
    "girth": 3,
    "colorings": 6,
    "count_cpu_s": 15.361,
-   "witness": "planted"
+   "witness": "planted",
+   "source": "generated"
   },
   {
    "name": "planted_n64_k4_p50",
@@ -1560,9 +1626,9 @@
    "split": "confirmation",
    "tier": "medium",
    "class": "planted-vertices",
-   "source": "generated",
+   "origin": "Generated by tools/build_graph_tiers.py: planted 4-coloring of 64 vertices, cross-class edge probability 0.5, seed 4064050",
    "family": "planted-vertices",
-   "density": 0.38,
+   "density": 0.5,
    "seed": 4064050,
    "vertices": 64,
    "edges": 766,
@@ -1575,7 +1641,8 @@
    "girth": 3,
    "colorings": 24,
    "count_cpu_s": 17.524,
-   "witness": "planted"
+   "witness": "planted",
+   "source": "generated"
   },
   {
    "name": "planted_n96_k3_p50",
@@ -1584,9 +1651,9 @@
    "split": "confirmation",
    "tier": "medium",
    "class": "planted-vertices",
-   "source": "generated",
+   "origin": "Generated by tools/build_graph_tiers.py: planted 3-coloring of 96 vertices, cross-class edge probability 0.5, seed 3096050",
    "family": "planted-vertices",
-   "density": 0.3331,
+   "density": 0.5,
    "seed": 3096050,
    "vertices": 96,
    "edges": 1519,
@@ -1599,7 +1666,8 @@
    "girth": 3,
    "colorings": 6,
    "count_cpu_s": 0.005,
-   "witness": "planted"
+   "witness": "planted",
+   "source": "generated"
   },
   {
    "name": "planted_n96_k4_p50",
@@ -1608,9 +1676,9 @@
    "split": "confirmation",
    "tier": "medium",
    "class": "planted-vertices",
-   "source": "generated",
+   "origin": "Generated by tools/build_graph_tiers.py: planted 4-coloring of 96 vertices, cross-class edge probability 0.5, seed 4096050",
    "family": "planted-vertices",
-   "density": 0.3719,
+   "density": 0.5,
    "seed": 4096050,
    "vertices": 96,
    "edges": 1696,
@@ -1623,7 +1691,8 @@
    "girth": 3,
    "colorings": 24,
    "count_cpu_s": 0.006,
-   "witness": "planted"
+   "witness": "planted",
+   "source": "generated"
   },
   {
    "name": "planted_n128_k3_p50",
@@ -1632,9 +1701,9 @@
    "split": "confirmation",
    "tier": "medium",
    "class": "planted-vertices",
-   "source": "generated",
+   "origin": "Generated by tools/build_graph_tiers.py: planted 3-coloring of 128 vertices, cross-class edge probability 0.5, seed 3128050",
    "family": "planted-vertices",
-   "density": 0.3334,
+   "density": 0.5,
    "seed": 3128050,
    "vertices": 128,
    "edges": 2710,
@@ -1647,7 +1716,8 @@
    "girth": 3,
    "colorings": 6,
    "count_cpu_s": 0.01,
-   "witness": "planted"
+   "witness": "planted",
+   "source": "generated"
   },
   {
    "name": "planted_n128_k4_p50",
@@ -1656,9 +1726,9 @@
    "split": "confirmation",
    "tier": "medium",
    "class": "planted-vertices",
-   "source": "generated",
+   "origin": "Generated by tools/build_graph_tiers.py: planted 4-coloring of 128 vertices, cross-class edge probability 0.5, seed 4128050",
    "family": "planted-vertices",
-   "density": 0.3767,
+   "density": 0.5,
    "seed": 4128050,
    "vertices": 128,
    "edges": 3062,
@@ -1671,7 +1741,8 @@
    "girth": 3,
    "colorings": 24,
    "count_cpu_s": 0.021,
-   "witness": "planted"
+   "witness": "planted",
+   "source": "generated"
   },
   {
    "name": "planted_n16_k3_p10",
@@ -1680,9 +1751,9 @@
    "split": "confirmation",
    "tier": "medium",
    "class": "planted-density",
-   "source": "generated",
+   "origin": "Generated by tools/build_graph_tiers.py: planted 3-coloring of 16 vertices, cross-class edge probability 0.1, seed 3016010",
    "family": "planted-density",
-   "density": 0.075,
+   "density": 0.1,
    "seed": 3016010,
    "vertices": 16,
    "edges": 9,
@@ -1695,7 +1766,8 @@
    "girth": null,
    "colorings": 1119744,
    "count_cpu_s": 0.0,
-   "witness": "planted"
+   "witness": "planted",
+   "source": "generated"
   },
   {
    "name": "planted_n16_k3_p20",
@@ -1704,9 +1776,9 @@
    "split": "confirmation",
    "tier": "medium",
    "class": "planted-density",
-   "source": "generated",
+   "origin": "Generated by tools/build_graph_tiers.py: planted 3-coloring of 16 vertices, cross-class edge probability 0.2, seed 3016020",
    "family": "planted-density",
-   "density": 0.1417,
+   "density": 0.2,
    "seed": 3016020,
    "vertices": 16,
    "edges": 17,
@@ -1719,7 +1791,8 @@
    "girth": 4,
    "colorings": 53856,
    "count_cpu_s": 0.0,
-   "witness": "planted"
+   "witness": "planted",
+   "source": "generated"
   },
   {
    "name": "planted_n16_k3_p30",
@@ -1728,9 +1801,9 @@
    "split": "confirmation",
    "tier": "medium",
    "class": "planted-density",
-   "source": "generated",
+   "origin": "Generated by tools/build_graph_tiers.py: planted 3-coloring of 16 vertices, cross-class edge probability 0.3, seed 3016030",
    "family": "planted-density",
-   "density": 0.225,
+   "density": 0.3,
    "seed": 3016030,
    "vertices": 16,
    "edges": 27,
@@ -1743,7 +1816,8 @@
    "girth": 3,
    "colorings": 162,
    "count_cpu_s": 0.0,
-   "witness": "planted"
+   "witness": "planted",
+   "source": "generated"
   },
   {
    "name": "planted_n16_k3_p70",
@@ -1752,9 +1826,9 @@
    "split": "confirmation",
    "tier": "medium",
    "class": "planted-density",
-   "source": "generated",
+   "origin": "Generated by tools/build_graph_tiers.py: planted 3-coloring of 16 vertices, cross-class edge probability 0.7, seed 3016070",
    "family": "planted-density",
-   "density": 0.475,
+   "density": 0.7,
    "seed": 3016070,
    "vertices": 16,
    "edges": 57,
@@ -1767,7 +1841,8 @@
    "girth": 3,
    "colorings": 6,
    "count_cpu_s": 0.006,
-   "witness": "planted"
+   "witness": "planted",
+   "source": "generated"
   },
   {
    "name": "planted_n16_k3_p90",
@@ -1776,9 +1851,9 @@
    "split": "confirmation",
    "tier": "medium",
    "class": "planted-density",
-   "source": "generated",
+   "origin": "Generated by tools/build_graph_tiers.py: planted 3-coloring of 16 vertices, cross-class edge probability 0.9, seed 3016090",
    "family": "planted-density",
-   "density": 0.625,
+   "density": 0.9,
    "seed": 3016090,
    "vertices": 16,
    "edges": 75,
@@ -1791,7 +1866,8 @@
    "girth": 3,
    "colorings": 6,
    "count_cpu_s": 0.026,
-   "witness": "planted"
+   "witness": "planted",
+   "source": "generated"
   },
   {
    "name": "planted_n24_k10_p50_clique",
@@ -1800,9 +1876,9 @@
    "split": "confirmation",
    "tier": "medium",
    "class": "planted-colors",
-   "source": "generated",
+   "origin": "Generated by tools/build_graph_tiers.py: planted 10-coloring of 24 vertices with a planted 10-clique, cross-class edge probability 0.5, seed 7010024",
    "family": "planted-colors",
-   "density": 0.5797,
+   "density": 0.5,
    "seed": 7010024,
    "vertices": 24,
    "edges": 160,
@@ -1815,7 +1891,8 @@
    "girth": 3,
    "colorings": 80672346316800,
    "count_cpu_s": 14.688,
-   "witness": "planted"
+   "witness": "planted",
+   "source": "generated"
   },
   {
    "name": "planted_n24_k11_p50_clique",
@@ -1824,9 +1901,9 @@
    "split": "confirmation",
    "tier": "medium",
    "class": "planted-colors",
-   "source": "generated",
+   "origin": "Generated by tools/build_graph_tiers.py: planted 11-coloring of 24 vertices with a planted 11-clique, cross-class edge probability 0.5, seed 7011024",
    "family": "planted-colors",
-   "density": 0.6196,
+   "density": 0.5,
    "seed": 7011024,
    "vertices": 24,
    "edges": 171,
@@ -1839,7 +1916,8 @@
    "girth": 3,
    "colorings": 502924776076800,
    "count_cpu_s": 8.309,
-   "witness": "planted"
+   "witness": "planted",
+   "source": "generated"
   },
   {
    "name": "planted_n24_k12_p50_clique",
@@ -1848,9 +1926,9 @@
    "split": "confirmation",
    "tier": "medium",
    "class": "planted-colors",
-   "source": "generated",
+   "origin": "Generated by tools/build_graph_tiers.py: planted 12-coloring of 24 vertices with a planted 12-clique, cross-class edge probability 0.5, seed 7012024",
    "family": "planted-colors",
-   "density": 0.6014,
+   "density": 0.5,
    "seed": 7012024,
    "vertices": 24,
    "edges": 166,
@@ -1863,7 +1941,8 @@
    "girth": 3,
    "colorings": 82096006146739200,
    "count_cpu_s": 100.693,
-   "witness": "planted"
+   "witness": "planted",
+   "source": "generated"
   },
   {
    "name": "planted_n24_k14_p50_clique",
@@ -1872,9 +1951,9 @@
    "split": "confirmation",
    "tier": "medium",
    "class": "planted-colors",
-   "source": "generated",
+   "origin": "Generated by tools/build_graph_tiers.py: planted 14-coloring of 24 vertices with a planted 14-clique, cross-class edge probability 0.5, seed 7014024",
    "family": "planted-colors",
-   "density": 0.6341,
+   "density": 0.5,
    "seed": 7014024,
    "vertices": 24,
    "edges": 175,
@@ -1887,7 +1966,8 @@
    "girth": 3,
    "colorings": 11043714109139712000,
    "count_cpu_s": 73.156,
-   "witness": "planted"
+   "witness": "planted",
+   "source": "generated"
   },
   {
    "name": "planted_n24_k15_p50_clique",
@@ -1896,9 +1976,9 @@
    "split": "confirmation",
    "tier": "medium",
    "class": "planted-colors",
-   "source": "generated",
+   "origin": "Generated by tools/build_graph_tiers.py: planted 15-coloring of 24 vertices with a planted 15-clique, cross-class edge probability 0.5, seed 7015024",
    "family": "planted-colors",
-   "density": 0.6739,
+   "density": 0.5,
    "seed": 7015024,
    "vertices": 24,
    "edges": 186,
@@ -1911,7 +1991,8 @@
    "girth": 3,
    "colorings": 44335550001270528000,
    "count_cpu_s": 20.143,
-   "witness": "planted"
+   "witness": "planted",
+   "source": "generated"
   },
   {
    "name": "planted_n24_k16_p50_clique",
@@ -1920,9 +2001,9 @@
    "split": "confirmation",
    "tier": "medium",
    "class": "planted-colors",
-   "source": "generated",
+   "origin": "Generated by tools/build_graph_tiers.py: planted 16-coloring of 24 vertices with a planted 16-clique, cross-class edge probability 0.5, seed 7016024",
    "family": "planted-colors",
-   "density": 0.7065,
+   "density": 0.5,
    "seed": 7016024,
    "vertices": 24,
    "edges": 195,
@@ -1935,7 +2016,8 @@
    "girth": 3,
    "colorings": 186026554404827136000,
    "count_cpu_s": 5.611,
-   "witness": "planted"
+   "witness": "planted",
+   "source": "generated"
   },
   {
    "name": "planted_n24_k17_p50_clique",
@@ -1944,9 +2026,9 @@
    "split": "confirmation",
    "tier": "medium",
    "class": "planted-colors",
-   "source": "generated",
+   "origin": "Generated by tools/build_graph_tiers.py: planted 17-coloring of 24 vertices with a planted 17-clique, cross-class edge probability 0.5, seed 7017024",
    "family": "planted-colors",
-   "density": 0.7572,
+   "density": 0.5,
    "seed": 7017024,
    "vertices": 24,
    "edges": 209,
@@ -1959,7 +2041,8 @@
    "girth": 3,
    "colorings": 313128715949457408000,
    "count_cpu_s": 0.539,
-   "witness": "planted"
+   "witness": "planted",
+   "source": "generated"
   },
   {
    "name": "planted_n24_k18_p50_clique",
@@ -1968,9 +2051,9 @@
    "split": "confirmation",
    "tier": "medium",
    "class": "planted-colors",
-   "source": "generated",
+   "origin": "Generated by tools/build_graph_tiers.py: planted 18-coloring of 24 vertices with a planted 18-clique, cross-class edge probability 0.5, seed 7018024",
    "family": "planted-colors",
-   "density": 0.7717,
+   "density": 0.5,
    "seed": 7018024,
    "vertices": 24,
    "edges": 213,
@@ -1983,7 +2066,8 @@
    "girth": 3,
    "colorings": 2114716839749369856000,
    "count_cpu_s": 0.215,
-   "witness": "planted"
+   "witness": "planted",
+   "source": "generated"
   },
   {
    "name": "planted_n24_k19_p50_clique",
@@ -1992,9 +2076,9 @@
    "split": "confirmation",
    "tier": "medium",
    "class": "planted-colors",
-   "source": "generated",
+   "origin": "Generated by tools/build_graph_tiers.py: planted 19-coloring of 24 vertices with a planted 19-clique, cross-class edge probability 0.5, seed 7019024",
    "family": "planted-colors",
-   "density": 0.7899,
+   "density": 0.5,
    "seed": 7019024,
    "vertices": 24,
    "edges": 218,
@@ -2007,7 +2091,8 @@
    "girth": 3,
    "colorings": 11362503893887770624000,
    "count_cpu_s": 0.063,
-   "witness": "planted"
+   "witness": "planted",
+   "source": "generated"
   },
   {
    "name": "planted_n24_k20_p50_clique",
@@ -2016,9 +2101,9 @@
    "split": "confirmation",
    "tier": "medium",
    "class": "planted-colors",
-   "source": "generated",
+   "origin": "Generated by tools/build_graph_tiers.py: planted 20-coloring of 24 vertices with a planted 20-clique, cross-class edge probability 0.5, seed 7020024",
    "family": "planted-colors",
-   "density": 0.8333,
+   "density": 0.5,
    "seed": 7020024,
    "vertices": 24,
    "edges": 230,
@@ -2031,7 +2116,8 @@
    "girth": 3,
    "colorings": 25676847794296258560000,
    "count_cpu_s": 0.008,
-   "witness": "planted"
+   "witness": "planted",
+   "source": "generated"
   },
   {
    "name": "planted_n24_k2_p50_clique",
@@ -2040,9 +2126,9 @@
    "split": "confirmation",
    "tier": "medium",
    "class": "planted-colors",
-   "source": "generated",
+   "origin": "Generated by tools/build_graph_tiers.py: planted 2-coloring of 24 vertices with a planted 2-clique, cross-class edge probability 0.5, seed 7002024",
    "family": "planted-colors",
-   "density": 0.2826,
+   "density": 0.5,
    "seed": 7002024,
    "vertices": 24,
    "edges": 78,
@@ -2055,7 +2141,8 @@
    "girth": 4,
    "colorings": 2,
    "count_cpu_s": 0.002,
-   "witness": "planted"
+   "witness": "planted",
+   "source": "generated"
   },
   {
    "name": "planted_n24_k3_p50_clique",
@@ -2064,9 +2151,9 @@
    "split": "confirmation",
    "tier": "medium",
    "class": "planted-colors",
-   "source": "generated",
+   "origin": "Generated by tools/build_graph_tiers.py: planted 3-coloring of 24 vertices with a planted 3-clique, cross-class edge probability 0.5, seed 7003024",
    "family": "planted-colors",
-   "density": 0.337,
+   "density": 0.5,
    "seed": 7003024,
    "vertices": 24,
    "edges": 93,
@@ -2079,7 +2166,8 @@
    "girth": 3,
    "colorings": 6,
    "count_cpu_s": 0.06,
-   "witness": "planted"
+   "witness": "planted",
+   "source": "generated"
   },
   {
    "name": "planted_n24_k4_p50_clique",
@@ -2088,9 +2176,9 @@
    "split": "confirmation",
    "tier": "medium",
    "class": "planted-colors",
-   "source": "generated",
+   "origin": "Generated by tools/build_graph_tiers.py: planted 4-coloring of 24 vertices with a planted 4-clique, cross-class edge probability 0.5, seed 7004024",
    "family": "planted-colors",
-   "density": 0.4529,
+   "density": 0.5,
    "seed": 7004024,
    "vertices": 24,
    "edges": 125,
@@ -2103,7 +2191,8 @@
    "girth": 3,
    "colorings": 24,
    "count_cpu_s": 13.903,
-   "witness": "planted"
+   "witness": "planted",
+   "source": "generated"
   },
   {
    "name": "planted_n24_k5_p50_clique",
@@ -2112,9 +2201,9 @@
    "split": "confirmation",
    "tier": "medium",
    "class": "planted-colors",
-   "source": "generated",
+   "origin": "Generated by tools/build_graph_tiers.py: planted 5-coloring of 24 vertices with a planted 5-clique, cross-class edge probability 0.5, seed 7005024",
    "family": "planted-colors",
-   "density": 0.4928,
+   "density": 0.5,
    "seed": 7005024,
    "vertices": 24,
    "edges": 136,
@@ -2127,7 +2216,8 @@
    "girth": 3,
    "colorings": 120,
    "count_cpu_s": 0.809,
-   "witness": "planted"
+   "witness": "planted",
+   "source": "generated"
   },
   {
    "name": "planted_n24_k6_p50_clique",
@@ -2136,9 +2226,9 @@
    "split": "confirmation",
    "tier": "medium",
    "class": "planted-colors",
-   "source": "generated",
+   "origin": "Generated by tools/build_graph_tiers.py: planted 6-coloring of 24 vertices with a planted 6-clique, cross-class edge probability 0.5, seed 7006024",
    "family": "planted-colors",
-   "density": 0.413,
+   "density": 0.5,
    "seed": 7006024,
    "vertices": 24,
    "edges": 114,
@@ -2151,7 +2241,8 @@
    "girth": 3,
    "colorings": 41220720,
    "count_cpu_s": 1.003,
-   "witness": "planted"
+   "witness": "planted",
+   "source": "generated"
   },
   {
    "name": "planted_n24_k7_p50_clique",
@@ -2160,9 +2251,9 @@
    "split": "confirmation",
    "tier": "medium",
    "class": "planted-colors",
-   "source": "generated",
+   "origin": "Generated by tools/build_graph_tiers.py: planted 7-coloring of 24 vertices with a planted 7-clique, cross-class edge probability 0.5, seed 7007024",
    "family": "planted-colors",
-   "density": 0.4457,
+   "density": 0.5,
    "seed": 7007024,
    "vertices": 24,
    "edges": 123,
@@ -2175,7 +2266,8 @@
    "girth": 3,
    "colorings": 22990922640,
    "count_cpu_s": 11.337,
-   "witness": "planted"
+   "witness": "planted",
+   "source": "generated"
   },
   {
    "name": "planted_n24_k8_p50_clique",
@@ -2184,9 +2276,9 @@
    "split": "confirmation",
    "tier": "medium",
    "class": "planted-colors",
-   "source": "generated",
+   "origin": "Generated by tools/build_graph_tiers.py: planted 8-coloring of 24 vertices with a planted 8-clique, cross-class edge probability 0.5, seed 7008024",
    "family": "planted-colors",
-   "density": 0.5507,
+   "density": 0.5,
    "seed": 7008024,
    "vertices": 24,
    "edges": 152,
@@ -2199,7 +2291,8 @@
    "girth": 3,
    "colorings": 28289479680,
    "count_cpu_s": 0.721,
-   "witness": "planted"
+   "witness": "planted",
+   "source": "generated"
   },
   {
    "name": "planted_n24_k9_p50_clique",
@@ -2208,9 +2301,9 @@
    "split": "confirmation",
    "tier": "medium",
    "class": "planted-colors",
-   "source": "generated",
+   "origin": "Generated by tools/build_graph_tiers.py: planted 9-coloring of 24 vertices with a planted 9-clique, cross-class edge probability 0.5, seed 7009024",
    "family": "planted-colors",
-   "density": 0.5036,
+   "density": 0.5,
    "seed": 7009024,
    "vertices": 24,
    "edges": 139,
@@ -2223,7 +2316,8 @@
    "girth": 3,
    "colorings": 28387296080640,
    "count_cpu_s": 49.338,
-   "witness": "planted"
+   "witness": "planted",
+   "source": "generated"
   },
   {
    "name": "queen5_5",
@@ -2232,7 +2326,7 @@
    "split": "confirmation",
    "tier": "medium",
    "class": "queens",
-   "source": "https://mat.tepper.cmu.edu/COLOR/instances/queen5_5.col",
+   "origin": "Stanford GraphBase (D. E. Knuth): 5 by 5 queen graph (DIMACS graph-coloring collection)",
    "chromatic_number": 5,
    "vertices": 25,
    "edges": 160,
@@ -2247,7 +2341,8 @@
    "colorings": 240,
    "count_cpu_s": 0.0,
    "witness": "found",
-   "witness_cpu_s": 0.001
+   "witness_cpu_s": 0.001,
+   "source": "https://mat.tepper.cmu.edu/COLOR/instances/queen5_5.col"
   },
   {
    "name": "queen6_6",
@@ -2256,7 +2351,7 @@
    "split": "confirmation",
    "tier": "medium",
    "class": "queens",
-   "source": "https://mat.tepper.cmu.edu/COLOR/instances/queen6_6.col",
+   "origin": "Stanford GraphBase (D. E. Knuth): 6 by 6 queen graph (DIMACS graph-coloring collection)",
    "chromatic_number": 7,
    "vertices": 36,
    "edges": 290,
@@ -2271,7 +2366,8 @@
    "colorings": 100800,
    "count_cpu_s": 1.292,
    "witness": "found",
-   "witness_cpu_s": 0.074
+   "witness_cpu_s": 0.074,
+   "source": "https://mat.tepper.cmu.edu/COLOR/instances/queen6_6.col"
   },
   {
    "name": "sudoku_9x9",
@@ -2280,7 +2376,7 @@
    "split": "confirmation",
    "tier": "large",
    "class": "sudoku",
-   "source": "generated",
+   "origin": "Generated by tools/build_graph_tiers.py: 9 by 9 Sudoku graph",
    "vertices": 81,
    "edges": 810,
    "colors": 9,
@@ -2294,7 +2390,8 @@
    "colorings": null,
    "count_cpu_s": 314.783,
    "witness": "found",
-   "witness_cpu_s": 0.005
+   "witness_cpu_s": 0.005,
+   "source": "generated"
   },
   {
    "name": "interval_n48",
@@ -2303,7 +2400,7 @@
    "split": "confirmation",
    "tier": "large",
    "class": "interval-graphs",
-   "source": "generated",
+   "origin": "Generated by tools/build_graph_tiers.py: random interval graph on 48 vertices, seed 6000048",
    "vertices": 48,
    "edges": 323,
    "colors": 14,
@@ -2317,7 +2414,8 @@
    "colorings": null,
    "count_cpu_s": 151.56,
    "witness": "found",
-   "witness_cpu_s": 0.002
+   "witness_cpu_s": 0.002,
+   "source": "generated"
   },
   {
    "name": "planted_n24_k13_p50_clique",
@@ -2326,9 +2424,9 @@
    "split": "confirmation",
    "tier": "large",
    "class": "planted-colors",
-   "source": "generated",
+   "origin": "Generated by tools/build_graph_tiers.py: planted 13-coloring of 24 vertices with a planted 13-clique, cross-class edge probability 0.5, seed 7013024",
    "family": "planted-colors",
-   "density": 0.5978,
+   "density": 0.5,
    "seed": 7013024,
    "vertices": 24,
    "edges": 165,
@@ -2341,7 +2439,8 @@
    "girth": 3,
    "colorings": null,
    "count_cpu_s": 141.355,
-   "witness": "planted"
+   "witness": "planted",
+   "source": "generated"
   },
   {
    "name": "queen8_8",
@@ -2350,7 +2449,7 @@
    "split": "confirmation",
    "tier": "large",
    "class": "queens",
-   "source": "https://mat.tepper.cmu.edu/COLOR/instances/queen8_8.col",
+   "origin": "Stanford GraphBase (D. E. Knuth): 8 by 8 queen graph (DIMACS graph-coloring collection)",
    "chromatic_number": 9,
    "legacy": "same edges as legacy/vcgc commit 95f6167",
    "vertices": 64,
@@ -2366,7 +2465,8 @@
    "colorings": null,
    "count_cpu_s": 399.232,
    "witness": "found",
-   "witness_cpu_s": 369.585
+   "witness_cpu_s": 369.585,
+   "source": "https://mat.tepper.cmu.edu/COLOR/instances/queen8_8.col"
   },
   {
    "name": "myciel6",
@@ -2375,7 +2475,7 @@
    "split": "confirmation",
    "tier": "large",
    "class": "mycielski",
-   "source": "https://mat.tepper.cmu.edu/COLOR04/INSTANCES/myciel6.col",
+   "origin": "Michael Trick: graph from the Mycielski transformation (DIMACS graph-coloring collection)",
    "chromatic_number": 7,
    "vertices": 95,
    "edges": 755,
@@ -2390,7 +2490,8 @@
    "colorings": null,
    "count_cpu_s": 157.62,
    "witness": "found",
-   "witness_cpu_s": 0.006
+   "witness_cpu_s": 0.006,
+   "source": "https://mat.tepper.cmu.edu/COLOR04/INSTANCES/myciel6.col"
   },
   {
    "name": "myciel7",
@@ -2399,7 +2500,7 @@
    "split": "confirmation",
    "tier": "large",
    "class": "mycielski",
-   "source": "https://mat.tepper.cmu.edu/COLOR/instances/myciel7.col",
+   "origin": "Michael Trick: graph from the Mycielski transformation (DIMACS graph-coloring collection)",
    "chromatic_number": 8,
    "vertices": 191,
    "edges": 2360,
@@ -2414,7 +2515,8 @@
    "colorings": null,
    "count_cpu_s": 168.161,
    "witness": "found",
-   "witness_cpu_s": 0.03
+   "witness_cpu_s": 0.03,
+   "source": "https://mat.tepper.cmu.edu/COLOR/instances/myciel7.col"
   },
   {
    "name": "DSJC125.1",
@@ -2423,7 +2525,7 @@
    "split": "confirmation",
    "tier": "large",
    "class": "random",
-   "source": "https://mat.tepper.cmu.edu/COLOR04/INSTANCES/DSJC125.1.col",
+   "origin": "David Johnson: random graph with edge probability 0.1 from Johnson, Aragon, McGeoch and Schevon, Operations Research 39 (1991) (DIMACS graph-coloring collection)",
    "chromatic_number": 5,
    "vertices": 125,
    "edges": 736,
@@ -2438,7 +2540,8 @@
    "colorings": null,
    "count_cpu_s": 326.027,
    "witness": "found",
-   "witness_cpu_s": 0.358
+   "witness_cpu_s": 0.358,
+   "source": "https://mat.tepper.cmu.edu/COLOR04/INSTANCES/DSJC125.1.col"
   },
   {
    "name": "le450_5a",
@@ -2447,7 +2550,7 @@
    "split": "confirmation",
    "tier": "large",
    "class": "leighton",
-   "source": "https://mat.tepper.cmu.edu/COLOR/instances/le450_5a.col",
+   "origin": "Craig Morgenstern: Leighton graph (F. T. Leighton, J. Res. Natl. Bur. Stand. 84, 1979) with 450 vertices and 5 colors (DIMACS graph-coloring collection)",
    "chromatic_number": 5,
    "vertices": 450,
    "edges": 5714,
@@ -2462,7 +2565,8 @@
    "colorings": null,
    "count_cpu_s": 301.254,
    "witness": "found",
-   "witness_cpu_s": 54.786
+   "witness_cpu_s": 54.786,
+   "source": "https://mat.tepper.cmu.edu/COLOR/instances/le450_5a.col"
   },
   {
    "name": "4-Insertions_3",
@@ -2471,7 +2575,7 @@
    "split": "confirmation",
    "tier": "large",
    "class": "insertions",
-   "source": "https://mat.tepper.cmu.edu/COLOR04/INSTANCES/4-Insertions_3.col",
+   "origin": "M. Caramia and P. Dell'Olmo: 4-Insertions graph of order 3 (DIMACS graph-coloring collection)",
    "chromatic_number": 4,
    "legacy": "same edges as legacy/vcgc commit 95f6167",
    "vertices": 79,
@@ -2487,7 +2591,8 @@
    "colorings": null,
    "count_cpu_s": 202.269,
    "witness": "found",
-   "witness_cpu_s": 0.003
+   "witness_cpu_s": 0.003,
+   "source": "https://mat.tepper.cmu.edu/COLOR04/INSTANCES/4-Insertions_3.col"
   },
   {
    "name": "5-FullIns_3",
@@ -2496,7 +2601,7 @@
    "split": "confirmation",
    "tier": "large",
    "class": "insertions",
-   "source": "https://mat.tepper.cmu.edu/COLOR04/INSTANCES/5-FullIns_3.col",
+   "origin": "M. Caramia and P. Dell'Olmo: 5-FullIns graph of order 3 (DIMACS graph-coloring collection)",
    "chromatic_number": 8,
    "legacy": "same edges as legacy/vcgc commit 95f6167",
    "vertices": 154,
@@ -2512,7 +2617,8 @@
    "colorings": null,
    "count_cpu_s": 158.659,
    "witness": "found",
-   "witness_cpu_s": 0.014
+   "witness_cpu_s": 0.014,
+   "source": "https://mat.tepper.cmu.edu/COLOR04/INSTANCES/5-FullIns_3.col"
   },
   {
    "name": "huck",
@@ -2521,7 +2627,7 @@
    "split": "confirmation",
    "tier": "large",
    "class": "book-characters",
-   "source": "https://mat.tepper.cmu.edu/COLOR/instances/huck.col",
+   "origin": "Stanford GraphBase (D. E. Knuth): characters of Huckleberry Finn (Twain) (DIMACS graph-coloring collection)",
    "chromatic_number": 11,
    "vertices": 74,
    "edges": 301,
@@ -2536,7 +2642,8 @@
    "colorings": null,
    "count_cpu_s": 125.392,
    "witness": "found",
-   "witness_cpu_s": 0.003
+   "witness_cpu_s": 0.003,
+   "source": "https://mat.tepper.cmu.edu/COLOR/instances/huck.col"
   },
   {
    "name": "jean",
@@ -2545,7 +2652,7 @@
    "split": "confirmation",
    "tier": "large",
    "class": "book-characters",
-   "source": "https://mat.tepper.cmu.edu/COLOR/instances/jean.col",
+   "origin": "Stanford GraphBase (D. E. Knuth): characters of Les Mis\u00e9rables (Hugo) (DIMACS graph-coloring collection)",
    "chromatic_number": 10,
    "vertices": 80,
    "edges": 254,
@@ -2560,7 +2667,8 @@
    "colorings": null,
    "count_cpu_s": 117.053,
    "witness": "found",
-   "witness_cpu_s": 0.003
+   "witness_cpu_s": 0.003,
+   "source": "https://mat.tepper.cmu.edu/COLOR/instances/jean.col"
   },
   {
    "name": "david",
@@ -2569,7 +2677,7 @@
    "split": "confirmation",
    "tier": "large",
    "class": "book-characters",
-   "source": "https://mat.tepper.cmu.edu/COLOR/instances/david.col",
+   "origin": "Stanford GraphBase (D. E. Knuth): characters of David Copperfield (Dickens) (DIMACS graph-coloring collection)",
    "chromatic_number": 11,
    "vertices": 87,
    "edges": 406,
@@ -2584,7 +2692,8 @@
    "colorings": null,
    "count_cpu_s": 120.974,
    "witness": "found",
-   "witness_cpu_s": 0.004
+   "witness_cpu_s": 0.004,
+   "source": "https://mat.tepper.cmu.edu/COLOR/instances/david.col"
   },
   {
    "name": "anna",
@@ -2593,7 +2702,7 @@
    "split": "confirmation",
    "tier": "large",
    "class": "book-characters",
-   "source": "https://mat.tepper.cmu.edu/COLOR/instances/anna.col",
+   "origin": "Stanford GraphBase (D. E. Knuth): characters of Anna Karenina (Tolstoy) (DIMACS graph-coloring collection)",
    "chromatic_number": 11,
    "vertices": 138,
    "edges": 493,
@@ -2608,7 +2717,8 @@
    "colorings": null,
    "count_cpu_s": 131.069,
    "witness": "found",
-   "witness_cpu_s": 0.009
+   "witness_cpu_s": 0.009,
+   "source": "https://mat.tepper.cmu.edu/COLOR/instances/anna.col"
   },
   {
    "name": "games120",
@@ -2617,7 +2727,7 @@
    "split": "confirmation",
    "tier": "large",
    "class": "football-games",
-   "source": "https://mat.tepper.cmu.edu/COLOR/instances/games120.col",
+   "origin": "Stanford GraphBase (D. E. Knuth): college football teams joined when they played (DIMACS graph-coloring collection)",
    "chromatic_number": 9,
    "vertices": 120,
    "edges": 638,
@@ -2632,7 +2742,8 @@
    "colorings": null,
    "count_cpu_s": 137.303,
    "witness": "found",
-   "witness_cpu_s": 0.008
+   "witness_cpu_s": 0.008,
+   "source": "https://mat.tepper.cmu.edu/COLOR/instances/games120.col"
   },
   {
    "name": "miles250",
@@ -2641,7 +2752,7 @@
    "split": "confirmation",
    "tier": "large",
    "class": "city-distances",
-   "source": "https://mat.tepper.cmu.edu/COLOR/instances/miles250.col",
+   "origin": "Stanford GraphBase (D. E. Knuth): North American cities less than 250 miles apart (DIMACS graph-coloring collection)",
    "chromatic_number": 8,
    "vertices": 128,
    "edges": 387,
@@ -2656,7 +2767,8 @@
    "colorings": null,
    "count_cpu_s": 117.253,
    "witness": "found",
-   "witness_cpu_s": 0.007
+   "witness_cpu_s": 0.007,
+   "source": "https://mat.tepper.cmu.edu/COLOR/instances/miles250.col"
   }
  ]
 }

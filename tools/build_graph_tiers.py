@@ -6,7 +6,7 @@ Usage (from the checkout, research environment):
 
 Layout of ``datasets/graphs/``:
 
-- ``manuscript/`` holds the nine graphs of the rejected manuscript. They are the
+- ``discovery/`` holds the nine graphs of the rejected manuscript. They are the
   *discovery* set: every finding up to 26 November 2026 comes from them. This
   tool reads them and never rewrites them.
 - ``small/``, ``medium/`` and ``large/`` hold every other graph of the study (the
@@ -31,7 +31,9 @@ so only new or changed graphs are counted and searched again (``--recompute``
 forces everything). Every graph gets a verification witness: the planted coloring
 of a planted family, or one found by ``logique.coloring.solver`` within the
 witness budget. Structural columns (clique number, triangles, bipartiteness,
-girth, density) describe each graph. The tool stops if two graphs are isomorphic.
+girth, density) describe each graph, and its ``origin`` says who made it and how:
+the author named in the header of a downloaded file, or the construction and seed
+of a generated one. The tool stops if two graphs are isomorphic.
 It writes ``manifest.json``, ``witnesses.json`` and the index ``README.md``.
 """
 
@@ -62,8 +64,30 @@ SMALL_QUBITS = 24
 # loses no counting or search (ignored by Git).
 CACHE = ROOT / ".cache" / "graph-tiers" / "evaluations.jsonl"
 
-MANUSCRIPT = ["K3", "K5", "K10", "K20", "myciel3", "myciel4", "myciel5"]
-MANUSCRIPT += ["2-Insertions_3", "zed-city_2019"]
+COLLECTION = " (DIMACS graph-coloring collection)"
+MANUSCRIPT = "; a benchmark of the original manuscript"
+TRICK = "Michael Trick: graph from the Mycielski transformation"
+# The nine graphs of the original manuscript (the discovery set): (class, origin).
+DISCOVERY = {
+    "K3": ("complete", "Complete graph written for the original manuscript"),
+    "K5": ("complete", "Complete graph written for the original manuscript"),
+    "K10": ("complete", "Complete graph written for the original manuscript"),
+    "K20": ("complete", "Complete graph written for the original manuscript"),
+    "myciel3": ("mycielski", TRICK + COLLECTION + MANUSCRIPT),
+    "myciel4": ("mycielski", TRICK + COLLECTION + MANUSCRIPT),
+    "myciel5": ("mycielski", TRICK + COLLECTION + MANUSCRIPT),
+    "2-Insertions_3": (
+        "insertions",
+        "M. Caramia and P. Dell'Olmo: 2-Insertions graph of order 3"
+        + COLLECTION
+        + MANUSCRIPT,
+    ),
+    "zed-city_2019": (
+        "zed-city",
+        "IBM Quantum Hackathon 2019: the Zed city problem of placing convenience "
+        "stores in city districts, posed as vertex coloring" + MANUSCRIPT,
+    ),
+}
 
 COLOR = "https://mat.tepper.cmu.edu/COLOR/instances/"
 COLOR04 = "https://mat.tepper.cmu.edu/COLOR04/INSTANCES/"
@@ -163,14 +187,40 @@ DIMACS = {
 # Three of these were used by the legacy code (commit 95f6167); their edge sets
 # are checked against the legacy files when fetching.
 LEGACY = {"queen8_8", "4-Insertions_3", "5-FullIns_3"}
+SGB = "Stanford GraphBase (D. E. Knuth): "
+JOHNSON = (
+    "David Johnson: random graph with edge probability 0.1 from Johnson, Aragon, "
+    "McGeoch and Schevon, Operations Research 39 (1991)"
+)
+LEIGHTON = (
+    "Craig Morgenstern: Leighton graph (F. T. Leighton, J. Res. Natl. Bur. Stand. "
+    "84, 1979) with 450 vertices and 5 colors"
+)
+# Who made each DIMACS instance, as its file header states.
+ORIGIN = {
+    "queen5_5": SGB + "5 by 5 queen graph",
+    "queen6_6": SGB + "6 by 6 queen graph",
+    "queen8_8": SGB + "8 by 8 queen graph",
+    "myciel6": TRICK,
+    "myciel7": TRICK,
+    "DSJC125.1": JOHNSON,
+    "le450_5a": LEIGHTON,
+    "4-Insertions_3": "M. Caramia and P. Dell'Olmo: 4-Insertions graph of order 3",
+    "5-FullIns_3": "M. Caramia and P. Dell'Olmo: 5-FullIns graph of order 3",
+    "anna": SGB + "characters of Anna Karenina (Tolstoy)",
+    "david": SGB + "characters of David Copperfield (Dickens)",
+    "huck": SGB + "characters of Huckleberry Finn (Twain)",
+    "jean": SGB + "characters of Les Misérables (Hugo)",
+    "games120": SGB + "college football teams joined when they played",
+    "miles250": SGB + "North American cities less than 250 miles apart",
+}
 # Instances whose witness search needs more than the default budget.
 LONGER_WITNESS = {"queen8_8": 1800}
 
 CLASSES = {
-    "manuscript": "The nine graphs of the rejected manuscript (the discovery set).",
     "paths": "Paths; trees, so the edge-wise oracle has no slack.",
     "cycles": "Single cycles, even (two colors) and odd (three colors).",
-    "complete": "Complete graphs not already in the manuscript set.",
+    "complete": "Complete graphs.",
     "petersen": "The Petersen graph: triangle-free, three colors.",
     "wheels": "A hub joined to every vertex of a cycle; every triangle uses the hub.",
     "complete-multipartite": "Every vertex joined to every vertex of the other "
@@ -202,8 +252,10 @@ CLASSES = {
     "(Stanford GraphBase, DIMACS).",
     "football-games": "College football teams joined when they played "
     "(Stanford GraphBase, DIMACS).",
-    "city-distances": "US cities joined when closer than 250 miles "
+    "city-distances": "North American cities joined when closer than 250 miles "
     "(Stanford GraphBase, DIMACS).",
+    "zed-city": "The Zed city problem of the IBM Quantum Hackathon 2019, posed as "
+    "vertex coloring.",
 }
 
 
@@ -217,8 +269,9 @@ class Spec:
     source: dict
     structured: bool = False
     coloring: dict | None = None
-    stored: Path | None = None  # existing file (manuscript graphs)
+    stored: Path | None = None  # existing file (the discovery graphs)
     also_in: list = field(default_factory=list)
+    origin: str = ""
 
 
 def sha256(data: bytes) -> str:
@@ -415,9 +468,35 @@ def structured() -> list[Spec]:
             col_text(n, edges, colors, f"{name}: {description}, generated"),
             {"source": "generated"},
             structured=True,
+            origin="Generated by tools/build_graph_tiers.py: "
+            + construction(name, cls, n, colors, description),
         )
         for name, cls, n, edges, colors, description in graphs
     ]
+
+
+def construction(name: str, cls: str, n: int, colors: int, description: str) -> str:
+    """A precise phrase for the origin of a structured graph."""
+    seed = description.split(", ")[-1]  # "seed N" for the random constructions
+    phrases = {
+        "paths": f"path on {n} vertices with {colors} colors",
+        "cycles": f"cycle on {n} vertices with {colors} colors",
+        "complete": f"complete graph on {n} vertices",
+        "petersen": "the Petersen graph, 10 vertices with 3 colors",
+        "wheels": f"wheel: a hub joined to a cycle of {n - 1} vertices, "
+        f"{colors} colors",
+        "complete-multipartite": "complete multipartite graph with parts of sizes "
+        + ", ".join(name.split("_")[1:]),
+        "latin-squares": f"rook's graph of a {colors} by {colors} board, whose "
+        f"{colors}-colorings are the Latin squares of order {colors}",
+        "sudoku": f"{colors} by {colors} Sudoku graph",
+        "grids": f"{round(n ** 0.5)} by {round(n ** 0.5)} square grid with 2 colors",
+        "hypercubes": f"{n.bit_length() - 1}-dimensional hypercube with 2 colors",
+        "planar-triangulations": f"random planar triangulation on {n} vertices "
+        f"(vertex insertions, then edge flips), {seed}",
+        "interval-graphs": f"random interval graph on {n} vertices, {seed}",
+    }
+    return phrases[cls]
 
 
 # Planted families ---------------------------------------------------------
@@ -465,7 +544,17 @@ def families() -> list[Spec]:
         edges, coloring = planted(n, k, p, seed, clique)
         source = {"source": "generated", "family": cls, "density": p, "seed": seed}
         graphs.append(
-            Spec(name, cls, col_text(n, edges, k, comment), source, coloring=coloring)
+            Spec(
+                name,
+                cls,
+                col_text(n, edges, k, comment),
+                source,
+                coloring=coloring,
+                origin="Generated by tools/build_graph_tiers.py: planted "
+                f"{k}-coloring of {n} vertices"
+                + (f" with a planted {k}-clique" if clique else "")
+                + f", cross-class edge probability {p}, seed {seed}",
+            )
         )
     for spec in graphs:
         if spec.name == "planted_n16_k3_p50":
@@ -476,17 +565,18 @@ def families() -> list[Spec]:
 # Manuscript and DIMACS ----------------------------------------------------
 
 
-def manuscript() -> list[Spec]:
+def discovery() -> list[Spec]:
     specs = []
-    for name in MANUSCRIPT:
-        path = GRAPHS / "manuscript" / f"{name}.col"
+    for name, (cls, origin) in DISCOVERY.items():
+        path = GRAPHS / "discovery" / f"{name}.col"
         specs.append(
             Spec(
                 name,
-                "manuscript",
+                cls,
                 path.read_bytes().decode(),
-                {"source": "manuscript benchmark"},
+                {"source": "original manuscript"},
                 stored=path,
+                origin=origin,
             )
         )
     return specs
@@ -554,7 +644,8 @@ def dimacs(refetch: bool) -> list[Spec]:
         source = {"source": base + name + ".col", "chromatic_number": chromatic}
         if name in LEGACY:
             source["legacy"] = "same edges as legacy/vcgc commit 95f6167"
-        specs.append(Spec(name, cls, text, source))
+        origin = ORIGIN[name] + COLLECTION
+        specs.append(Spec(name, cls, text, source, origin=origin))
     return specs
 
 
@@ -735,7 +826,7 @@ def index(entries: list[dict]) -> str:
         "",
         "| Folder | What it holds |",
         "| --- | --- |",
-        "| `manuscript/` | The nine graphs of the rejected manuscript: the **discovery "
+        "| `discovery/` | The nine graphs of the rejected manuscript: the **discovery "
         "set**, on which every finding up to 26 November 2026 was made. Their tiers "
         "are listed below. |",
         "| `small/<class>/` | **Small tier**: structured graphs whose data register "
@@ -747,7 +838,7 @@ def index(entries: list[dict]) -> str:
         "| `teaching/` | Tutorial inputs and the format template (`template.col`). |",
         "| `legacy/` | Historical and development inputs outside the study. |",
         "",
-        "Every graph outside `manuscript/` belongs to the **confirmation set**. Each "
+        "Every graph outside `discovery/` belongs to the **confirmation set**. Each "
         "file records its color count k in an `x colors` line. ω is the clique "
         "number: when ω = k, k colors are necessary, so k is the chromatic number.",
         "",
@@ -760,19 +851,22 @@ def index(entries: list[dict]) -> str:
     lines += [f"| {cls} | {CLASSES[cls]} |" for cls in used]
     header = [
         "| Graph | Class | Vertices | Edges | k | ω | Triangles | Colorings | "
-        "Witness |",
-        "| --- | --- | --- | --- | --- | --- | --- | --- | --- |",
+        "Witness | Origin |",
+        "| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |",
     ]
 
     def row(e):
         count = "—" if e["colorings"] is None else f"{e['colorings']:,}"
+        origin = e["origin"]
+        if str(e.get("source", "")).startswith("https://"):
+            origin += f" ([file]({e['source']}))"
         return (
             f"| {e['name']} | {e['class']} | {e['vertices']} | {e['edges']} | "
             f"{e['colors']} | {e['clique_number']} | {e['triangles']:,} | {count} | "
-            f"{e['witness']} |"
+            f"{e['witness']} | {origin} |"
         )
 
-    groups = [("Discovery set (`manuscript/`)", "discovery", None)]
+    groups = [("Discovery set (`discovery/`)", "discovery", None)]
     groups += [
         (f"{tier.capitalize()} tier (`{tier}/`)", "confirmation", tier)
         for tier in TIERS
@@ -788,6 +882,24 @@ def index(entries: list[dict]) -> str:
         summary = ", ".join(f"{n} {label}" for label, n in counts.items())
         lines += [f"{len(chosen)} graphs: {summary}.", ""] + header
         lines += [row(e) for e in chosen]
+    lines += [
+        "",
+        "## Sources",
+        "",
+        "- **Generated graphs** (structured classes and planted families) are built by "
+        "`tools/build_graph_tiers.py` from the construction and seed given in their "
+        "origin and in the first line of each file.",
+        "- **DIMACS graph-coloring collection** (maintained by Michael Trick): "
+        "[COLOR](https://mat.tepper.cmu.edu/COLOR/instances.html) and "
+        "[COLOR02/03/04](https://mat.tepper.cmu.edu/COLOR04/). Each downloaded file "
+        "keeps its original header, which names its author, and is checked against the "
+        "SHA-256 recorded in the tool.",
+        "- **Stanford GraphBase**: D. E. Knuth, *The Stanford GraphBase: A Platform for "
+        "Combinatorial Computing*, Addison-Wesley, 1993. The queen, book, football and "
+        "city-distance graphs come from it through the DIMACS collection.",
+        "- **Original manuscript**: the complete graphs were written for it; the other "
+        "discovery graphs come from the sources named in their origin.",
+    ]
     return "\n".join(lines) + "\n"
 
 
@@ -809,7 +921,7 @@ def main() -> None:
     parser.add_argument("--witness-budget", type=float, default=120.0)
     args = parser.parse_args()
 
-    specs = manuscript() + dimacs(args.fetch) + structured() + families()
+    specs = discovery() + dimacs(args.fetch) + structured() + families()
     names = Counter(spec.name for spec in specs)
     assert max(names.values()) == 1, [n for n, c in names.items() if c > 1]
     check_duplicates(specs)
@@ -873,6 +985,8 @@ def main() -> None:
     written = set()
     for spec in specs:
         entry = entries[spec.name]
+        entry.pop("source", None)
+        entry.update({"class": spec.cls, **spec.source, "origin": spec.origin})
         if spec.stored is not None:
             path = spec.stored
             entry["split"] = "discovery"
@@ -896,7 +1010,7 @@ def main() -> None:
         if (GRAPHS / folder).is_dir() and not any((GRAPHS / folder).iterdir()):
             (GRAPHS / folder).rmdir()
 
-    keys = ["name", "path", "sha256", "split", "tier", "class"]
+    keys = ["name", "path", "sha256", "split", "tier", "class", "origin"]
     ordered = []
     for e in sorted(entries.values(), key=order):
         ordered.append({**{k: e[k] for k in keys}, **e})

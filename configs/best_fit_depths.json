@@ -1,9 +1,9 @@
 {
   "kind": "study",
   "inputs": [
-    "../datasets/graphs/manuscript/myciel3.col",
-    "../datasets/graphs/manuscript/myciel4.col",
-    "../datasets/graphs/manuscript/myciel5.col"
+    "../datasets/graphs/discovery/myciel3.col",
+    "../datasets/graphs/discovery/myciel4.col",
+    "../datasets/graphs/discovery/myciel5.col"
   ],
   "methods": [
     "best_fit"

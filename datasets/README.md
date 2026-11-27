@@ -3,12 +3,13 @@
 ## Graphs (`graphs/`)
 
 The graphs of the coloring study are organized by role and by tier. The generated index
-[`graphs/README.md`](graphs/README.md) lists every graph with its size, colors, clique number,
-triangles and number of colorings.
+[`graphs/README.md`](graphs/README.md) lists every graph with:
+- its size, colors, clique number, triangles and number of colorings;
+- its origin: who made it, and how.
 
 | Folder | What it holds |
 | --- | --- |
-| `graphs/manuscript/` | The nine graphs of the original manuscript (K3, K5, K10, K20, myciel3–5, 2-Insertions_3, zed-city_2019). They are the *discovery set*: every finding up to 26 November 2026 was made on them. Configurations and tests refer to them by these paths. |
+| `graphs/discovery/` | The *discovery set*: the nine graphs of the original manuscript (K3, K5, K10, K20, myciel3–5, 2-Insertions_3, zed-city_2019). Every finding up to 26 November 2026 was made on them. Configurations and tests refer to them by these paths. |
 | `graphs/small/<class>/` | *Small tier*: structured graphs whose data register has at most 24 qubits, simulated exactly. |
 | `graphs/medium/<class>/` | *Medium tier*: graphs whose colorings can be counted within the study's budget, so the complete search is priced exactly. |
 | `graphs/large/<class>/` | *Large tier*: graphs whose colorings cannot be counted; they are compared per Grover iteration. |
@@ -27,7 +28,7 @@ Every graph in the three tier folders belongs to the *confirmation set*.
 
 | File | What it holds |
 | --- | --- |
-| `graphs/manifest.json` | Each graph's path, SHA-256, split (discovery or confirmation), tier, class, source, structure (density, clique number, triangles, bipartiteness, girth) and number of colorings. |
+| `graphs/manifest.json` | For each graph: its path, SHA-256, split (discovery or confirmation), tier, class, structure (density, clique number, triangles, bipartiteness, girth) and number of colorings. It also records the graph's provenance in two fields. `origin` says who made the graph and how: the author named in a downloaded file's header (Michael Trick, the Stanford GraphBase, David Johnson and others), or the construction and seed of a generated graph. `source` gives the download URL, `generated` or `original manuscript`. |
 | `graphs/witnesses.json` | One proper coloring per graph, for verification. |
 | `graphs/README.md` | The generated index. |
 

@@ -1,7 +1,7 @@
 {
   "kind": "study",
   "inputs": [
-    "../datasets/graphs/manuscript/myciel5.col"
+    "../datasets/graphs/discovery/myciel5.col"
   ],
   "methods": [
     "best_fit"

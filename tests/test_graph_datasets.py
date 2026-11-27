@@ -45,7 +45,7 @@ def test_folders_encode_split_tier_and_class(manifest):
     for entry in manifest["graphs"]:
         parts = Path(entry["path"]).relative_to("datasets/graphs").parts
         if entry["split"] == "discovery":
-            assert parts[0] == "manuscript"
+            assert parts[0] == "discovery"
         else:
             assert entry["split"] == "confirmation"
             assert parts[:2] == (entry["tier"], entry["class"])
@@ -54,9 +54,15 @@ def test_folders_encode_split_tier_and_class(manifest):
 
 def test_tier_folders_hold_only_listed_graphs(manifest):
     listed = {entry["path"] for entry in manifest["graphs"]}
-    for tier in (*TIERS, "manuscript"):
+    for tier in (*TIERS, "discovery"):
         for path in (GRAPHS / tier).rglob("*.col"):
             assert str(path.relative_to(ROOT)) in listed, path
+
+
+def test_every_graph_states_its_origin(manifest):
+    for entry in manifest["graphs"]:
+        assert entry["origin"].strip(), entry["name"]
+        assert entry["source"], entry["name"]
 
 
 def test_tiers_follow_their_rules(manifest):

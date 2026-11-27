@@ -110,7 +110,7 @@ def test_single_xag_kickback_matches_historical_amplitudes(monkeypatch):
         executable = native_executable()
     except FileNotFoundError:
         pytest.skip("Configure the native bridge")
-    problem = read_dimacs(ROOT / "datasets/graphs/manuscript/K3.col")
+    problem = read_dimacs(ROOT / "datasets/graphs/discovery/K3.col")
     expression, variables = edge_coloring_expression(problem)
     result = synthesize_expression(expression, variables, executable=executable)
     encoding = encode_coloring(replace(problem, colors=4, precolored={}))

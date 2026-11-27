@@ -1,15 +1,15 @@
 {
   "kind": "study",
   "inputs": [
-    "../datasets/graphs/manuscript/K3.col",
-    "../datasets/graphs/manuscript/K5.col",
-    "../datasets/graphs/manuscript/K10.col",
-    "../datasets/graphs/manuscript/K20.col",
-    "../datasets/graphs/manuscript/myciel3.col",
-    "../datasets/graphs/manuscript/myciel4.col",
-    "../datasets/graphs/manuscript/myciel5.col",
-    "../datasets/graphs/manuscript/2-Insertions_3.col",
-    "../datasets/graphs/manuscript/zed-city_2019.col"
+    "../datasets/graphs/discovery/K3.col",
+    "../datasets/graphs/discovery/K5.col",
+    "../datasets/graphs/discovery/K10.col",
+    "../datasets/graphs/discovery/K20.col",
+    "../datasets/graphs/discovery/myciel3.col",
+    "../datasets/graphs/discovery/myciel4.col",
+    "../datasets/graphs/discovery/myciel5.col",
+    "../datasets/graphs/discovery/2-Insertions_3.col",
+    "../datasets/graphs/discovery/zed-city_2019.col"
   ],
   "methods": [
     "xag"

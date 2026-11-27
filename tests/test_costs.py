@@ -292,7 +292,7 @@ def test_xag_oracle_t_count_follows_its_and_gates():
     except FileNotFoundError:
         pytest.skip("Configure the native bridge for synthesis tests")
     root = Path(__file__).resolve().parents[1]
-    problem = read_dimacs(root / "datasets/graphs/benchmarks/K3.col")
+    problem = read_dimacs(root / "datasets/graphs/manuscript/K3.col")
     result = synthesize(encode_coloring(problem), "xag")
     summary = result.summary()
     assert summary["mcx_3plus"] == 0

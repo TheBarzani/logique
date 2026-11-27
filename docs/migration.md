@@ -13,8 +13,8 @@ The project, Python package, and CLI are now named `logique`. Imports, environme
 | Benchmark generation scripts | `logique benchmark run --config FILE` |
 | Plotting scripts | `logique plot TABLE --metric METRIC --output FILE` |
 | Notebook runner script | `logique notebook run NOTEBOOK` |
-| `data/benchmarks/` | `datasets/graphs/benchmarks/` |
-| `data/execution/*.col` | `datasets/graphs/execution/` |
+| `data/benchmarks/` | `datasets/graphs/manuscript/` (the nine manuscript graphs) and `datasets/graphs/legacy/benchmarks/grid6.col` |
+| `data/execution/*.col` | `datasets/graphs/legacy/execution/` |
 | Original VCGC `examples/` and `experiments/` | `legacy/vcgc` branch; maintained notebooks in `experiments/` |
 | `data/output/` and historical result directories | `legacy/vcgc` branch |
 | Dependency submodules at the root | `external/abc/`, `external/caterpillar/`, `external/mockturtle/`, `external/saha-belletti/`, `external/tweedledum/` |

@@ -89,7 +89,7 @@ def generate(output: Path | None = None, graphs: list[str] | None = None) -> Pat
     historical_rows, measured_rows = [], []
     for name in names:
         print(name, flush=True)
-        original = read_dimacs(ROOT / "datasets/graphs/benchmarks" / f"{name}.col")
+        original = read_dimacs(ROOT / "datasets/graphs/manuscript" / f"{name}.col")
 
         # Replay the original predicate: edge inequalities, without precolors or
         # constraints excluding unused binary color codes.

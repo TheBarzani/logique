@@ -156,7 +156,7 @@ def test_tree_shapes_need_a_balanced_encoding():
 
 
 def test_edge_rounds_form_a_proper_edge_colouring():
-    problem = read_dimacs(ROOT / "datasets/graphs/benchmarks/myciel3.col")
+    problem = read_dimacs(ROOT / "datasets/graphs/manuscript/myciel3.col")
     rounds = edge_rounds(problem)
     assert set(rounds) == {frozenset(e) for e in problem.edges}
     for u, v in problem.edges:

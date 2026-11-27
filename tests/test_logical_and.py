@@ -201,7 +201,7 @@ def test_baseline_flags_are_uncomputed_like_the_xag_ands():
     from logique.circuits.search import baseline_instance
 
     problem = replace(
-        read_dimacs(ROOT / "datasets/graphs/benchmarks/K3.col"), precolored={}
+        read_dimacs(ROOT / "datasets/graphs/manuscript/K3.col"), precolored={}
     )
     instance = baseline_instance(problem, "simple", "R3")
     oracle, _ = expand_oracle(instance, "throwaway_tree")
@@ -234,7 +234,7 @@ def k3_xag():
         native_executable()
     except FileNotFoundError:
         pytest.skip("Configure the native bridge for synthesis tests")
-    problem = read_dimacs(ROOT / "datasets/graphs/benchmarks/K3.col")
+    problem = read_dimacs(ROOT / "datasets/graphs/manuscript/K3.col")
     return synthesize(encode_coloring(problem), "xag")
 
 

@@ -1,15 +1,15 @@
 {
   "kind": "study",
   "inputs": [
-    "../datasets/graphs/benchmarks/K3.col",
-    "../datasets/graphs/benchmarks/K5.col",
-    "../datasets/graphs/benchmarks/K10.col",
-    "../datasets/graphs/benchmarks/K20.col",
-    "../datasets/graphs/benchmarks/myciel3.col",
-    "../datasets/graphs/benchmarks/myciel4.col",
-    "../datasets/graphs/benchmarks/myciel5.col",
-    "../datasets/graphs/benchmarks/2-Insertions_3.col",
-    "../datasets/graphs/benchmarks/zed-city_2019.col"
+    "../datasets/graphs/manuscript/K3.col",
+    "../datasets/graphs/manuscript/K5.col",
+    "../datasets/graphs/manuscript/K10.col",
+    "../datasets/graphs/manuscript/K20.col",
+    "../datasets/graphs/manuscript/myciel3.col",
+    "../datasets/graphs/manuscript/myciel4.col",
+    "../datasets/graphs/manuscript/myciel5.col",
+    "../datasets/graphs/manuscript/2-Insertions_3.col",
+    "../datasets/graphs/manuscript/zed-city_2019.col"
   ],
   "methods": [
     "aig_bennett",

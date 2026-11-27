@@ -12,7 +12,7 @@ from logique.coloring.counting import count_colorings
 from logique.coloring.model import ColoringProblem
 
 ROOT = Path(__file__).resolve().parents[1]
-GRAPHS = ROOT / "datasets/graphs/benchmarks"
+GRAPHS = ROOT / "datasets/graphs/manuscript"
 
 
 def unprecolored(name):
